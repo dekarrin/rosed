@@ -2,7 +2,10 @@ package rosed
 
 // this file contains operations performed by Editors.
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 // LineOperation is a function that takes a zero-indexed line number and the
 // contents of that line and performs some operation on the string to get a
@@ -81,4 +84,122 @@ func (ed Editor) IndentOpts(level int, opts Options) Editor {
 	}
 
 	return ed.ApplyOpts(doIndent, opts)
+}
+
+// WrapOpts performs a wrap of all text to the given width. The provided options
+// are used instead of the Editor's built-in options. If width is less than 2,
+// it is assumed to be 2 because no meaningful wrap algorithm can be applied to
+// anything smaller.
+func (ed Editor) WrapOpts(width int, opts Options) []string {
+	opts = opts.WithDefaults()
+
+	if width < 2 {
+		width = 2
+	}
+
+	// get the correct 'complete' paragraph separator based on our line ending
+	// mode
+
+	// split the paragraph separator about its line separators so we can see any
+	// extra chars that will be chopped off while in a preserve-mode wrap that
+	// messes with line separators
+	var paraSepPrevSuffix, paraSepNextPrefix string
+	var paraSepLines []string
+	parts := strings.Split(opts.ParagraphSeparator, opts.LineSeparator)
+	paraSepPrevSuffix = parts[0]
+	if len(parts) > 1 {
+		paraSepLines = parts[1 : len(parts)-1]
+		paraSepNextPrefix = parts[len(parts)-1]
+	}
+
+	var totalLines int
+	var wrappedParagraphs [][]string
+	if options.PreserveParagraphs {
+		var paragraphs = strings.Split(text, options.ParagraphSeparator)
+		wrappedParagraphs = make([][]string, len(paragraphs))
+		for idx, para := range paragraphs {
+			trimParaSuffix := false
+			trimParaPrefix := false
+			// to get proper width, make sure we add the prefix and suffix to the para
+			if idx > 0 {
+				// if there are prev paragraphs, add the next line prefix
+				para = paraSepNextPrefix + para
+				trimParaPrefix = true
+			}
+			if idx+1 < len(paragraphs) {
+				// if there are more paragraphs, add the prev line suffix
+				para += paraSepPrevSuffix
+				trimParaSuffix = true
+
+				// update totalLines to include the "between paragraphs" lines added by the separator.
+				totalLines += len(paraSepLines)
+			}
+
+			para = options.ParagraphPrefix + para + options.ParagraphSuffix
+			wrappedPara := doPrecalculatedWidthWrap(para, widthWithoutAffixes)
+			// trim off paragraph prefixes and suffixes to let the later routine add them outside of the
+			// prefix/suffix specified in options (if any)
+			wrappedPara[0] = strings.TrimPrefix(wrappedPara[0], options.ParagraphPrefix)
+			wrappedPara[len(wrappedPara)-1] = strings.TrimSuffix(wrappedPara[len(wrappedPara)-1], options.ParagraphPrefix)
+			totalLines += len(wrappedPara)
+
+			// trim off para break prefixes and suffixes to let the later routine add them outside of the
+			// prefix/suffix specified in options (if any)
+			if trimParaPrefix {
+				wrappedPara[0] = strings.TrimPrefix(wrappedPara[0], paraSepNextPrefix)
+			}
+			if trimParaSuffix {
+				wrappedPara[len(wrappedPara)-1] = strings.TrimSuffix(wrappedPara[len(wrappedPara)-1], paraSepPrevSuffix)
+			}
+			wrappedParagraphs[idx] = wrappedPara
+		}
+	} else {
+		para := options.ParagraphPrefix + text + options.ParagraphSuffix
+		wrapped := doPrecalculatedWidthWrap(para, widthWithoutAffixes)
+		// trim off paragraph prefixes and suffixes to let the later routine add them outside of the
+		// prefix/suffix specified in options (if any)
+		wrapped[0] = strings.TrimPrefix(wrapped[0], options.ParagraphPrefix)
+		wrapped[len(wrapped)-1] = strings.TrimSuffix(wrapped[len(wrapped)-1], options.ParagraphPrefix)
+		totalLines = len(wrapped)
+		wrappedParagraphs = [][]string{wrapped}
+	}
+
+	// add affixes and paragraph breaks to the lines
+	lines := make([]string, totalLines)
+	curParaLines := lines
+	for paraIdx, para := range wrappedParagraphs {
+		for lineIdx := range para {
+			curParaLines[lineIdx] = fmt.Sprintf("%s%s%s", options.Prefix, para[lineIdx], options.Suffix)
+
+			if lineIdx == 0 {
+				// if on the first line of the paragraph, add the paragraph prefix
+				curParaLines[lineIdx] = options.ParagraphPrefix + curParaLines[lineIdx]
+
+				// if on the first line of any paragraph after the first, add the separator prefix to it
+				if paraIdx > 0 {
+					curParaLines[lineIdx] = paraSepNextPrefix + curParaLines[lineIdx]
+				}
+			}
+
+			if lineIdx+1 >= len(para) {
+				// insert paragraph suffix after last line
+				curParaLines[lineIdx] = curParaLines[lineIdx] + options.ParagraphSuffix
+			}
+		}
+		extraLines := 0
+		if paraIdx+1 < len(wrappedParagraphs) {
+			curParaLines[len(para)-1] = curParaLines[len(para)-1] + paraSepPrevSuffix
+
+			for paraSepIdx, paraSepLine := range paraSepLines {
+				curParaLines[len(para)+paraSepIdx] = paraSepLine
+			}
+			extraLines += len(paraSepLines)
+		}
+
+		// set destination lines to refer to the end of where we have written
+		// for next loop
+		curParaLines = curParaLines[len(para)+extraLines:]
+	}
+
+	return lines
 }
