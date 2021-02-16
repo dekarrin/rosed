@@ -2,7 +2,7 @@ package rosed
 
 const (
 	// DefaultParagraphSeparator is the sequence that separates paragraphs.
-	DefaultParagraphSeparator = "\n"
+	DefaultParagraphSeparator = "\n\n"
 
 	// DefaultLineSeparator is the default line separator sequence.
 	DefaultLineSeparator = "\n"
@@ -16,10 +16,13 @@ const (
 // items set to defaults.
 type Options struct {
 	// ParagraphSeparator is the sequence that is considered to separate
-	// paragraphs in the text. If NoTrailingLineSeparators is false, this
-	// sequence comes after an instance of LineSeparator; otherwise it can fold
-	// into a line ending as well if they are the same. If this is set to "",
-	// the Editor will use the DefaultParagraphSeparator.
+	// paragraphs in the text. Paragraphs are considered to have separators
+	// than terminators; i.e. this sequence does not occur at the start of the
+	// first paragraph or at the end of the final paragraph. It may or may not
+	// include LineSeparator as a substring; every mode of operation of Editor
+	// will transparantly handle this case.
+	//
+	// If this is set to "", the Editor will use the DefaultParagraphSeparator.
 	ParagraphSeparator string
 
 	// LineSeparator is the string that the Editor considers to signify the
