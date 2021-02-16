@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"unicode"
 )
 
 var (
@@ -392,159 +391,44 @@ func (ed Editor) WrapOpts(width int, opts Options) Editor {
 	return ed
 }
 
-// does a wrap without considering any additional lengths. Automatically
-// normalizes all runs of space characters to a single space.
+// Justify takes the contents in the Editor and justifies all lines to the given
+// width.
 //
-// The returned value is a Block of all resulting lines. Trailing mode will not
-// be set on the Block.
-func wrap(text string, width int, lineSep string) Block {
-	if width < 2 {
-		panic(fmt.Sprintf("invalid width: %v", width))
-	}
-
-	lines := Block{LineSeparator: lineSep}
-
-	// normalize string to convert all whitespace to single space char.
-	text = collapseSpace(text, lineSep)
-	if text == "" {
-		return lines
-	}
-
-	toConsume := []rune(text)
-	curWord := []rune{}
-	curLine := []rune{}
-	for i := 0; i < len(toConsume); i++ {
-		ch := toConsume[i]
-		if ch == ' ' {
-			curLine = appendWordToLine(lines, curWord, curLine, width)
-			curWord = []rune{}
-		} else {
-			curWord = append(curWord, ch)
-		}
-	}
-
-	if len(curWord) != 0 {
-		curLine = appendWordToLine(lines, curWord, curLine, width)
-		curWord = []rune{}
-	}
-
-	if len(curLine) != 0 {
-		lines.Append(string(curLine))
-	}
-
-	return lines
+// The options currently set on the Editor are used for this operation.
+func (ed Editor) Justify(width int) Editor {
+	return ed.JustifyOpts(width, ed.Options)
 }
 
-// lines will be modified to add the appended line if curLine is full.
-func appendWordToLine(lines Block, curWord []rune, curLine []rune, width int) (newCurLine []rune) {
-	// any width less than 2 is not possible and will result in an infinite loop,
-	// as at least one character is required for next in word, and one character for
-	// line continuation.
-	if width < 2 {
-		panic(fmt.Sprintf("invalid width in call to appendWordToLine: %v", width))
-	}
-	//originalWord := string(curWord)
-	for len(curWord) > 0 {
-		addedChars := len(curWord)
-		if len(curLine) != 0 {
-			addedChars++ // for the space
-		}
-		if len(curLine)+addedChars == width {
-			if len(curLine) != 0 {
-				curLine = append(curLine, ' ')
+// JustifyOpts takes the contents in the Editor and justifies all lines to the
+// given width.
+func (ed Editor) JustifyOpts(width int, opts Options) Editor {
+	opts = opts.WithDefaults()
+
+	if opts.PreserveParagraphs {
+		return ed.ApplyParagraphsOpts(func(idx int, para, pre, suf string) []string {
+			// need to include the separator prefix/suffix if any
+			sepStart := ""
+			sepEnd := ""
+			// using "A" deliberately as it should be 1 byte
+			for range pre {
+				sepStart += "A"
 			}
-			curLine = append(curLine, curWord...)
-			lines.Append(string(curLine))
-			curLine = []rune{}
-			curWord = []rune{}
-		} else if len(curLine)+addedChars > width {
-			if len(curLine) == 0 {
-				curLine = append([]rune{}, curWord[0:width-1]...)
-				curLine = append(curLine, '-')
-				curWord = curWord[width-1:]
+			for range suf {
+				sepEnd += "A"
 			}
-			lines.Append(string(curLine))
-			curLine = []rune{}
-		} else {
-			if len(curLine) != 0 {
-				curLine = append(curLine, ' ')
-			}
-			curLine = append(curLine, curWord...)
-			curWord = []rune{}
-		}
-	}
-	return curLine
-}
+			bl := NewBlock(sepStart+para+sepEnd, opts.LineSeparator)
+			bl.Apply(func(idx int, line string) []string {
+				return []string{justifyLine(line, width)}
+			})
+			text := bl.Join()
 
-func collapseSpace(text string, lineSep string) string {
-	textRunes := []rune(strings.ReplaceAll(text, lineSep, " "))
-	for i := 0; i < len(textRunes); i++ {
-		if unicode.IsSpace(textRunes[i]) {
-			textRunes[i] = ' ' // set it to actual space char
-		}
-	}
-	text = string(textRunes)
-	text = spaceCollapser.ReplaceAllString(text, " ")
-	text = strings.TrimSpace(text)
-	return text
-}
-
-// combineColumnBlocks takes two separate columns and combines them into a
-// single block of text. The right column will be left-aligned such that it will
-// be separated by minSpaceBetween space characters at minimum from the left
-// column.
-//
-// leftText and rightText are slices where each item is a line. The returned
-// slice has a similar format.
-//
-// The left and right column blocks do not need to be the same length; if one
-// has more lines than the other, the returned block will have a number of lines
-// equal to the greater number of lines between leftText and rightText. A nil
-// slice is considered equivalent to a column of line length 0.
-//
-// The returned block will not have line terminator behavior set on it; callers
-// will need to handle line terminators themselves.
-func combineColumnBlocks(left, right Block, minSpaceBetween int) Block {
-	if left.Len() == 0 && right.Len() == 0 {
-		return Block{}
-	}
-	numLines := left.Len()
-	if numLines < right.Len() {
-		numLines = right.Len()
+			// remove separator (if any)
+			para = text[len(sepStart) : len(text)-len(sepEnd)]
+			return []string{para}
+		}, opts)
 	}
 
-	// to find how far the right column should be shifted, we need to find the
-	// maximum width of the left column
-	var leftColMaxWidth int
-
-	for i := 0; i < left.Len(); i++ {
-		lineLen := left.RuneCount(i)
-		if lineLen > leftColMaxWidth {
-			leftColMaxWidth = lineLen
-		}
-	}
-
-	totalCharsOnLeft := leftColMaxWidth + minSpaceBetween
-
-	combined := Block{}
-	for i := 0; i < numLines; i++ {
-		// first get lines from each column
-		var leftLine string
-		var leftLineCharCount int
-		var rightLine string
-		if i < left.Len() {
-			leftLine = left.Line(i)
-			leftLineCharCount = left.RuneCount(i)
-		}
-		if i < right.Len() {
-			rightLine = right.Line(i)
-		}
-
-		charsToAddToLeft := totalCharsOnLeft - leftLineCharCount
-		midSpacer := strings.Repeat(" ", charsToAddToLeft)
-
-		combined.Append(fmt.Sprintf("%s%s%s", leftLine, midSpacer, rightLine))
-	}
-
-	return combined
+	return ed.ApplyOpts(func(idx int, line string) []string {
+		return []string{justifyLine(line, width)}
+	}, opts)
 }
