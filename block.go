@@ -15,14 +15,14 @@ import (
 // The Zero-value for Block is a block with no lines, with LineSeparator unset
 // and TrailingSeparator set to false.
 type Block struct {
-	lines             []string
+	Lines             []string
 	LineSeparator     string
 	TrailingSeparator bool
 }
 
 // String returns the string representation of the block.
 func (tb Block) String() string {
-	return fmt.Sprintf("<Block LineSeparator:%q TrailingSeparator:%b Content:%q>", tb.LineSeparator, tb.TrailingSeparator, tb.lines)
+	return fmt.Sprintf("<Block LineSeparator:%q TrailingSeparator:%b Content:%q>", tb.LineSeparator, tb.TrailingSeparator, tb.Lines)
 }
 
 // NewBlock creates a block of text.
@@ -49,7 +49,7 @@ func NewBlock(text, lineSep string) Block {
 	}
 	if text == lineSep {
 		return Block{
-			lines:             []string{""},
+			Lines:             []string{""},
 			LineSeparator:     lineSep,
 			TrailingSeparator: true,
 		}
@@ -61,7 +61,7 @@ func NewBlock(text, lineSep string) Block {
 		trailing = true
 	}
 	return Block{
-		lines:             lines,
+		Lines:             lines,
 		LineSeparator:     lineSep,
 		TrailingSeparator: trailing,
 	}
@@ -69,7 +69,7 @@ func NewBlock(text, lineSep string) Block {
 
 // Len gives the number of lines in the block.
 func (tb Block) Len() int {
-	return len(tb.lines)
+	return len(tb.Lines)
 }
 
 // Less reports whether line i should sort before line j.
@@ -79,23 +79,23 @@ func (tb Block) Less(i, j int) bool {
 
 // Swap swaps line i with line j.
 func (tb Block) Swap(i, j int) {
-	tb.lines[i], tb.lines[j] = tb.lines[j], tb.lines[i]
+	tb.Lines[i], tb.Lines[j] = tb.Lines[j], tb.Lines[i]
 }
 
 // Append adds a new line to the block.
 func (tb *Block) Append(content string) {
-	if len(tb.lines) < 1 {
-		tb.lines = []string{content}
+	if len(tb.Lines) < 1 {
+		tb.Lines = []string{content}
 		return
 	}
-	tb.lines = append(tb.lines, content)
+	tb.Lines = append(tb.Lines, content)
 }
 
 // Set sets a line to new contents.
 //
 // linePos must be a line that exists.
 func (tb *Block) Set(linePos int, content string) {
-	tb.lines[linePos] = content
+	tb.Lines[linePos] = content
 }
 
 // AddEmpty adds the given number of empty lines to the Block.
@@ -118,17 +118,17 @@ func (tb *Block) AddEmpty(count int) {
 func (tb *Block) Apply(transform LineOperation) {
 	var applied []string
 
-	for idx, line := range tb.lines {
+	for idx, line := range tb.Lines {
 		applied = append(applied, transform(idx, line)...)
 	}
 
-	tb.lines = applied
+	tb.Lines = applied
 }
 
 // Line gives the line at a position. pos is not checked for validity before
 // accessing; callers must do so.
 func (tb Block) Line(pos int) string {
-	return tb.lines[pos]
+	return tb.Lines[pos]
 }
 
 // RuneCount returns the number of utf8 codepoints in the given line which
@@ -147,7 +147,7 @@ func (tb Block) Join() string {
 		return ""
 	}
 
-	full := strings.Join(tb.lines, tb.LineSeparator)
+	full := strings.Join(tb.Lines, tb.LineSeparator)
 	if tb.TrailingSeparator {
 		full += tb.LineSeparator
 	}

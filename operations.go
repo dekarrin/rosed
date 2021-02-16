@@ -144,10 +144,11 @@ func (ed Editor) Insert(charPos int, text string) Editor {
 	return ed
 }
 
-/*
 // InsertDefinitionsTable creates a table that gives two-columns; one for words
 // on the left and the other for definitions on the right.
-func InsertDefinitionsTable(definitions [][2]string, width int) string {
+//
+// pos is the character position to insert the table at.
+func InsertDefinitionsTable(pos int, definitions [][2]string, width int) string {
 	const (
 		termLeftTabWidth = 2
 		minBetween       = 2
@@ -176,8 +177,9 @@ func InsertDefinitionsTable(definitions [][2]string, width int) string {
 			rightPadding = strings.Repeat(" ", longestTermLen-len([]rune(term)))
 		}
 		leftTab := strings.Repeat(" ", termLeftTabWidth)
-		leftCol := []string{fmt.Sprintf("%s%s%s", leftTab, term, rightPadding)}
-		rightCol := Wrap(def, rightWidth, &WrapOptions{Prefix: "  "})
+		leftCol := NewBlock(fmt.Sprintf("%s%s%s", leftTab, term, rightPadding), ``)
+		leftCol := []string{}
+		rightCol := wrap(def, rightWidth, &WrapOptions{Prefix: "  "})
 		rightCol[0] = "- " + strings.TrimPrefix(rightCol[0], "  ")
 		combined := CombineColumnsBlock(leftCol, rightCol, minBetween)
 		lines = append(lines, combined...)
@@ -189,7 +191,7 @@ func InsertDefinitionsTable(definitions [][2]string, width int) string {
 	}
 
 	return strings.Join(lines, "\n")
-}*/
+}
 
 // InsertTwoColumnsOpts takes two seperate text sequences and puts them into two
 // columns. Each column will be properly wrapped to fit.
