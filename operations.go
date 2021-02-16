@@ -144,11 +144,23 @@ func (ed Editor) Insert(charPos int, text string) Editor {
 	return ed
 }
 
-// InsertDefinitionsTable creates a table that gives two-columns; one for words
-// on the left and the other for definitions on the right.
+// InsertDefinitionsTable creates a table that gives two-columns; one for
+// words on the left and the other for definitions on the right.
 //
 // pos is the character position to insert the table at.
-func InsertDefinitionsTable(pos int, definitions [][2]string, width int) string {
+//
+// The options currently set on the editor are used for the table.
+func (ed Editor) InsertDefinitionsTable(pos int, definitions [][2]string, width int) Editor {
+	return ed.InsertDefinitionsTableOpts(pos, definitions, width, ed.Options)
+}
+
+// InsertDefinitionsTableOpts creates a table that gives two-columns; one for
+// words on the left and the other for definitions on the right.
+//
+// pos is the character position to insert the table at.
+func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, width int, opts Options) Editor {
+	opts = opts.WithDefaults()
+
 	const (
 		termLeftTabWidth = 2
 		minBetween       = 2
@@ -167,7 +179,7 @@ func InsertDefinitionsTable(pos int, definitions [][2]string, width int) string 
 	leftWidth := longestTermLen + termLeftTabWidth
 	rightWidth := width - leftWidth - minBetween
 
-	lines := []string{}
+	fullTable := Block{LineSeparator: opts.LineSeparator}
 
 	for _, item := range definitions {
 		term := item[0]
@@ -177,20 +189,47 @@ func InsertDefinitionsTable(pos int, definitions [][2]string, width int) string 
 			rightPadding = strings.Repeat(" ", longestTermLen-len([]rune(term)))
 		}
 		leftTab := strings.Repeat(" ", termLeftTabWidth)
-		leftCol := NewBlock(fmt.Sprintf("%s%s%s", leftTab, term, rightPadding), ``)
-		leftCol := []string{}
-		rightCol := wrap(def, rightWidth, &WrapOptions{Prefix: "  "})
-		rightCol[0] = "- " + strings.TrimPrefix(rightCol[0], "  ")
-		combined := CombineColumnsBlock(leftCol, rightCol, minBetween)
-		lines = append(lines, combined...)
-		lines = append(lines, "")
+		leftCol := Block{
+			Lines: []string{fmt.Sprintf("%s%s%s", leftTab, term, rightPadding)},
+		}
+		// subtract 2 from width so we can put in a left margin of "  "
+		rightCol := wrap(def, rightWidth-2, opts.LineSeparator)
+		rightCol.Apply(func(idx int, line string) []string {
+			if idx == 0 {
+				return []string{"- " + line}
+			}
+			return []string{"  " + line}
+		})
+		combined := combineColumnBlocks(leftCol, rightCol, minBetween)
+
+		fullTable.AppendBlock(combined)
+		fullTable.Append("")
 	}
 
-	if len(lines) > 0 {
-		lines = lines[:len(lines)-1] // remove trailing newline
+	if fullTable.Len() > 0 {
+		fullTable.Lines = fullTable.Lines[:len(fullTable.Lines)-1] // remove trailing newline
 	}
 
-	return strings.Join(lines, "\n")
+	return ed.Insert(pos, fullTable.Join())
+}
+
+// InsertTwoColumnsOpts takes two seperate text sequences and puts them into two
+// columns. Each column will be properly wrapped to fit.
+//
+// This function will attempt to align the columns such that the returned text
+// is widthTarget large at its widest point. If the left and right columns
+// cannot be wrapped such that widthTarget is achieved (for instance due to
+// widthTarget being smaller than the line with longest combined length of the
+// two columns plus minSpaceBetween), the lowest possible integer greater than
+// widthTarget will be used.
+//
+// The columns will be wrapped such that the the left column will take up
+// leftColPercent of the available layout area (width - space between), and the
+// right column will take up the rest. If leftColPercent is less than 0.0, it
+// will be assumed to be 0.0. If greater than 1.0, it will be assumed to be 1.0.
+// The minimum width that a column can be is always 2 characters wide.
+func (ed Editor) InsertTwoColumns(pos int, leftText string, rightText string, minSpaceBetween int, widthTarget int, leftColPercent float64) Editor {
+	return ed.InsertTwoColumnsOpts(pos, leftText, rightText, minSpaceBetween, widthTarget, leftColPercent, ed.Options)
 }
 
 // InsertTwoColumnsOpts takes two seperate text sequences and puts them into two

@@ -91,6 +91,13 @@ func (tb *Block) Append(content string) {
 	tb.Lines = append(tb.Lines, content)
 }
 
+// AppendBlock adds all lines in the given block to the end of this one.
+func (tb *Block) AppendBlock(b Block) {
+	for i := 0; i < b.Len(); i++ {
+		tb.Append(b.Line(i))
+	}
+}
+
 // Set sets a line to new contents.
 //
 // linePos must be a line that exists.
