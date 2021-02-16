@@ -213,7 +213,7 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 	return ed.Insert(pos, fullTable.Join())
 }
 
-// InsertTwoColumnsOpts takes two seperate text sequences and puts them into two
+// InsertTwoColumns takes two seperate text sequences and puts them into two
 // columns. Each column will be properly wrapped to fit.
 //
 // This function will attempt to align the columns such that the returned text
