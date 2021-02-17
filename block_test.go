@@ -1,10 +1,29 @@
 package rosed
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/dekarrin/rosed/internal/assert"
 )
+
+type compBlock Block
+
+func (cb compBlock) Equal(other interface{}) bool {
+	b1 := Block(cb)
+	b2, ok := other.(Block)
+	if !ok {
+		return false
+	}
+
+	if b1.LineSeparator != b2.LineSeparator {
+		return false
+	}
+	if b1.TrailingSeparator != b2.TrailingSeparator {
+		return false
+	}
+	return reflect.DeepEqual(b1.Lines, b2.Lines)
+}
 
 func Test_NewBlock(t *testing.T) {
 	testCases := []struct {
@@ -33,7 +52,7 @@ func Test_NewBlock(t *testing.T) {
 
 			actual := NewBlock(tc.text, tc.sep)
 
-			asrt.Var("block").Equal(tc.expected, actual)
+			asrt.Var("block").Equal(compBlock(tc.expected), compBlock(actual))
 
 		})
 	}

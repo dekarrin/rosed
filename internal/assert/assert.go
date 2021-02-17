@@ -5,8 +5,22 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
+	"strings"
 	"testing"
 )
+
+var (
+	objTypeName string
+	pkgPath     string
+)
+
+// sets up some easy locations to get Asserter type info from
+func init() {
+	a := Asserter{}
+	refVal := reflect.TypeOf(a)
+	objTypeName = refVal.Name()
+	pkgPath = refVal.PkgPath()
+}
 
 // Asserter performs various tasks and fails a provided testing.T when a test
 // fails. The zero-value of an Asserter is not suitable for use, and should be
@@ -168,32 +182,39 @@ func (a Asserter) EqualSlicesFunc(expected, actual interface{}, elemComp func(ex
 	}
 }
 
-// formats s with a and adds caller info if it is available.
+// adds caller info to front of given string if it is available.
 //
-// must always be called only from a function in Asserter
-// must always be called only from a top-level exported function in this module.
-func addCallerInfo(s string, b ...interface{}) string {
-	// try getting caller info first bc everything could break
-	// unlikely we are at a call depth of 10, but if we are we can
-	// always get more stack frames
-	framePCs := make([]uintptr, 10)
-	n := runtime.Callers(1, framePCs)
-	if n == 0 {
-		// cant get any call frames for some reason; just default to not adding
-		// the info
-		return fmt.Sprintf(s, b...)
+// must always be called only from a function in Asserter.
+func (a Asserter) addCallerInfo(s string) string {
+	// extCallFrame is the stack frame of the Asserter caller. We will go up
+	// the tree and look for the first call outside of Asserter.
+	var extCallFrame *runtime.Frame
+	for i := 0; extCallFrame == nil; i++ {
+		// unlikely we are at a call depth of 10, but if we are we can
+		// always get more stack frames
+		const framesToExamine = 10
+		framePCs := make([]uintptr, framesToExamine)
+		n := runtime.Callers(1+(framesToExamine*i), framePCs)
+		if n == 0 {
+			// cant get any call frames for some reason; just default to not adding
+			// the info
+			break
+		}
+		frames := runtime.CallersFrames(framePCs[:n])
+		for f, more := frames.Next(); more; f, more = frames.Next() {
+			funcNameSplit := strings.LastIndex(f.Function, ".")
+			preFuncName := f.Function[:funcNameSplit]
+			if preFuncName != pkgPath+"."+objTypeName {
+				extCallFrame = new(runtime.Frame)
+				*extCallFrame = f
+				break
+			}
+		}
 	}
-	frames := runtime.CallersFrames(framePCs[:n])
-	for f, more := frames.Next(); more; f, more = frames.Next() {
-		fmt.Printf("FUNC: %v\n", f)
+	if extCallFrame != nil {
+		return fmt.Sprintf("\n%s:%d: %s", extCallFrame.File, extCallFrame.Line, s)
 	}
-
-	full := fmt.Sprintf(s, b...)
-	_, callingFile, callingLine, ok := runtime.Caller(2)
-	if ok {
-		return fmt.Sprintf("\n%s:%d: %s", callingFile, callingLine, full)
-	}
-	return full
+	return s
 }
 
 // gets the format verb to use for a particular arg passed in to an Assert
@@ -221,7 +242,7 @@ func (a Asserter) fail(format string, varName string, expected interface{}, actu
 		if act, isSkip := actual.(skipArg); isSkip {
 			actual = act.arg
 		}
-		failureMsg = addCallerInfo(a.Format(varName, expected, actual))
+		failureMsg = a.addCallerInfo(a.Format(varName, expected, actual))
 	} else {
 		// build up args only out of non-skip elements
 		fmtArgs := []interface{}{varName}
@@ -236,7 +257,8 @@ func (a Asserter) fail(format string, varName string, expected interface{}, actu
 				fmtArgs = append(fmtArgs, m)
 			}
 		}
-		failureMsg = addCallerInfo(fmt.Sprintf(format, fmtArgs))
+
+		failureMsg = a.addCallerInfo(fmt.Sprintf(format, fmtArgs...))
 	}
 
 	if a.NonFatal {
