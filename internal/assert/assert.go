@@ -59,7 +59,12 @@ func (a *Asserter) Var(name string) *Asserter {
 
 // Equal checks that the actual and expected values are equal.
 func (a Asserter) Equal(expected, actual interface{}) {
-	if expected != actual {
+	argsEqual, err := checkEqual(expected, actual, nil)
+	if err != nil {
+		a.fail("comparison for %s failed; expected and actual are not comparable types", a.fullVar(), skipArg{expected}, skipArg{actual})
+	}
+
+	if argsEqual {
 		eVerb := fmtVerbForArg(expected)
 		aVerb := fmtVerbForArg(actual)
 		a.fail("expected %s to be "+eVerb+" but was "+aVerb, a.fullVar(), expected, actual)
@@ -98,9 +103,7 @@ func (a Asserter) EqualContentsString(expected, actual *string) {
 // EqualSlices checks whether expected and actual are two slice-like (slice
 // or array) objects with equal size, same type of element, and equal elements.
 func (a Asserter) EqualSlices(expected, actual interface{}) {
-	a.EqualSlicesFunc(expected, actual, func(e interface{}, a interface{}) bool {
-		return e == a
-	})
+	a.EqualSlicesFunc(expected, actual, nil)
 }
 
 // EqualSlicesFunc checks whether expected and actual are two slice-like (slice
@@ -150,10 +153,16 @@ func (a Asserter) EqualSlicesFunc(expected, actual interface{}, elemComp func(ex
 	for i := 0; i < eVal.Len(); i++ {
 		eItem := eVal.Index(i).Interface()
 		aItem := aVal.Index(i).Interface()
-		eVerb := fmtVerbForArg(expected)
-		aVerb := fmtVerbForArg(actual)
-		if !elemComp(eItem, aItem) {
-			varName := fmt.Sprintf("%s[%d]", a.fullVar(), i)
+
+		varName := fmt.Sprintf("%s[%d]", a.fullVar(), i)
+		eq, err := checkEqual(eItem, aItem, elemComp)
+		if err != nil {
+			a.fail("comparison for %s failed; expected and actual are not comparable types", varName, skipArg{expected}, skipArg{actual})
+		}
+
+		if !eq {
+			eVerb := fmtVerbForArg(expected)
+			aVerb := fmtVerbForArg(actual)
 			a.fail("expected %s to be "+eVerb+" but was "+aVerb, varName, eVal, aVal)
 		}
 	}

@@ -19,7 +19,7 @@ func Test_NewBlock(t *testing.T) {
 			sep:  "\n",
 			expected: Block{
 				Lines: []string{
-					"",
+					"a",
 				},
 				LineSeparator:     "\n",
 				TrailingSeparator: false,
