@@ -2,6 +2,7 @@ package rosed
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"unicode/utf8"
 )
@@ -65,6 +66,23 @@ func NewBlock(text, lineSep string) Block {
 		LineSeparator:     lineSep,
 		TrailingSeparator: trailing,
 	}
+}
+
+// Equal checks whether this Block is equal to another object. Returns whether
+// other is also a Block with the same contents as tb.
+func (tb Block) Equal(other interface{}) bool {
+	b2, ok := other.(Block)
+	if !ok {
+		return false
+	}
+
+	if tb.LineSeparator != b2.LineSeparator {
+		return false
+	}
+	if tb.TrailingSeparator != b2.TrailingSeparator {
+		return false
+	}
+	return reflect.DeepEqual(tb.Lines, b2.Lines)
 }
 
 // Len gives the number of lines in the block.

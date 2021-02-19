@@ -78,7 +78,7 @@ func (a Asserter) Equal(expected, actual interface{}) {
 		a.fail("comparison for %s failed; expected and actual are not comparable types", a.fullVar(), skipArg{expected}, skipArg{actual})
 	}
 
-	if argsEqual {
+	if !argsEqual {
 		eVerb := fmtVerbForArg(expected)
 		aVerb := fmtVerbForArg(actual)
 		a.fail("expected %s to be "+eVerb+" but was "+aVerb, a.fullVar(), expected, actual)
