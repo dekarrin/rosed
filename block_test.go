@@ -4,7 +4,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/dekarrin/rosed/internal/assertion"
+	"github.com/dekarrin/assertion"
 )
 
 func Test_NewBlock(t *testing.T) {
