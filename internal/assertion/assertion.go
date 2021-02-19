@@ -64,6 +64,11 @@ func New(t *testing.T) Asserter {
 	return Asserter{t: t}
 }
 
+// Reset sets the testing.T that assertion failure will be communicated to.
+func (a *Asserter) Reset(t *testing.T) {
+	a.t = t
+}
+
 // Var sets the variable name for future tests. Can be chained as Var().Equal,
 // etc. This is shorthand for just setting VarName in the Asserter.
 func (a *Asserter) Var(name string) *Asserter {

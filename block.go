@@ -47,13 +47,6 @@ func NewBlock(text, lineSep string) Block {
 			LineSeparator: lineSep,
 		}
 	}
-	if text == lineSep {
-		return Block{
-			Lines:             []string{""},
-			LineSeparator:     lineSep,
-			TrailingSeparator: true,
-		}
-	}
 
 	lines := strings.Split(text, lineSep)
 	if len(lines) > 1 && lines[len(lines)-1] == "" {

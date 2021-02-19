@@ -14,13 +14,25 @@ func Test_NewBlock(t *testing.T) {
 		expected Block
 	}{
 		{
-			name: "no lines",
+			name: "no lines - no trailing newline",
 			text: "",
 			sep:  "\n",
 			expected: Block{
 				Lines:             []string{},
 				LineSeparator:     "\n",
 				TrailingSeparator: false,
+			},
+		},
+		{
+			name: "no lines - trailing newline",
+			text: "\n",
+			sep:  "\n",
+			expected: Block{
+				Lines: []string{
+					"",
+				},
+				LineSeparator:     "\n",
+				TrailingSeparator: true,
 			},
 		},
 		{
@@ -47,6 +59,34 @@ func Test_NewBlock(t *testing.T) {
 				TrailingSeparator: true,
 			},
 		},
+		{
+			name: "multi line - no trailing newline",
+			text: "hello\nthere\ntest",
+			sep:  "\n",
+			expected: Block{
+				Lines: []string{
+					"hello",
+					"there",
+					"test",
+				},
+				LineSeparator:     "\n",
+				TrailingSeparator: false,
+			},
+		},
+		{
+			name: "multi line - trailing newline",
+			text: "hello\nthere\ntest\n",
+			sep:  "\n",
+			expected: Block{
+				Lines: []string{
+					"hello",
+					"there",
+					"test",
+				},
+				LineSeparator:     "\n",
+				TrailingSeparator: true,
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -56,6 +96,21 @@ func Test_NewBlock(t *testing.T) {
 			actual := NewBlock(tc.text, tc.sep)
 
 			assert.Var("block").Equal(tc.expected, actual)
+		})
+	}
+}
+
+func Test_Block_Equal(t *testing.T) {
+	testCases := []struct {
+		name   string
+		b1     Block
+		b2     Block
+		expect bool
+	}{}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
 		})
 	}
 }
