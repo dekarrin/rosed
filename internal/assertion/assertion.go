@@ -60,8 +60,8 @@ type Asserter struct {
 
 // New creates a new Asserter that fails the provided testing.T when an
 // assertion fails.
-func New(t *testing.T) Asserter {
-	return Asserter{t: t}
+func New(t *testing.T) *Asserter {
+	return &Asserter{t: t}
 }
 
 // Reset sets the testing.T that assertion failure will be communicated to.
