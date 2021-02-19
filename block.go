@@ -2,7 +2,6 @@ package rosed
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 	"unicode/utf8"
 )
@@ -82,7 +81,18 @@ func (tb Block) Equal(other interface{}) bool {
 	if tb.TrailingSeparator != b2.TrailingSeparator {
 		return false
 	}
-	return reflect.DeepEqual(tb.Lines, b2.Lines)
+
+	// don't use deep equal because it will fail if one has nil Lines and
+	// another has empty Lines even though that case should compare equal.
+	if len(tb.Lines) != len(b2.Lines) {
+		return false
+	}
+	for i := 0; i < len(tb.Lines); i++ {
+		if tb.Lines[i] != b2.Lines[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // Len gives the number of lines in the block.

@@ -3,7 +3,7 @@ package rosed
 import (
 	"testing"
 
-	"github.com/dekarrin/rosed/internal/assert"
+	"github.com/dekarrin/rosed/internal/assertion"
 )
 
 func Test_NewBlock(t *testing.T) {
@@ -18,9 +18,7 @@ func Test_NewBlock(t *testing.T) {
 			text: "",
 			sep:  "\n",
 			expected: Block{
-				Lines: []string{
-					"a",
-				},
+				Lines:             []string{},
 				LineSeparator:     "\n",
 				TrailingSeparator: false,
 			},
@@ -53,11 +51,11 @@ func Test_NewBlock(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			asrt := assert.New(t)
+			assert := assertion.New(t)
 
 			actual := NewBlock(tc.text, tc.sep)
 
-			asrt.Var("block").Equal(tc.expected, actual)
+			assert.Var("block").Equal(tc.expected, actual)
 		})
 	}
 }
