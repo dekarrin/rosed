@@ -348,13 +348,140 @@ func Test_Block_Append(t *testing.T) {
 		append string
 		input  Block
 		expect Block
-	}{}
+	}{
+		{
+			name:   "append empty line to nil",
+			append: "",
+			input:  Block{Lines: nil},
+			expect: Block{Lines: []string{""}},
+		},
+		{
+			name:   "append empty line to empty Lines",
+			append: "",
+			input:  Block{Lines: []string{}},
+			expect: Block{Lines: []string{""}},
+		},
+		{
+			name:   "append empty line to default",
+			append: "",
+			input:  Block{},
+			expect: Block{Lines: []string{""}},
+		},
+		{
+			name:   "append filled line to default",
+			append: "vriska",
+			input:  Block{},
+			expect: Block{Lines: []string{"vriska"}},
+		},
+		{
+			name:   "append line with separator to default",
+			append: "vriska\nserket\n",
+			input:  Block{LineSeparator: "\n"},
+			expect: Block{LineSeparator: "\n", Lines: []string{"vriska\nserket\n"}},
+		},
+		{
+			name:   "append line to multiple Lines",
+			append: "terezi",
+			input:  Block{Lines: []string{"vriska", "roxy", "latula"}},
+			expect: Block{Lines: []string{"vriska", "roxy", "latula", "terezi"}},
+		},
+	}
 
-	assert := assertion.New(t)
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := .Var()
+			assert := assertion.New(t)
 
+			actual := tc.input
+			actual.Append(tc.append)
+
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
+func Test_Block_AppendBlock(t *testing.T) {
+	testCases := []struct {
+		name   string
+		input  Block
+		append Block
+		expect Block
+	}{
+		{
+			name:   "append nil to nil",
+			input:  Block{Lines: nil},
+			append: Block{Lines: nil},
+			expect: Block{},
+		},
+		{
+			name:   "append nil to empty",
+			append: Block{Lines: nil},
+			input:  Block{Lines: []string{}},
+			expect: Block{},
+		},
+		{
+			name:   "append nil to default",
+			append: Block{Lines: nil},
+			input:  Block{},
+			expect: Block{},
+		},
+		{
+			name:   "append nil to 1",
+			append: Block{Lines: nil},
+			input:  Block{Lines: []string{"karkat"}},
+			expect: Block{Lines: []string{"karkat"}},
+		},
+		{
+			name:   "append nil to multi",
+			append: Block{Lines: nil},
+			input:  Block{Lines: []string{"karkat", "kanaya", "gamzee"}},
+			expect: Block{Lines: []string{"karkat", "kanaya", "gamzee"}},
+		},
+		{
+			name:   "append 1 to nil",
+			append: Block{Lines: []string{"vriska"}},
+			input:  Block{Lines: nil},
+			expect: Block{Lines: []string{"vriska"}},
+		},
+		{
+			name:   "append 1 to 1",
+			append: Block{Lines: []string{"vriska"}},
+			input:  Block{Lines: []string{"terezi"}},
+			expect: Block{Lines: []string{"terezi", "vriska"}},
+		},
+		{
+			name:   "append 1 to multi",
+			append: Block{Lines: []string{"tavros"}},
+			input:  Block{Lines: []string{"aradia", "sollux"}},
+			expect: Block{Lines: []string{"aradia", "sollux", "tavros"}},
+		},
+		{
+			name:   "append multi to nil",
+			append: Block{Lines: []string{"equius", "nepeta", "eridan"}},
+			input:  Block{Lines: nil},
+			expect: Block{Lines: []string{"equius", "nepeta", "eridan"}},
+		},
+		{
+			name:   "append multi to 1",
+			append: Block{Lines: []string{"equius", "nepeta", "vriska"}},
+			input:  Block{Lines: []string{"feferi"}},
+			expect: Block{Lines: []string{"feferi", "equius", "nepeta", "vriska"}},
+		},
+		{
+			name:   "append multi to multi",
+			append: Block{Lines: []string{"nepeta", "kanaya", "aradia"}},
+			input:  Block{Lines: []string{"feferi", "eridan", "equius"}},
+			expect: Block{Lines: []string{"feferi", "eridan", "equius", "nepeta", "kanaya", "aradia"}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assertion.New(t)
+
+			actual := tc.input
+			actual.AppendBlock(tc.append)
+
+			assert.Equal(tc.expect, actual)
 		})
 	}
 }

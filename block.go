@@ -119,18 +119,18 @@ func (tb *Block) AppendBlock(b Block) {
 	}
 }
 
+// AppendEmpty adds the given number of empty lines to the Block.
+func (tb *Block) AppendEmpty(count int) {
+	for i := 0; i < count; i++ {
+		tb.Append("")
+	}
+}
+
 // Set sets a line to new contents.
 //
 // linePos must be a line that exists.
 func (tb *Block) Set(linePos int, content string) {
 	tb.Lines[linePos] = content
-}
-
-// AddEmpty adds the given number of empty lines to the Block.
-func (tb *Block) AddEmpty(count int) {
-	for i := 0; i < count; i++ {
-		tb.Append("")
-	}
 }
 
 // Apply performs the given transformation on each line and applies the results
