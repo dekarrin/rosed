@@ -1,5 +1,5 @@
-// Package assert has various functions useful for testing rosed.
-package assert
+// Package assertion has various functions useful for testing rosed.
+package assertion
 
 import (
 	"fmt"
