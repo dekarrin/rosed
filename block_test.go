@@ -608,7 +608,7 @@ func Test_Block_Line(t *testing.T) {
 	}
 }
 
-func Test_Block_RuneCount(t *testing.T) {
+func Test_Block_CharCount(t *testing.T) {
 	testCases := []struct {
 		name   string
 		pos    int
@@ -671,9 +671,9 @@ func Test_Block_RuneCount(t *testing.T) {
 			assert := assertion.New(t)
 
 			if tc.panics {
-				assert.Panics(func() { tc.input.RuneCount(tc.pos) })
+				assert.Panics(func() { tc.input.CharCount(tc.pos) })
 			} else {
-				actual := tc.input.RuneCount(tc.pos)
+				actual := tc.input.CharCount(tc.pos)
 				assert.Equal(tc.expect, actual)
 			}
 		})

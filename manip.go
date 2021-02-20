@@ -134,7 +134,7 @@ func combineColumnBlocks(left, right Block, minSpaceBetween int) Block {
 	var leftColMaxWidth int
 
 	for i := 0; i < left.Len(); i++ {
-		lineLen := left.RuneCount(i)
+		lineLen := left.CharCount(i)
 		if lineLen > leftColMaxWidth {
 			leftColMaxWidth = lineLen
 		}
@@ -150,7 +150,7 @@ func combineColumnBlocks(left, right Block, minSpaceBetween int) Block {
 		var rightLine string
 		if i < left.Len() {
 			leftLine = left.Line(i)
-			leftLineCharCount = left.RuneCount(i)
+			leftLineCharCount = left.CharCount(i)
 		}
 		if i < right.Len() {
 			rightLine = right.Line(i)

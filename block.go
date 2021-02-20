@@ -3,7 +3,8 @@ package rosed
 import (
 	"fmt"
 	"strings"
-	"unicode/utf8"
+
+	"github.com/dekarrin/rosed/internal/grapheme"
 )
 
 // Block is a "block" of text, that is some number of lines. The line separator
@@ -159,10 +160,10 @@ func (tb Block) Line(pos int) string {
 	return tb.Lines[pos]
 }
 
-// RuneCount returns the number of utf8 codepoints in the given line which
-// will not include the separator.
-func (tb Block) RuneCount(linePos int) int {
-	return utf8.RuneCountInString(tb.Line(linePos))
+// CharCount returns the number of characters in the given line which will not
+// include the separator.
+func (tb Block) CharCount(linePos int) int {
+	return grapheme.New(tb.Line(linePos)).Len()
 }
 
 // Join converts the block into a single string by appending each line to the
