@@ -679,3 +679,141 @@ func Test_Block_CharCount(t *testing.T) {
 		})
 	}
 }
+
+func Test_Block_Join(t *testing.T) {
+	testCases := []struct {
+		name   string
+		input  Block
+		expect string
+	}{
+		{
+			name: "join with some empty, trailing separator",
+			input: Block{
+				Lines: []string{
+					"test1",
+					"",
+					"test2",
+					"",
+					"",
+					"test3",
+				},
+				LineSeparator:     "\n",
+				TrailingSeparator: true,
+			},
+			expect: "test1\n\ntest2\n\n\ntest3\n",
+		},
+		{
+			name: "join with some empty, no trailing separator",
+			input: Block{
+				Lines: []string{
+					"test1",
+					"",
+					"test2",
+					"",
+					"",
+					"test3",
+				},
+				LineSeparator: "\n",
+			},
+			expect: "test1\n\ntest2\n\n\ntest3",
+		},
+		{
+			name: "join 3 lines, trailing separator",
+			input: Block{
+				Lines: []string{
+					"test1",
+					"test2",
+					"test3",
+				},
+				LineSeparator:     "\n",
+				TrailingSeparator: true,
+			},
+			expect: "test1\ntest2\ntest3\n",
+		},
+		{
+			name: "join 3 lines, no trailing separator",
+			input: Block{
+				Lines: []string{
+					"test1",
+					"test2",
+					"test3",
+				},
+				LineSeparator:     "\n",
+				TrailingSeparator: false,
+			},
+			expect: "test1\ntest2\ntest3",
+		},
+		{
+			name: "join 3 lines, alternate separator",
+			input: Block{
+				Lines: []string{
+					"test1",
+					"test2",
+					"test3",
+				},
+				LineSeparator:     "_",
+				TrailingSeparator: false,
+			},
+			expect: "test1_test2_test3",
+		},
+		{
+			name: "join nil lines",
+			input: Block{
+				Lines:         nil,
+				LineSeparator: "\n",
+			},
+			expect: "",
+		},
+		{
+			name: "join nil lines, line terminator on",
+			input: Block{
+				Lines:             nil,
+				LineSeparator:     "\n",
+				TrailingSeparator: true,
+			},
+			expect: "\n",
+		},
+		{
+			name: "join empty lines",
+			input: Block{
+				Lines:         []string{},
+				LineSeparator: "\n",
+			},
+			expect: "",
+		},
+		{
+			name: "join empty lines, line terminator on",
+			input: Block{
+				Lines:             []string{},
+				LineSeparator:     "\n",
+				TrailingSeparator: true,
+			},
+			expect: "\n",
+		},
+		{
+			name: "join 1 empty line",
+			input: Block{
+				Lines:         []string{""},
+				LineSeparator: "\n",
+			},
+			expect: "",
+		},
+		{
+			name: "join 1 empty line, line terminator on",
+			input: Block{
+				Lines:             []string{""},
+				LineSeparator:     "\n",
+				TrailingSeparator: true,
+			},
+			expect: "\n",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assertion.New(t)
+			actual := tc.input.Join()
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
