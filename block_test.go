@@ -402,14 +402,14 @@ func Test_Block_Append(t *testing.T) {
 func Test_Block_AppendBlock(t *testing.T) {
 	testCases := []struct {
 		name   string
-		input  Block
 		append Block
+		input  Block
 		expect Block
 	}{
 		{
 			name:   "append nil to nil",
-			input:  Block{Lines: nil},
 			append: Block{Lines: nil},
+			input:  Block{Lines: nil},
 			expect: Block{},
 		},
 		{
@@ -482,6 +482,200 @@ func Test_Block_AppendBlock(t *testing.T) {
 			actual.AppendBlock(tc.append)
 
 			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
+func Test_Block_AppendEmpty(t *testing.T) {
+	testCases := []struct {
+		name   string
+		count  int
+		input  Block
+		expect Block
+	}{
+		{"append 0 to nil", 0, Block{Lines: nil}, Block{}},
+		{"append 0 to empty", 0, Block{Lines: []string{}}, Block{}},
+		{"append 0 to default", 0, Block{}, Block{}},
+		{"append 1 to nil", 1, Block{Lines: nil}, Block{Lines: []string{""}}},
+		{"append 1 to empty", 1, Block{Lines: []string{}}, Block{Lines: []string{""}}},
+		{"append 1 to default", 1, Block{}, Block{Lines: []string{""}}},
+		{"append 1 to 1", 1, Block{Lines: []string{"vriska"}}, Block{Lines: []string{"vriska", ""}}},
+		{"append 1 to many", 1, Block{Lines: []string{"vriska", "terezi"}}, Block{Lines: []string{"vriska", "terezi", ""}}},
+		{"append 3 to 1", 3, Block{Lines: []string{"vriska"}}, Block{Lines: []string{"vriska", "", "", ""}}},
+		{"append 3 to many", 3, Block{Lines: []string{"vriska", "terezi"}}, Block{Lines: []string{"vriska", "terezi", "", "", ""}}},
+		{"append -1 to default", -1, Block{}, Block{}},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assertion.New(t)
+
+			actual := tc.input
+			actual.AppendEmpty(tc.count)
+
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
+func Test_Block_Set(t *testing.T) {
+	type args struct {
+		pos  int
+		text string
+	}
+
+	testCases := []struct {
+		name   string
+		args   args
+		input  Block
+		expect Block
+		panics bool
+	}{
+		{
+			name:   "index too low causes panic",
+			args:   args{-1, ""},
+			input:  Block{},
+			panics: true,
+		},
+		{
+			name:   "index too high causes panic",
+			args:   args{20, ""},
+			input:  Block{Lines: []string{"", ""}},
+			panics: true,
+		},
+		{
+			name:   "set 0th line",
+			args:   args{0, "new text"},
+			input:  Block{Lines: []string{"old text", "test"}},
+			expect: Block{Lines: []string{"new text", "test"}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assertion.New(t)
+
+			actual := tc.input
+			if tc.panics {
+				assert.Panics(func() { actual.Set(tc.args.pos, tc.args.text) })
+			} else {
+				actual.Set(tc.args.pos, tc.args.text)
+				assert.Equal(tc.expect, actual)
+			}
+		})
+	}
+}
+
+func Test_Block_Line(t *testing.T) {
+	testCases := []struct {
+		name   string
+		pos    int
+		input  Block
+		expect string
+		panics bool
+	}{
+		{
+			name:   "index too low causes panic",
+			pos:    0,
+			input:  Block{},
+			panics: true,
+		},
+		{
+			name:   "index too high causes panic",
+			pos:    2,
+			input:  Block{Lines: []string{"", ""}},
+			panics: true,
+		},
+		{
+			name:   "get 0th line",
+			pos:    0,
+			input:  Block{Lines: []string{"old text", "test"}},
+			expect: "old text",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assertion.New(t)
+
+			if tc.panics {
+				assert.Panics(func() { tc.input.Line(tc.pos) })
+			} else {
+				actual := tc.input.Line(tc.pos)
+				assert.Equal(tc.expect, actual)
+			}
+		})
+	}
+}
+
+func Test_Block_RuneCount(t *testing.T) {
+	testCases := []struct {
+		name   string
+		pos    int
+		input  Block
+		expect int
+		panics bool
+	}{
+		{
+			name:   "index too low causes panic",
+			pos:    0,
+			input:  Block{},
+			panics: true,
+		},
+		{
+			name:   "index too high causes panic",
+			pos:    2,
+			input:  Block{Lines: []string{"", ""}},
+			panics: true,
+		},
+		{
+			name:   "empty string",
+			pos:    0,
+			input:  Block{Lines: []string{""}},
+			expect: 0,
+		},
+		{
+			name:   "latin-1",
+			pos:    0,
+			input:  Block{Lines: []string{"test"}},
+			expect: 4,
+		},
+		{
+			name:   "japanese",
+			pos:    0,
+			input:  Block{Lines: []string{"こんにちは世界"}},
+			expect: 7,
+		},
+		{
+			name:   "russian",
+			pos:    0,
+			input:  Block{Lines: []string{"При́пять"}},
+			expect: 7,
+		},
+		{
+			name:   "arabic",
+			pos:    0,
+			input:  Block{Lines: []string{"الخوارزمية"}},
+			expect: 10,
+		},
+		{
+			name:   "emoji",
+			pos:    0,
+			input:  Block{Lines: []string{"😍😎😑😐😏"}},
+			expect: 5,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assertion.New(t)
+
+			if tc.panics {
+				assert.Panics(func() { tc.input.RuneCount(tc.pos) })
+			} else {
+				actual := tc.input.RuneCount(tc.pos)
+				assert.Equal(tc.expect, actual)
+			}
 		})
 	}
 }
