@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"unicode"
+
+	"github.com/dekarrin/rosed/internal/gem"
 )
 
 // contains functions for manipulation of text. Used by Editor.
@@ -13,46 +15,45 @@ import (
 //
 // The returned value is a Block of all resulting lines. Trailing mode will not
 // be set on the Block.
-func wrap(text string, width int, lineSep string) Block {
+func wrap(text gem.String, width int, lineSep gem.String) block {
 	if width < 2 {
 		panic(fmt.Sprintf("invalid width: %v", width))
 	}
 
-	lines := Block{LineSeparator: lineSep}
+	lines := block{LineSeparator: lineSep}
 
 	// normalize string to convert all whitespace to single space char.
 	text = collapseSpace(text, lineSep)
-	if text == "" {
+	if text.String() == "" {
 		return lines
 	}
 
-	toConsume := []rune(text)
-	curWord := []rune{}
-	curLine := []rune{}
-	for i := 0; i < len(toConsume); i++ {
-		ch := toConsume[i]
-		if ch == ' ' {
+	toConsume := text
+	var curWord, curLine gem.String
+	for i := 0; i < toConsume.Len(); i++ {
+		ch := toConsume.CharAt(i)
+		if ch[0] == ' ' {
 			curLine = appendWordToLine(lines, curWord, curLine, width)
-			curWord = []rune{}
+			curWord = gem.Z
 		} else {
-			curWord = append(curWord, ch)
+			curWord = curWord.Add(gem.Char(ch))
 		}
 	}
 
-	if len(curWord) != 0 {
+	if !curWord.IsEmpty() {
 		curLine = appendWordToLine(lines, curWord, curLine, width)
-		curWord = []rune{}
+		curWord = gem.Z
 	}
 
-	if len(curLine) != 0 {
-		lines.Append(string(curLine))
+	if !curLine.IsEmpty() {
+		lines.Append(curLine)
 	}
 
 	return lines
 }
 
 // lines will be modified to add the appended line if curLine is full.
-func appendWordToLine(lines Block, curWord []rune, curLine []rune, width int) (newCurLine []rune) {
+func appendWordToLine(lines block, curWord gem.String, curLine gem.String, width int) (newCurLine gem.String) {
 	// any width less than 2 is not possible and will result in an infinite loop,
 	// as at least one character is required for next in word, and one character for
 	// line continuation.
@@ -60,49 +61,49 @@ func appendWordToLine(lines Block, curWord []rune, curLine []rune, width int) (n
 		panic(fmt.Sprintf("invalid width in call to appendWordToLine: %v", width))
 	}
 	//originalWord := string(curWord)
-	for len(curWord) > 0 {
-		addedChars := len(curWord)
-		if len(curLine) != 0 {
+	for curWord.Len() > 0 {
+		addedChars := curWord.Len()
+		if curLine.Len() != 0 {
 			addedChars++ // for the space
 		}
-		if len(curLine)+addedChars == width {
-			if len(curLine) != 0 {
-				curLine = append(curLine, ' ')
+		if curLine.Len()+addedChars == width {
+			if curLine.Len() != 0 {
+				curLine = curLine.Add(gem.S(" "))
 			}
-			curLine = append(curLine, curWord...)
-			lines.Append(string(curLine))
-			curLine = []rune{}
-			curWord = []rune{}
-		} else if len(curLine)+addedChars > width {
-			if len(curLine) == 0 {
-				curLine = append([]rune{}, curWord[0:width-1]...)
-				curLine = append(curLine, '-')
-				curWord = curWord[width-1:]
+
+			curLine = curLine.Add(curWord)
+			lines.Append(curLine)
+			curLine = gem.Z
+			curWord = gem.Z
+		} else if curLine.Len()+addedChars > width {
+			if curLine.Len() == 0 {
+				curLine = curLine.Add(curWord.Sub(0, width-1))
+				curLine = curLine.Add(gem.S("-"))
+				curWord = curWord.Sub(width-1, curWord.Len())
 			}
-			lines.Append(string(curLine))
-			curLine = []rune{}
+			lines.Append(curLine)
+			curLine = gem.Z
 		} else {
-			if len(curLine) != 0 {
-				curLine = append(curLine, ' ')
+			if curLine.Len() != 0 {
+				curLine = curLine.Add(gem.S(" "))
 			}
-			curLine = append(curLine, curWord...)
-			curWord = []rune{}
+			curLine = curLine.Add(curWord)
+			curWord = gem.Z
 		}
 	}
 	return curLine
 }
 
-func collapseSpace(text string, lineSep string) string {
-	textRunes := []rune(strings.ReplaceAll(text, lineSep, " "))
-	for i := 0; i < len(textRunes); i++ {
-		if unicode.IsSpace(textRunes[i]) {
-			textRunes[i] = ' ' // set it to actual space char
+func collapseSpace(text gem.String, lineSep gem.String) gem.String {
+	text = gem.S(strings.ReplaceAll(text.String(), lineSep.String(), " "))
+	for i := 0; i < text.Len(); i++ {
+		if unicode.IsSpace(text.CharAt(i)[0]) {
+			text = text.SetCharAt(i, []rune{' '}) // set it to actual space char
 		}
 	}
-	text = string(textRunes)
-	text = spaceCollapser.ReplaceAllString(text, " ")
-	text = strings.TrimSpace(text)
-	return text
+	collapsed := spaceCollapser.ReplaceAllString(text.String(), " ")
+	collapsed = strings.TrimSpace(collapsed)
+	return gem.S(collapsed)
 }
 
 // combineColumnBlocks takes two separate columns and combines them into a
@@ -120,9 +121,9 @@ func collapseSpace(text string, lineSep string) string {
 //
 // The returned block will not have line terminator behavior set on it; callers
 // will need to handle line terminators themselves.
-func combineColumnBlocks(left, right Block, minSpaceBetween int) Block {
+func combineColumnBlocks(left, right block, minSpaceBetween int) block {
 	if left.Len() == 0 && right.Len() == 0 {
-		return Block{}
+		return block{}
 	}
 	numLines := left.Len()
 	if numLines < right.Len() {
@@ -142,12 +143,12 @@ func combineColumnBlocks(left, right Block, minSpaceBetween int) Block {
 
 	totalCharsOnLeft := leftColMaxWidth + minSpaceBetween
 
-	combined := Block{}
+	combined := block{}
 	for i := 0; i < numLines; i++ {
 		// first get lines from each column
-		var leftLine string
+		var leftLine gem.String
 		var leftLineCharCount int
-		var rightLine string
+		var rightLine gem.String
 		if i < left.Len() {
 			leftLine = left.Line(i)
 			leftLineCharCount = left.CharCount(i)
@@ -159,7 +160,7 @@ func combineColumnBlocks(left, right Block, minSpaceBetween int) Block {
 		charsToAddToLeft := totalCharsOnLeft - leftLineCharCount
 		midSpacer := strings.Repeat(" ", charsToAddToLeft)
 
-		combined.Append(fmt.Sprintf("%s%s%s", leftLine, midSpacer, rightLine))
+		combined.Append(gem.S(fmt.Sprintf("%s%s%s", leftLine, midSpacer, rightLine)))
 	}
 
 	return combined
@@ -171,17 +172,15 @@ func combineColumnBlocks(left, right Block, minSpaceBetween int) Block {
 // If there are no spaces in the given string, it is returned centered.
 // If it is longer than the desired width after collapsing spaces in it, the
 // collapsed-space string is returned without further modification.
-func justifyLine(text string, width int) string {
+func justifyLine(text gem.String, width int) gem.String {
 	// collapseSpace in a line so that it can be properly laid out
-	text = collapseSpace(text, "\n") // doing \n which would be whitespace-collapsed anyways
+	text = collapseSpace(text, gem.S("\n")) // doing \n which would be whitespace-collapsed anyways
 
-	textRunes := []rune(text)
-	curLength := len([]rune(textRunes))
-	if curLength >= width {
+	if text.Len() >= width {
 		return text
 	}
 
-	splitWords := strings.Split(text, " ")
+	splitWords := strings.Split(text.String(), " ")
 	numGaps := len(splitWords) - 1
 	if numGaps < 1 {
 		return text

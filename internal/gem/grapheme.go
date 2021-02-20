@@ -1,8 +1,10 @@
-// Package grapheme provides operations for individual user-perceived
+// Package gem provides operations for individual user-perceived
 // characters and implements UAX #29 by Unicode for grapheme boundary finding.
 //
-// It can be used to show the number of "characters on screen".
-package grapheme
+// It can be used to show the number of characters as a user would perceive one
+// character to be, implementing the rules specified by Unicode to be safe
+// across multiple character ranges.
+package gem
 
 // String is a series of user-perceived characters. It is immutable; operations
 // on the String produce a new String.
@@ -14,6 +16,10 @@ type String interface {
 	// not modify the String.
 	CharAt(idx int) []rune
 
+	// SetCharAt sets the character at the given index to the given value and
+	// returns the resulting String. The original String is not modified.
+	SetCharAt(idx int, r []rune) String
+
 	// Len returns the number of grapheme clusters (user-perceivable characters)
 	// that are in the String.
 	//
@@ -21,8 +27,22 @@ type String interface {
 	// occured.
 	Len() int
 
+	// IsEmpty return whether the String is the empty string "".
+	IsEmpty() bool
+
 	// Add adds to strings together and returns the result
 	Add(s String) String
+
+	// Sub returns the substring given between the two indexes. The returned
+	// String will be a copy with its contents set to the characters at indexes
+	// in the range [start, end).
+	//
+	// If start or end is less than 0 it is assumed to be that many away from
+	// the actual end of the string; e.g. -1 would be Len()-1, -2 would be
+	// Len()-2, etc. If end or start are greater than Len, they are assumed to
+	// be Len. If start or end are negative and point to an index less than 0
+	// after calculating, it is assumed that they are pointing to 0.
+	Sub(start, end int) String
 
 	// String gets the contents as the built-in string type.
 	String() string
@@ -30,11 +50,117 @@ type String interface {
 	// Runes returns the string's raw Runes. Modifying the returned slice has no
 	// effect on the String.
 	Runes() []rune
+
+	// Equal returns whether one String has the exact same rune sequence as
+	// another.
+	Equal(s String) bool
+
+	// Less returns whether one String is lexigraphically less than another.
+	Less(s String) bool
 }
 
 type runeString struct {
 	r  []rune
 	gc []int
+}
+
+var (
+	// Z is a String of zero length.
+	Z String = S("")
+)
+
+func (runes *runeString) Sub(start, end int) String {
+	copy := runes.clone()
+
+	if start < 0 {
+		start += copy.Len()
+		if start < 0 {
+			start = 0
+		}
+	}
+	if end < 0 {
+		end += copy.Len()
+		if end < 0 {
+			end = 0
+		}
+	}
+	if end > copy.Len() {
+		end = copy.Len()
+	}
+	if start > copy.Len() {
+		start = copy.Len()
+	}
+
+	var runesStart int
+	if start > 0 {
+		runesStart = copy.gc[start-1]
+	}
+	runesEnd := copy.gc[end]
+	copy.r = copy.r[runesStart:runesEnd]
+	copy.gc = copy.gc[start:end]
+	return copy
+}
+
+func (runes *runeString) IsEmpty() bool {
+	return len(runes.r) == 0
+}
+
+func (runes *runeString) Less(s String) bool {
+	sR := s.Runes()
+	minLen := len(sR)
+	if minLen > len(runes.r) {
+		minLen = len(runes.r)
+	}
+	for i := 0; i <= minLen; i++ {
+		if runes.r[i] < sR[i] {
+			return true
+		}
+
+		// runes"2" s"1"
+		if runes.r[i] > sR[i] {
+			return false
+		}
+	}
+
+	// if we get here, they are exactly the same up to minLen
+	if minLen == len(sR) && minLen == len(runes.r) {
+		// exactly the same, not less
+		return false
+	}
+
+	// if it is shorter, then it is less
+	return minLen == len(runes.r)
+}
+
+// Slice turns the from slice into a slice of String objects.
+func Slice(from []string) []String {
+	str := make([]String, len(from))
+	for i := range from {
+		str[i] = S(from[i])
+	}
+	return str
+}
+
+// Strings turns the from slice into a slice of plain string objects.
+func Strings(from []String) []string {
+	str := make([]string, len(from))
+	for i := range from {
+		str[i] = from[i].String()
+	}
+	return str
+}
+
+func (runes *runeString) Equal(s String) bool {
+	otherR := s.Runes()
+	if len(otherR) != len(runes.r) {
+		return false
+	}
+	for i := range runes.r {
+		if otherR[i] != runes.r[i] {
+			return false
+		}
+	}
+	return true
 }
 
 func (runes *runeString) Runes() []rune {
@@ -43,6 +169,23 @@ func (runes *runeString) Runes() []rune {
 		r[i] = runes.r[i]
 	}
 	return r
+}
+
+func (runes *runeString) SetCharAt(idx int, r []rune) String {
+	copy := runes.clone()
+
+	if copy.gc == nil {
+		copy.gc = Split(copy.r)
+	}
+
+	var startIdx int
+	if idx > 0 {
+		startIdx = copy.gc[idx-1]
+	}
+	curEndIdx := copy.gc[idx]
+	copy.r = append(copy.r[:startIdx], append(r, copy.r[curEndIdx:]...)...)
+	copy.gc = nil
+	return copy
 }
 
 func (runes *runeString) String() string {
@@ -116,12 +259,18 @@ func (runes *runeString) clone() *runeString {
 	return &clone
 }
 
-// New takes the given string and converts it into a graphemes.String object for
+// S takes the given string and converts it into a graphemes.String object for
 // use with grapheme-aware functions. UAX-29 analysis is performed on a lazy
 // basis; the contents of s are not scanned for grapheme clusters until an
 // operation requires it.
-func New(s string) String {
+func S(s string) String {
 	return &runeString{r: []rune(s)}
+}
+
+// Char creates a String from single user-perceived character made up of the
+// given runes.
+func Char(ch []rune) String {
+	return S(string(ch))
 }
 
 // Split splits the given runes into a series of grapheme clusters. The

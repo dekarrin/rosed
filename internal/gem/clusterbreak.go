@@ -1,4 +1,4 @@
-package grapheme
+package gem
 
 // Values are taken from UAX #29 Table 2,
 // "Grapheme_Cluster_Break Property Values".

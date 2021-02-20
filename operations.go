@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/dekarrin/rosed/internal/grapheme"
 )
 
 var (
@@ -27,6 +29,8 @@ var (
 // will always be after a call with idx = 3, regardless of the size of the
 // returned slice in the prior call.
 type LineOperation func(idx int, line string) []string
+
+type gLineOperation func(idx int, line grapheme.String)
 
 // ParagraphOperation is a function that takes a zero-indexed paragraph number
 // and the contents of that paragraph and performs some operation on the string
