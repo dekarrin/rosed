@@ -75,7 +75,7 @@ func (tb block) Equal(other interface{}) bool {
 		return false
 	}
 
-	if tb.LineSeparator != b2.LineSeparator {
+	if !tb.LineSeparator.Equal(b2.LineSeparator) {
 		return false
 	}
 	if tb.TrailingSeparator != b2.TrailingSeparator {
@@ -88,7 +88,7 @@ func (tb block) Equal(other interface{}) bool {
 		return false
 	}
 	for i := 0; i < len(tb.Lines); i++ {
-		if tb.Lines[i].Equal(b2.Lines[i]) {
+		if !tb.Lines[i].Equal(b2.Lines[i]) {
 			return false
 		}
 	}
