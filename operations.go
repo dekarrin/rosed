@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/dekarrin/rosed/internal/grapheme"
+	"github.com/dekarrin/rosed/internal/gem"
 )
 
 var (
@@ -29,8 +29,6 @@ var (
 // will always be after a call with idx = 3, regardless of the size of the
 // returned slice in the prior call.
 type LineOperation func(idx int, line string) []string
-
-type gLineOperation func(idx int, line grapheme.String)
 
 // ParagraphOperation is a function that takes a zero-indexed paragraph number
 // and the contents of that paragraph and performs some operation on the string
@@ -56,6 +54,8 @@ type gLineOperation func(idx int, line grapheme.String)
 // separators (which will include the affixes) as needed to the returned
 // paragraph(s).
 type ParagraphOperation func(idx int, para, sepPrefix, sepSuffix string) []string
+
+type gParagraphOperation func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String
 
 // Apply applies the given LineOperation for each line in the text. Line
 // termination at the last line is transparently handled as per the options
@@ -100,23 +100,29 @@ func (ed Editor) ApplyParagraphs(op ParagraphOperation) Editor {
 // performs some operation on them, and then puts the paragraphs back together.
 // TODO: Better docs
 func (ed Editor) ApplyParagraphsOpts(op ParagraphOperation, opts Options) Editor {
+	return ed.applyGParagraphsOpts(func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String {
+		return gem.Slice(op(idx, para.String(), sepPrefix.String(), sepSuffix.String()))
+	}, opts)
+}
+
+func (ed Editor) applyGParagraphsOpts(op gParagraphOperation, opts Options) Editor {
 	opts = opts.WithDefaults()
 
 	// split the paragraph separator about its line separators so we can see any
 	// extra chars that will be chopped off while in a preserve-mode wrap that
 	// messes with line separators
-	var paraSepPrevSuffix, paraSepNextPrefix string
+	var paraSepPrevSuffix, paraSepNextPrefix gem.String
 	parts := strings.Split(opts.ParagraphSeparator, opts.LineSeparator)
-	paraSepPrevSuffix = parts[0]
+	paraSepPrevSuffix = _g(parts[0])
 	if len(parts) > 1 {
-		paraSepNextPrefix = parts[len(parts)-1]
+		paraSepNextPrefix = _g(parts[len(parts)-1])
 	}
 
 	paragraphs := strings.Split(ed.Text, opts.ParagraphSeparator)
 	transformed := make([]string, 0, len(paragraphs))
 	for idx, para := range paragraphs {
 		// the first one will not have the prev
-		var paraPre, paraSuf string
+		var paraPre, paraSuf gem.String
 		if idx != 0 {
 			paraPre = paraSepNextPrefix
 		}
@@ -124,10 +130,10 @@ func (ed Editor) ApplyParagraphsOpts(op ParagraphOperation, opts Options) Editor
 			paraSuf = paraSepPrevSuffix
 		}
 
-		nextParas := op(idx, para, paraPre, paraSuf)
+		nextParas := op(idx, _g(para), paraPre, paraSuf)
 
 		if len(nextParas) > 0 {
-			transformed = append(transformed, nextParas...)
+			transformed = append(transformed, gem.Strings(nextParas)...)
 		}
 	}
 
@@ -182,7 +188,7 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 	leftWidth := longestTermLen + termLeftTabWidth
 	rightWidth := width - leftWidth - minBetween
 
-	fullTable := Block{LineSeparator: opts.LineSeparator}
+	fullTable := block{LineSeparator: _g(opts.LineSeparator)}
 
 	for _, item := range definitions {
 		term := item[0]
@@ -192,11 +198,11 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 			rightPadding = strings.Repeat(" ", longestTermLen-len([]rune(term)))
 		}
 		leftTab := strings.Repeat(" ", termLeftTabWidth)
-		leftCol := Block{
-			Lines: []string{fmt.Sprintf("%s%s%s", leftTab, term, rightPadding)},
+		leftCol := block{
+			Lines: []gem.String{_g(fmt.Sprintf("%s%s%s", leftTab, term, rightPadding))},
 		}
 		// subtract 2 from width so we can put in a left margin of "  "
-		rightCol := wrap(def, rightWidth-2, opts.LineSeparator)
+		rightCol := wrap(_g(def), rightWidth-2, _g(opts.LineSeparator))
 		rightCol.Apply(func(idx int, line string) []string {
 			if idx == 0 {
 				return []string{"- " + line}
@@ -206,14 +212,14 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 		combined := combineColumnBlocks(leftCol, rightCol, minBetween)
 
 		fullTable.AppendBlock(combined)
-		fullTable.Append("")
+		fullTable.Append(_g(""))
 	}
 
 	if fullTable.Len() > 0 {
 		fullTable.Lines = fullTable.Lines[:len(fullTable.Lines)-1] // remove trailing newline
 	}
 
-	return ed.Insert(pos, fullTable.Join())
+	return ed.Insert(pos, fullTable.Join().String())
 }
 
 // InsertTwoColumns takes two seperate text sequences and puts them into two
@@ -293,14 +299,14 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 	}
 
 	opts = opts.WithDefaults()
-	leftColBlock := wrap(leftText, leftColWidth, opts.LineSeparator)
-	rightColBlock := wrap(rightText, rightColWidth, opts.LineSeparator)
+	leftColBlock := wrap(_g(leftText), leftColWidth, _g(opts.LineSeparator))
+	rightColBlock := wrap(_g(rightText), rightColWidth, _g(opts.LineSeparator))
 
 	combinedBlock := combineColumnBlocks(leftColBlock, rightColBlock, minSpaceBetween)
-	combinedBlock.LineSeparator = opts.LineSeparator
+	combinedBlock.LineSeparator = _g(opts.LineSeparator)
 	combinedBlock.TrailingSeparator = !opts.NoTrailingLineSeparators
 
-	return ed.Insert(pos, combinedBlock.Join())
+	return ed.Insert(pos, combinedBlock.Join().String())
 }
 
 // Indent adds the currently configured indent string level times at the start
@@ -345,7 +351,7 @@ func (ed Editor) CollapseSpace() Editor {
 // classification of the characters within it for the purposes of this function.
 func (ed Editor) CollapseSpaceOpts(opts Options) Editor {
 	opts = opts.WithDefaults()
-	ed.Text = collapseSpace(ed.Text, opts.LineSeparator)
+	ed.Text = collapseSpace(_g(ed.Text), _g(opts.LineSeparator)).String()
 	return ed
 }
 
@@ -368,30 +374,24 @@ func (ed Editor) WrapOpts(width int, opts Options) Editor {
 	}
 
 	if opts.PreserveParagraphs {
-		return ed.ApplyParagraphsOpts(func(idx int, para, sepPrefix, sepSuffix string) []string {
+		return ed.applyGParagraphsOpts(func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String {
 			// need to include the separator prefix/suffix if any
-			sepStart := ""
-			sepEnd := ""
-			for range sepPrefix {
-				sepStart += "A"
-			}
-			for range sepSuffix {
-				sepEnd += "A"
-			}
-			textBlock := wrap(sepStart+para+sepEnd, width, opts.LineSeparator)
+			sepStart := _g(strings.Repeat("", sepPrefix.Len()))
+			sepEnd := _g(strings.Repeat("", sepSuffix.Len()))
+			textBlock := wrap(sepStart.Add(para).Add(sepEnd), width, _g(opts.LineSeparator))
 			text := textBlock.Join()
-			text = text[len(sepStart) : len(text)-len(sepEnd)]
-			return []string{text}
+			text = text.Sub(sepStart.Len(), -sepEnd.Len())
+			return []gem.String{text}
 		}, opts)
 	}
 
-	textBlock := wrap(ed.Text, width, opts.LineSeparator)
+	textBlock := wrap(_g(ed.Text), width, _g(opts.LineSeparator))
 	text := textBlock.Join()
 	if strings.HasSuffix(ed.Text, opts.LineSeparator) {
-		text += opts.LineSeparator
+		text = text.Add(_g(opts.LineSeparator))
 	}
 
-	ed.Text = text
+	ed.Text = text.String()
 	return ed
 }
 
@@ -409,30 +409,22 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 	opts = opts.WithDefaults()
 
 	if opts.PreserveParagraphs {
-		return ed.ApplyParagraphsOpts(func(idx int, para, pre, suf string) []string {
-			// need to include the separator prefix/suffix if any
-			sepStart := ""
-			sepEnd := ""
-			// using "A" deliberately as it should be 1 byte
-			for range pre {
-				sepStart += "A"
-			}
-			for range suf {
-				sepEnd += "A"
-			}
-			bl := NewBlock(sepStart+para+sepEnd, opts.LineSeparator)
+		return ed.applyGParagraphsOpts(func(idx int, para, pre, suf gem.String) []gem.String {
+			sepStart := _g(strings.Repeat("A", pre.Len()))
+			sepEnd := _g(strings.Repeat("A", pre.Len()))
+			bl := newBlock(sepStart.Add(para).Add(sepEnd), _g(opts.LineSeparator))
 			bl.Apply(func(idx int, line string) []string {
-				return []string{justifyLine(line, width)}
+				return []string{justifyLine(_g(line), width).String()}
 			})
 			text := bl.Join()
 
 			// remove separator (if any)
-			para = text[len(sepStart) : len(text)-len(sepEnd)]
-			return []string{para}
+			para = text.Sub(sepStart.Len(), -sepEnd.Len())
+			return []gem.String{para}
 		}, opts)
 	}
 
 	return ed.ApplyOpts(func(idx int, line string) []string {
-		return []string{justifyLine(line, width)}
+		return []string{justifyLine(_g(line), width).String()}
 	}, opts)
 }

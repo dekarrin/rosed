@@ -68,7 +68,7 @@ func appendWordToLine(lines block, curWord gem.String, curLine gem.String, width
 		}
 		if curLine.Len()+addedChars == width {
 			if curLine.Len() != 0 {
-				curLine = curLine.Add(gem.S(" "))
+				curLine = curLine.Add(_g(" "))
 			}
 
 			curLine = curLine.Add(curWord)
@@ -78,14 +78,14 @@ func appendWordToLine(lines block, curWord gem.String, curLine gem.String, width
 		} else if curLine.Len()+addedChars > width {
 			if curLine.Len() == 0 {
 				curLine = curLine.Add(curWord.Sub(0, width-1))
-				curLine = curLine.Add(gem.S("-"))
+				curLine = curLine.Add(_g("-"))
 				curWord = curWord.Sub(width-1, curWord.Len())
 			}
 			lines.Append(curLine)
 			curLine = gem.Z
 		} else {
 			if curLine.Len() != 0 {
-				curLine = curLine.Add(gem.S(" "))
+				curLine = curLine.Add(_g(" "))
 			}
 			curLine = curLine.Add(curWord)
 			curWord = gem.Z
@@ -95,7 +95,7 @@ func appendWordToLine(lines block, curWord gem.String, curLine gem.String, width
 }
 
 func collapseSpace(text gem.String, lineSep gem.String) gem.String {
-	text = gem.S(strings.ReplaceAll(text.String(), lineSep.String(), " "))
+	text = _g(strings.ReplaceAll(text.String(), lineSep.String(), " "))
 	for i := 0; i < text.Len(); i++ {
 		if unicode.IsSpace(text.CharAt(i)[0]) {
 			text = text.SetCharAt(i, []rune{' '}) // set it to actual space char
@@ -103,7 +103,7 @@ func collapseSpace(text gem.String, lineSep gem.String) gem.String {
 	}
 	collapsed := spaceCollapser.ReplaceAllString(text.String(), " ")
 	collapsed = strings.TrimSpace(collapsed)
-	return gem.S(collapsed)
+	return _g(collapsed)
 }
 
 // combineColumnBlocks takes two separate columns and combines them into a
@@ -160,7 +160,7 @@ func combineColumnBlocks(left, right block, minSpaceBetween int) block {
 		charsToAddToLeft := totalCharsOnLeft - leftLineCharCount
 		midSpacer := strings.Repeat(" ", charsToAddToLeft)
 
-		combined.Append(gem.S(fmt.Sprintf("%s%s%s", leftLine, midSpacer, rightLine)))
+		combined.Append(_g(fmt.Sprintf("%s%s%s", leftLine, midSpacer, rightLine)))
 	}
 
 	return combined
@@ -174,7 +174,7 @@ func combineColumnBlocks(left, right block, minSpaceBetween int) block {
 // collapsed-space string is returned without further modification.
 func justifyLine(text gem.String, width int) gem.String {
 	// collapseSpace in a line so that it can be properly laid out
-	text = collapseSpace(text, gem.S("\n")) // doing \n which would be whitespace-collapsed anyways
+	text = collapseSpace(text, _g("\n")) // doing \n which would be whitespace-collapsed anyways
 
 	if text.Len() >= width {
 		return text
@@ -185,15 +185,15 @@ func justifyLine(text gem.String, width int) gem.String {
 	if numGaps < 1 {
 		return text
 	}
-	fullList := []string{}
+	fullList := []gem.String{}
 	for idx, word := range splitWords {
-		fullList = append(fullList, word)
+		fullList = append(fullList, _g(word))
 		if idx+1 < len(splitWords) {
-			fullList = append(fullList, " ")
+			fullList = append(fullList, _g(" "))
 		}
 	}
 
-	spacesToAdd := width - curLength
+	spacesToAdd := width - text.Len()
 	spaceIdx := 0
 	fromRight := false
 	oddSubtractor := 1
@@ -205,7 +205,7 @@ func justifyLine(text gem.String, width int) gem.String {
 		if fromRight {
 			spaceWordIdx = (((numGaps - oddSubtractor) - spaceIdx) * 2) + 1
 		}
-		fullList[spaceWordIdx] = fullList[spaceWordIdx] + " "
+		fullList[spaceWordIdx] = fullList[spaceWordIdx].Add(_g(" "))
 		fromRight = !fromRight
 		spaceIdx++
 		if spaceIdx >= numGaps {
@@ -213,6 +213,6 @@ func justifyLine(text gem.String, width int) gem.String {
 		}
 	}
 
-	finishedWord := strings.Join(fullList, "")
-	return finishedWord
+	finishedWord := strings.Join(gem.Strings(fullList), "")
+	return _g(finishedWord)
 }

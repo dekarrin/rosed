@@ -61,7 +61,7 @@ func newBlock(text, lineSep gem.String) block {
 	}
 
 	for i := range lines {
-		bl.Lines[i] = gem.S(lines[i])
+		bl.Lines[i] = gem.New(lines[i])
 	}
 
 	return bl
@@ -193,7 +193,7 @@ func (tb block) Join() gem.String {
 	}
 
 	full := strings.Join(gem.Strings(tb.Lines), tb.LineSeparator.String())
-	str := gem.S(full)
+	str := gem.New(full)
 	if tb.TrailingSeparator {
 		str = str.Add(tb.LineSeparator)
 	}

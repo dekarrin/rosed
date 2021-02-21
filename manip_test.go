@@ -1,119 +1,119 @@
 package rosed
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/dekarrin/assertion"
+	"github.com/dekarrin/rosed/internal/gem"
 )
 
 func Test_Manip_Wrap(t *testing.T) {
 	testCases := []struct {
 		name     string
-		input    string
+		input    gem.String
 		width    int
-		sep      string
-		expected []string
+		sep      gem.String
+		expected []gem.String
 	}{
 		{
 			name:  "empty input",
-			input: "",
+			input: _g(""),
 			width: 80,
-			sep:   "\n",
-			expected: []string{
-				"",
+			sep:   _g("\n"),
+			expected: []gem.String{
+				_g(""),
 			},
 		},
 		{
 			name:  "not enough to wrap",
-			input: "a test string",
+			input: _g("a test string"),
 			width: 80,
-			sep:   "\n",
-			expected: []string{
-				"a test string",
+			sep:   _g("\n"),
+			expected: []gem.String{
+				_g("a test string"),
 			},
 		},
 		{
 			name:  "2 line wrap",
-			input: "a string long enough to be wrapped",
+			input: _g("a string long enough to be wrapped"),
 			width: 20,
-			sep:   "\n",
-			expected: []string{
-				"a string long enough",
-				"to be wrapped",
+			sep:   _g("\n"),
+			expected: []gem.String{
+				_g("a string long enough"),
+				_g("to be wrapped"),
 			},
 		},
 		{
 			name:  "multi line wrap",
-			input: "a string long enough to be wrapped more than once",
+			input: _g("a string long enough to be wrapped more than once"),
 			width: 20,
-			sep:   "\n",
-			expected: []string{
-				"a string long enough",
-				"to be wrapped more",
-				"than once",
+			sep:   _g("\n"),
+			expected: []gem.String{
+				_g("a string long enough"),
+				_g("to be wrapped more"),
+				_g("than once"),
 			},
 		},
 		{
 			name:  "invalid width of -1 is interpreted as 2",
-			input: "test",
+			input: _g("test"),
 			width: -1,
-			sep:   "\n",
-			expected: []string{
-				"t-",
-				"e-",
-				"st",
+			sep:   _g("\n"),
+			expected: []gem.String{
+				_g("t-"),
+				_g("e-"),
+				_g("st"),
 			},
 		},
 		{
 			name:  "invalid width of 0 is interpreted as 2",
-			input: "test",
+			input: _g("test"),
 			width: 0,
-			sep:   "\n",
-			expected: []string{
-				"t-",
-				"e-",
-				"st",
+			sep:   _g("\n"),
+			expected: []gem.String{
+				_g("t-"),
+				_g("e-"),
+				_g("st"),
 			},
 		},
 		{
 			name:  "invalid width of 1 is interpreted as 2",
-			input: "test",
+			input: _g("test"),
 			width: 1,
-			sep:   "\n",
-			expected: []string{
-				"t-",
-				"e-",
-				"st",
+			sep:   _g("\n"),
+			expected: []gem.String{
+				_g("t-"),
+				_g("e-"),
+				_g("st"),
 			},
 		},
 		{
 			name:  "valid width of 2",
-			input: "test",
+			input: _g("test"),
 			width: 2,
-			sep:   "\n",
-			expected: []string{
-				"t-",
-				"e-",
-				"st",
+			sep:   _g("\n"),
+			expected: []gem.String{
+				_g("t-"),
+				_g("e-"),
+				_g("st"),
 			},
 		},
 		{
 			name:  "valid width of 3",
-			input: "test",
+			input: _g("test"),
 			width: 3,
-			sep:   "\n",
-			expected: []string{
-				"te-",
-				"st",
+			sep:   _g("\n"),
+			expected: []gem.String{
+				_g("te-"),
+				_g("st"),
 			},
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			assert := assertion.New(t)
 			actual := wrap(tc.input, tc.width, tc.sep).Lines
-
-			if !reflect.DeepEqual(actual, tc.input) {
-				t.Fatalf("expected result to be:\n%q\nbut was:\n%q", tc.expected, actual)
-			}
+			assert.EqualSlices(tc.expected, actual)
 		})
 	}
 }

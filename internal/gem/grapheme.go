@@ -66,7 +66,7 @@ type runeString struct {
 
 var (
 	// Z is a String of zero length.
-	Z String = S("")
+	Z String = New("")
 )
 
 func (runes *runeString) Sub(start, end int) String {
@@ -136,7 +136,7 @@ func (runes *runeString) Less(s String) bool {
 func Slice(from []string) []String {
 	str := make([]String, len(from))
 	for i := range from {
-		str[i] = S(from[i])
+		str[i] = New(from[i])
 	}
 	return str
 }
@@ -259,18 +259,18 @@ func (runes *runeString) clone() *runeString {
 	return &clone
 }
 
-// S takes the given string and converts it into a graphemes.String object for
+// New takes the given string and converts it into a graphemes.String object for
 // use with grapheme-aware functions. UAX-29 analysis is performed on a lazy
 // basis; the contents of s are not scanned for grapheme clusters until an
 // operation requires it.
-func S(s string) String {
+func New(s string) String {
 	return &runeString{r: []rune(s)}
 }
 
 // Char creates a String from single user-perceived character made up of the
 // given runes.
 func Char(ch []rune) String {
-	return S(string(ch))
+	return New(string(ch))
 }
 
 // Split splits the given runes into a series of grapheme clusters. The

@@ -17,7 +17,7 @@ func Test_NewBlock(t *testing.T) {
 	}{
 		{
 			name: "no lines - no trailing newline",
-			text: gem.Empty,
+			text: gem.Z,
 			sep:  gem.New("\n"),
 			expected: block{
 				Lines:             []gem.String{},
@@ -31,7 +31,7 @@ func Test_NewBlock(t *testing.T) {
 			sep:  gem.New("\n"),
 			expected: block{
 				Lines: []gem.String{
-					gem.Empty,
+					gem.Z,
 				},
 				LineSeparator:     gem.New("\n"),
 				TrailingSeparator: true,
@@ -179,25 +179,25 @@ func Test_Block_Equal(t *testing.T) {
 		{
 			name:     "empty Lines != 1 empty line",
 			b1:       block{Lines: []gem.String{}},
-			b2:       block{Lines: []gem.String{gem.Empty}},
+			b2:       block{Lines: []gem.String{gem.Z}},
 			expected: false,
 		},
 		{
 			name:     "nil Lines != 1 empty line",
 			b1:       block{Lines: nil},
-			b2:       block{Lines: []gem.String{gem.Empty}},
+			b2:       block{Lines: []gem.String{gem.Z}},
 			expected: false,
 		},
 		{
 			name:     "default != 1 empty line",
 			b1:       block{},
-			b2:       block{Lines: []gem.String{gem.Empty}},
+			b2:       block{Lines: []gem.String{gem.Z}},
 			expected: false,
 		},
 		{
 			name:     "1 empty line == 1 empty line",
-			b1:       block{Lines: []gem.String{gem.Empty}},
-			b2:       block{Lines: []gem.String{gem.Empty}},
+			b1:       block{Lines: []gem.String{gem.Z}},
+			b2:       block{Lines: []gem.String{gem.Z}},
 			expected: true,
 		},
 		{
@@ -214,14 +214,14 @@ func Test_Block_Equal(t *testing.T) {
 		},
 		{
 			name:     "3 empty lines != 4 empty lines",
-			b1:       block{Lines: []gem.String{gem.Empty, gem.Empty, gem.Empty}},
-			b2:       block{Lines: []gem.String{gem.Empty, gem.Empty, gem.Empty, gem.Empty}},
+			b1:       block{Lines: []gem.String{gem.Z, gem.Z, gem.Z}},
+			b2:       block{Lines: []gem.String{gem.Z, gem.Z, gem.Z, gem.Z}},
 			expected: false,
 		},
 		{
 			name:     "3 empty lines == 3 empty lines",
-			b1:       block{Lines: []gem.String{gem.Empty, gem.Empty, gem.Empty}},
-			b2:       block{Lines: []gem.String{gem.Empty, gem.Empty, gem.Empty}},
+			b1:       block{Lines: []gem.String{gem.Z, gem.Z, gem.Z}},
+			b2:       block{Lines: []gem.String{gem.Z, gem.Z, gem.Z}},
 			expected: true,
 		},
 		{
@@ -269,9 +269,9 @@ func Test_Block_Len(t *testing.T) {
 		{"nil Lines", block{Lines: nil}, 0},
 		{"empty Lines", block{Lines: []gem.String{}}, 0},
 		{"default Lines", block{}, 0},
-		{"1 empty line", block{Lines: []gem.String{gem.Empty}}, 1},
+		{"1 empty line", block{Lines: []gem.String{gem.Z}}, 1},
 		{"1 filled line", block{Lines: []gem.String{gem.New("test")}}, 1},
-		{"3 empty lines", block{Lines: []gem.String{gem.Empty, gem.Empty, gem.Empty}}, 3},
+		{"3 empty lines", block{Lines: []gem.String{gem.Z, gem.Z, gem.Z}}, 3},
 		{"3 filled lines", block{Lines: []gem.String{gem.New("a"), gem.New("b"), gem.New("c")}}, 3},
 	}
 
@@ -352,21 +352,21 @@ func Test_Block_Append(t *testing.T) {
 	}{
 		{
 			name:   "append empty line to nil",
-			append: gem.Empty,
+			append: gem.Z,
 			input:  block{Lines: nil},
-			expect: block{Lines: []gem.String{gem.Empty}},
+			expect: block{Lines: []gem.String{gem.Z}},
 		},
 		{
 			name:   "append empty line to empty Lines",
-			append: gem.Empty,
+			append: gem.Z,
 			input:  block{Lines: []gem.String{}},
-			expect: block{Lines: []gem.String{gem.Empty}},
+			expect: block{Lines: []gem.String{gem.Z}},
 		},
 		{
 			name:   "append empty line to default",
-			append: gem.Empty,
+			append: gem.Z,
 			input:  block{},
-			expect: block{Lines: []gem.String{gem.Empty}},
+			expect: block{Lines: []gem.String{gem.Z}},
 		},
 		{
 			name:   "append filled line to default",
@@ -497,13 +497,13 @@ func Test_Block_AppendEmpty(t *testing.T) {
 		{"append 0 to nil", 0, block{Lines: nil}, block{}},
 		{"append 0 to empty", 0, block{Lines: []gem.String{}}, block{}},
 		{"append 0 to default", 0, block{}, block{}},
-		{"append 1 to nil", 1, block{Lines: nil}, block{Lines: []gem.String{gem.Empty}}},
-		{"append 1 to empty", 1, block{Lines: []gem.String{}}, block{Lines: []gem.String{gem.Empty}}},
-		{"append 1 to default", 1, block{}, block{Lines: []gem.String{gem.Empty}}},
-		{"append 1 to 1", 1, block{Lines: []gem.String{gem.New("vriska")}}, block{Lines: []gem.String{gem.New("vriska"), gem.Empty}}},
-		{"append 1 to many", 1, block{Lines: []gem.String{gem.New("vriska"), gem.New("terezi")}}, block{Lines: []gem.String{gem.New("vriska"), gem.New("terezi"), gem.Empty}}},
-		{"append 3 to 1", 3, block{Lines: []gem.String{gem.New("vriska")}}, block{Lines: []gem.String{gem.New("vriska"), gem.Empty, gem.Empty, gem.Empty}}},
-		{"append 3 to many", 3, block{Lines: []gem.String{gem.New("vriska"), gem.New("terezi")}}, block{Lines: []gem.String{gem.New("vriska"), gem.New("terezi"), gem.Empty, gem.Empty, gem.Empty}}},
+		{"append 1 to nil", 1, block{Lines: nil}, block{Lines: []gem.String{gem.Z}}},
+		{"append 1 to empty", 1, block{Lines: []gem.String{}}, block{Lines: []gem.String{gem.Z}}},
+		{"append 1 to default", 1, block{}, block{Lines: []gem.String{gem.Z}}},
+		{"append 1 to 1", 1, block{Lines: []gem.String{gem.New("vriska")}}, block{Lines: []gem.String{gem.New("vriska"), gem.Z}}},
+		{"append 1 to many", 1, block{Lines: []gem.String{gem.New("vriska"), gem.New("terezi")}}, block{Lines: []gem.String{gem.New("vriska"), gem.New("terezi"), gem.Z}}},
+		{"append 3 to 1", 3, block{Lines: []gem.String{gem.New("vriska")}}, block{Lines: []gem.String{gem.New("vriska"), gem.Z, gem.Z, gem.Z}}},
+		{"append 3 to many", 3, block{Lines: []gem.String{gem.New("vriska"), gem.New("terezi")}}, block{Lines: []gem.String{gem.New("vriska"), gem.New("terezi"), gem.Z, gem.Z, gem.Z}}},
 		{"append -1 to default", -1, block{}, block{}},
 	}
 
@@ -534,14 +534,14 @@ func Test_Block_Set(t *testing.T) {
 	}{
 		{
 			name:   "index too low causes panic",
-			args:   args{-1, gem.Empty},
+			args:   args{-1, gem.Z},
 			input:  block{},
 			panics: true,
 		},
 		{
 			name:   "index too high causes panic",
-			args:   args{20, gem.Empty},
-			input:  block{Lines: []gem.String{gem.Empty, gem.Empty}},
+			args:   args{20, gem.Z},
+			input:  block{Lines: []gem.String{gem.Z, gem.Z}},
 			panics: true,
 		},
 		{
@@ -584,7 +584,7 @@ func Test_Block_Line(t *testing.T) {
 		{
 			name:   "index too high causes panic",
 			pos:    2,
-			input:  block{Lines: []gem.String{gem.Empty, gem.Empty}},
+			input:  block{Lines: []gem.String{gem.Z, gem.Z}},
 			panics: true,
 		},
 		{
@@ -626,13 +626,13 @@ func Test_Block_CharCount(t *testing.T) {
 		{
 			name:   "index too high causes panic",
 			pos:    2,
-			input:  block{Lines: []gem.String{gem.Empty, gem.Empty}},
+			input:  block{Lines: []gem.String{gem.Z, gem.Z}},
 			panics: true,
 		},
 		{
 			name:   "empty string",
 			pos:    0,
-			input:  block{Lines: []gem.String{gem.Empty}},
+			input:  block{Lines: []gem.String{gem.Z}},
 			expect: 0,
 		},
 		{
@@ -692,10 +692,10 @@ func Test_Block_Join(t *testing.T) {
 			input: block{
 				Lines: []gem.String{
 					gem.New("test1"),
-					gem.Empty,
+					gem.Z,
 					gem.New("test2"),
-					gem.Empty,
-					gem.Empty,
+					gem.Z,
+					gem.Z,
 					gem.New("test3"),
 				},
 				LineSeparator:     gem.New("\n"),
@@ -708,10 +708,10 @@ func Test_Block_Join(t *testing.T) {
 			input: block{
 				Lines: []gem.String{
 					gem.New("test1"),
-					gem.Empty,
+					gem.Z,
 					gem.New("test2"),
-					gem.Empty,
-					gem.Empty,
+					gem.Z,
+					gem.Z,
 					gem.New("test3"),
 				},
 				LineSeparator: gem.New("\n"),
@@ -794,7 +794,7 @@ func Test_Block_Join(t *testing.T) {
 		{
 			name: "join 1 empty line",
 			input: block{
-				Lines:         []gem.String{gem.Empty},
+				Lines:         []gem.String{gem.Z},
 				LineSeparator: gem.New("\n"),
 			},
 			expect: "",
@@ -802,7 +802,7 @@ func Test_Block_Join(t *testing.T) {
 		{
 			name: "join 1 empty line, line terminator on",
 			input: block{
-				Lines:             []gem.String{gem.Empty},
+				Lines:             []gem.String{gem.Z},
 				LineSeparator:     gem.New("\n"),
 				TrailingSeparator: true,
 			},
