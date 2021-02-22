@@ -6,6 +6,8 @@
 // across multiple character ranges.
 package gem
 
+import "fmt"
+
 // String is a series of user-perceived characters. It is immutable; operations
 // on the String produce a new String.
 //
@@ -57,6 +59,9 @@ type String interface {
 
 	// Less returns whether one String is lexigraphically less than another.
 	Less(s String) bool
+
+	// Format formats the String for printing.
+	Format(f fmt.State, verb rune)
 }
 
 type runeString struct {
@@ -151,6 +156,14 @@ func Strings(from []String) []string {
 }
 
 func (runes *runeString) Equal(s String) bool {
+	if runes == nil {
+		return s == nil
+	}
+
+	if s == nil {
+		return false
+	}
+
 	otherR := s.Runes()
 	if len(otherR) != len(runes.r) {
 		return false
@@ -188,7 +201,21 @@ func (runes *runeString) SetCharAt(idx int, r []rune) String {
 	return copy
 }
 
+func (runes *runeString) Format(f fmt.State, verb rune) {
+	if verb == 'q' {
+		if runes == nil {
+			f.Write([]byte("<nil>"))
+		}
+		f.Write([]byte(fmt.Sprintf("%q", runes.String())))
+	} else {
+		f.Write([]byte(fmt.Sprintf("%s", runes.String())))
+	}
+}
+
 func (runes *runeString) String() string {
+	if runes == nil {
+		return "<nil>"
+	}
 	return string(runes.r)
 }
 
