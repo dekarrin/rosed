@@ -685,7 +685,7 @@ func Test_Block_Join(t *testing.T) {
 	testCases := []struct {
 		name   string
 		input  block
-		expect string
+		expect gem.String
 	}{
 		{
 			name: "join with some empty, trailing separator",
@@ -701,7 +701,7 @@ func Test_Block_Join(t *testing.T) {
 				LineSeparator:     gem.New("\n"),
 				TrailingSeparator: true,
 			},
-			expect: "test1\n\ntest2\n\n\ntest3\n",
+			expect: _g("test1\n\ntest2\n\n\ntest3\n"),
 		},
 		{
 			name: "join with some empty, no trailing separator",
@@ -716,7 +716,7 @@ func Test_Block_Join(t *testing.T) {
 				},
 				LineSeparator: gem.New("\n"),
 			},
-			expect: "test1\n\ntest2\n\n\ntest3",
+			expect: _g("test1\n\ntest2\n\n\ntest3"),
 		},
 		{
 			name: "join 3 lines, trailing separator",
@@ -729,7 +729,7 @@ func Test_Block_Join(t *testing.T) {
 				LineSeparator:     gem.New("\n"),
 				TrailingSeparator: true,
 			},
-			expect: "test1\ntest2\ntest3\n",
+			expect: _g("test1\ntest2\ntest3\n"),
 		},
 		{
 			name: "join 3 lines, no trailing separator",
@@ -742,7 +742,7 @@ func Test_Block_Join(t *testing.T) {
 				LineSeparator:     gem.New("\n"),
 				TrailingSeparator: false,
 			},
-			expect: "test1\ntest2\ntest3",
+			expect: _g("test1\ntest2\ntest3"),
 		},
 		{
 			name: "join 3 lines, alternate separator",
@@ -755,7 +755,7 @@ func Test_Block_Join(t *testing.T) {
 				LineSeparator:     gem.New("_"),
 				TrailingSeparator: false,
 			},
-			expect: "test1_test2_test3",
+			expect: _g("test1_test2_test3"),
 		},
 		{
 			name: "join nil lines",
@@ -763,7 +763,7 @@ func Test_Block_Join(t *testing.T) {
 				Lines:         nil,
 				LineSeparator: gem.New("\n"),
 			},
-			expect: "",
+			expect: gem.Z,
 		},
 		{
 			name: "join nil lines, line terminator on",
@@ -772,7 +772,7 @@ func Test_Block_Join(t *testing.T) {
 				LineSeparator:     gem.New("\n"),
 				TrailingSeparator: true,
 			},
-			expect: "\n",
+			expect: _g("\n"),
 		},
 		{
 			name: "join empty lines",
@@ -780,7 +780,7 @@ func Test_Block_Join(t *testing.T) {
 				Lines:         []gem.String{},
 				LineSeparator: gem.New("\n"),
 			},
-			expect: "",
+			expect: gem.Z,
 		},
 		{
 			name: "join empty lines, line terminator on",
@@ -789,7 +789,7 @@ func Test_Block_Join(t *testing.T) {
 				LineSeparator:     gem.New("\n"),
 				TrailingSeparator: true,
 			},
-			expect: "\n",
+			expect: _g("\n"),
 		},
 		{
 			name: "join 1 empty line",
@@ -797,7 +797,7 @@ func Test_Block_Join(t *testing.T) {
 				Lines:         []gem.String{gem.Z},
 				LineSeparator: gem.New("\n"),
 			},
-			expect: "",
+			expect: gem.Z,
 		},
 		{
 			name: "join 1 empty line, line terminator on",
@@ -806,7 +806,7 @@ func Test_Block_Join(t *testing.T) {
 				LineSeparator:     gem.New("\n"),
 				TrailingSeparator: true,
 			},
-			expect: "\n",
+			expect: _g("\n"),
 		},
 	}
 

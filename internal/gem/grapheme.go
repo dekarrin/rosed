@@ -160,11 +160,15 @@ func Strings(from []String) []string {
 }
 
 func (runes *runeString) Equal(other interface{}) bool {
+	otherStr, otherIsRawStr := other.(string)
 	if runes == nil {
+		if otherIsRawStr {
+			return otherStr == ""
+		}
 		return other == nil
 	}
 
-	if otherStr, ok := other.(string); ok {
+	if otherIsRawStr {
 		return otherStr == runes.String()
 	}
 
