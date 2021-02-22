@@ -95,6 +95,11 @@ func appendWordToLine(lines block, curWord gem.String, curLine gem.String, width
 }
 
 func collapseSpace(text gem.String, lineSep gem.String) gem.String {
+	if text == nil {
+		return gem.Zero
+	}
+
+	// handle the separator but do not use the empty or nil string.
 	text = _g(strings.ReplaceAll(text.String(), lineSep.String(), " "))
 	for i := 0; i < text.Len(); i++ {
 		if unicode.IsSpace(text.CharAt(i)[0]) {

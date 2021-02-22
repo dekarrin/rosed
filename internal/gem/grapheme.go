@@ -8,78 +8,38 @@ package gem
 
 import "fmt"
 
-// String is a series of user-perceived characters. It is immutable; operations
-// on the String produce a new String.
+// String is a series of user-perceived characters. The contents are immutable;
+// operations on the String produce a new String. However, some transient state
+// does exist on the String, though an effort is made to limit access and use
+// in a somewhat threadsafe way, no guarantees are provided for use in threads.
+//
+// If such guarantees are needed, raw strings can be used primarily with
+// conversion to and from gem.String as needed.
 //
 // The zero value is an empty String.
 //
 // String.Equal can be used to test against raw strings.
-type String interface {
-	// CharAt returns the runes that make up the user-perceived character
-	// (grapheme cluster) of the given index. Modifying the returned slice will
-	// not modify the String.
-	CharAt(idx int) []rune
-
-	// SetCharAt sets the character at the given index to the given value and
-	// returns the resulting String. The original String is not modified.
-	SetCharAt(idx int, r []rune) String
-
-	// Len returns the number of grapheme clusters (user-perceivable characters)
-	// that are in the String.
-	//
-	// This function may trigger UAX29 analysis on the String if it hasn't yet
-	// occured.
-	Len() int
-
-	// IsEmpty return whether the String is the empty string "".
-	IsEmpty() bool
-
-	// Add adds to strings together and returns the result
-	Add(s String) String
-
-	// Sub returns the substring given between the two indexes. The returned
-	// String will be a copy with its contents set to the characters at indexes
-	// in the range [start, end).
-	//
-	// If start or end is less than 0 it is assumed to be that many away from
-	// the actual end of the string; e.g. -1 would be Len()-1, -2 would be
-	// Len()-2, etc. If end or start are greater than Len, they are assumed to
-	// be Len. If start or end are negative and point to an index less than 0
-	// after calculating, it is assumed that they are pointing to 0.
-	Sub(start, end int) String
-
-	// String gets the contents as the built-in string type.
-	String() string
-
-	// Runes returns the string's raw Runes. Modifying the returned slice has no
-	// effect on the String.
-	Runes() []rune
-
-	// Equal returns whether one String is equal to another object. If the
-	// object is another String struct, their resulting strings are compared. If
-	// the object is a raw string object, it is compared to the output of
-	// calling String() on the gem.String.
-	Equal(other interface{}) bool
-
-	// Less returns whether one String is lexigraphically less than another.
-	Less(s String) bool
-
-	// Format formats the String for printing.
-	Format(f fmt.State, verb rune)
-}
-
-type runeString struct {
+type String struct {
 	r  []rune
 	gc []int
 }
 
 var (
 	// Zero is a String of zero length.
-	Zero String = New("")
+	Zero String = String{r: []rune{}, gc: []int{}}
 )
 
-func (runes *runeString) Sub(start, end int) String {
-	copy := runes.clone()
+// Sub returns the substring given between the two indexes. The returned String
+// will be a copy with its contents set to the characters at indexes in the
+// range [start, end).
+//
+// If start or end is less than 0 it is assumed to be that many away from the
+// actual end of the string; e.g. -1 would be Len()-1, -2 would be Len()-2, etc.
+// If end or start are greater than Len, they are assumed to be Len. If start or
+// end are negative and point to an index less than 0 after calculating, it is
+// assumed that they are pointing to 0.
+func (str *String) Sub(start, end int) String {
+	copy := str.clone()
 
 	if start < 0 {
 		start += copy.Len()
@@ -110,35 +70,40 @@ func (runes *runeString) Sub(start, end int) String {
 	return copy
 }
 
-func (runes *runeString) IsEmpty() bool {
-	return len(runes.r) == 0
+// IsEmpty return whether the String is the empty string "".
+func (str *String) IsEmpty() bool {
+	if str == nil {
+		return true
+	}
+	return len(str.r) == 0
 }
 
-func (runes *runeString) Less(s String) bool {
+// Less returns whether one String is lexigraphically less than another.
+func (str *String) Less(s String) bool {
 	sR := s.Runes()
 	minLen := len(sR)
-	if minLen > len(runes.r) {
-		minLen = len(runes.r)
+	if minLen > len(str.r) {
+		minLen = len(str.r)
 	}
 	for i := 0; i <= minLen; i++ {
-		if runes.r[i] < sR[i] {
+		if str.r[i] < sR[i] {
 			return true
 		}
 
 		// runes"2" s"1"
-		if runes.r[i] > sR[i] {
+		if str.r[i] > sR[i] {
 			return false
 		}
 	}
 
 	// if we get here, they are exactly the same up to minLen
-	if minLen == len(sR) && minLen == len(runes.r) {
+	if minLen == len(sR) && minLen == len(str.r) {
 		// exactly the same, not less
 		return false
 	}
 
 	// if it is shorter, then it is less
-	return minLen == len(runes.r)
+	return minLen == len(str.r)
 }
 
 // Slice turns the from slice into a slice of String objects.
@@ -159,54 +124,77 @@ func Strings(from []String) []string {
 	return str
 }
 
-func (runes *runeString) Equal(other interface{}) bool {
+// Equal returns whether one String is equal to another object. If the object is
+// another String struct, their resulting strings are compared. If the object is
+// a raw string object, it is compared to the output of calling String() on the
+// gem.String. Otherwise, false is returned.
+func (str *String) Equal(other interface{}) bool {
 	otherStr, otherIsRawStr := other.(string)
-	if runes == nil {
-		if otherIsRawStr {
+	if !otherIsRawStr {
+		if sPtr, ok := other.(*string); ok {
+			if sPtr == nil {
+				return str.IsEmpty()
+			}
+			otherStr = *sPtr
+			otherIsRawStr = true
+		}
+	}
+
+	// not else because original condition being wrong may make this true
+	// and re-evaluation is required.
+	if otherIsRawStr {
+		if str == nil {
 			return otherStr == ""
 		}
-		return other == nil
+		return str.String() == otherStr
 	}
 
-	if otherIsRawStr {
-		return otherStr == runes.String()
+	s2, otherIsString := other.(String)
+	if !otherIsString {
+		if sPtr, ok := other.(*String); ok {
+			if sPtr == nil {
+				return str.IsEmpty()
+			}
+			s2 = *sPtr
+			otherIsString = true
+		}
 	}
 
-	s, ok := other.(String)
-	if !ok {
+	if !otherIsString {
 		return false
 	}
 
-	if runes == nil {
-		return other == nil
-	}
-
-	if s == nil {
+	if str == nil {
+		// only other two valid pointers (String and string) have already been
+		// checked for nil equality.
 		return false
 	}
 
-	otherR := s.Runes()
-	if len(otherR) != len(runes.r) {
+	if len(s2.r) != len(str.r) {
 		return false
 	}
-	for i := range runes.r {
-		if otherR[i] != runes.r[i] {
+	for i := range str.r {
+		if s2.r[i] != str.r[i] {
 			return false
 		}
 	}
 	return true
 }
 
-func (runes *runeString) Runes() []rune {
-	r := make([]rune, len(runes.r))
-	for i := range runes.r {
-		r[i] = runes.r[i]
+// Runes returns the string's raw Runes. Modifying the returned slice has no
+// effect on the String.
+func (str *String) Runes() []rune {
+	r := make([]rune, len(str.r))
+	for i := range str.r {
+		r[i] = str.r[i]
 	}
 	return r
 }
 
-func (runes *runeString) SetCharAt(idx int, r []rune) String {
-	copy := runes.clone()
+// SetCharAt sets the character at the given index to the given value and
+// returns the resulting String. The original String is not modified.
+func (str *String) SetCharAt(idx int, r []rune) String {
+	copy := str.clone()
 
 	if copy.gc == nil {
 		copy.gc = Split(copy.r)
@@ -222,29 +210,31 @@ func (runes *runeString) SetCharAt(idx int, r []rune) String {
 	return copy
 }
 
-func (runes *runeString) Format(f fmt.State, verb rune) {
+// Format formats the String for printing.
+func (str *String) Format(f fmt.State, verb rune) {
 	if verb == 'q' {
-		if runes == nil {
+		if str == nil {
 			f.Write([]byte("<nil>"))
 		}
-		f.Write([]byte(fmt.Sprintf("%q", runes.String())))
+		f.Write([]byte(fmt.Sprintf("%q", str.String())))
 	} else {
-		f.Write([]byte(fmt.Sprintf("%s", runes.String())))
+		f.Write([]byte(fmt.Sprintf("%s", str.String())))
 	}
 }
 
-func (runes *runeString) String() string {
-	if runes == nil {
-		return "<nil>"
-	}
-	return string(runes.r)
+// String gets the contents as the built-in string type.
+func (str *String) String() string {
+	return string(str.r)
 }
 
-func (runes *runeString) CharAt(idx int) []rune {
-	gc := runes.gc
+// CharAt returns the runes that make up the user-perceived character (grapheme
+// cluster) of the given index. Modifying the returned slice will not modify the
+// String.
+func (str *String) CharAt(idx int) []rune {
+	gc := str.gc
 	if gc == nil {
-		gc = Split(runes.r)
-		runes.gc = gc
+		gc = Split(str.r)
+		str.gc = gc
 	}
 
 	var startIdx = 0
@@ -254,32 +244,33 @@ func (runes *runeString) CharAt(idx int) []rune {
 	length := gc[idx] - startIdx
 	cluster := make([]rune, length)
 	for i := 0; i < length; i++ {
-		cluster[i] = runes.r[startIdx+i]
+		cluster[i] = str.r[startIdx+i]
 	}
 	return cluster
 }
 
-// Add performs the Add operation of a String.
-func (runes *runeString) Add(s2 String) String {
-	r2 := runes.clone()
+// Add adds two strings together and returns the result. The original String is
+// not modified.
+func (str *String) Add(s2 String) String {
+	r2 := str.clone()
 	r2.gc = nil
 	r2.r = append(r2.r, s2.Runes()...)
 	return r2
 }
 
-// Len returns the number of grapheme clusters (user-perceivable characters) are
-// in the String.
+// Len returns the number of grapheme clusters (user-perceivable characters)
+// that are in the String.
 //
-// This function will trigger UAX29 analysis on the String if it hasn't yet
+// This function may trigger UAX29 analysis on the String if it hasn't yet
 // occured.
-func (runes *runeString) Len() int {
-	gc := runes.gc
+func (str *String) Len() int {
+	gc := str.gc
 	if gc == nil {
-		if len(runes.r) == 0 {
+		if len(str.r) == 0 {
 			return 0
 		}
-		gc = Split(runes.r)
-		runes.gc = gc
+		gc = Split(str.r)
+		str.gc = gc
 	}
 	return len(gc)
 }
@@ -290,13 +281,13 @@ func (runes *runeString) Len() int {
 // modify the original. calling this is not needed unless a modification is
 // about to occur, even though passing String by value does pass pointers (via
 // slice-type members)
-func (runes *runeString) clone() *runeString {
-	gc := runes.gc
-	clone := runeString{
-		r: make([]rune, len(runes.r)),
+func (str *String) clone() String {
+	gc := str.gc
+	clone := String{
+		r: make([]rune, len(str.r)),
 	}
-	for i := range runes.r {
-		clone.r[i] = runes.r[i]
+	for i := range str.r {
+		clone.r[i] = str.r[i]
 	}
 	if gc != nil {
 		clone.gc = make([]int, len(gc))
@@ -304,7 +295,7 @@ func (runes *runeString) clone() *runeString {
 			clone.gc[i] = gc[i]
 		}
 	}
-	return &clone
+	return clone
 }
 
 // New takes the given string and converts it into a graphemes.String object for
@@ -312,7 +303,7 @@ func (runes *runeString) clone() *runeString {
 // basis; the contents of s are not scanned for grapheme clusters until an
 // operation requires it.
 func New(s string) String {
-	return &runeString{r: []rune(s)}
+	return String{r: []rune(s)}
 }
 
 // Char creates a String from single user-perceived character made up of the
