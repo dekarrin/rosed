@@ -572,7 +572,7 @@ func Test_Block_Line(t *testing.T) {
 		name   string
 		pos    int
 		input  block
-		expect string
+		expect gem.String
 		panics bool
 	}{
 		{
@@ -591,7 +591,7 @@ func Test_Block_Line(t *testing.T) {
 			name:   "get 0th line",
 			pos:    0,
 			input:  block{Lines: []gem.String{gem.New("old text"), gem.New("test")}},
-			expect: "old text",
+			expect: _g("old text"),
 		},
 	}
 

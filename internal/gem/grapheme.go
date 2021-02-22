@@ -12,6 +12,8 @@ import "fmt"
 // on the String produce a new String.
 //
 // The zero value is an empty String.
+//
+// String.Equal can be used to test against raw strings.
 type String interface {
 	// CharAt returns the runes that make up the user-perceived character
 	// (grapheme cluster) of the given index. Modifying the returned slice will
@@ -53,9 +55,11 @@ type String interface {
 	// effect on the String.
 	Runes() []rune
 
-	// Equal returns whether one String has the exact same rune sequence as
-	// another.
-	Equal(s String) bool
+	// Equal returns whether one String is equal to another object. If the
+	// object is another String struct, their resulting strings are compared. If
+	// the object is a raw string object, it is compared to the output of
+	// calling String() on the gem.String.
+	Equal(other interface{}) bool
 
 	// Less returns whether one String is lexigraphically less than another.
 	Less(s String) bool
@@ -155,9 +159,22 @@ func Strings(from []String) []string {
 	return str
 }
 
-func (runes *runeString) Equal(s String) bool {
+func (runes *runeString) Equal(other interface{}) bool {
 	if runes == nil {
-		return s == nil
+		return other == nil
+	}
+
+	if otherStr, ok := other.(string); ok {
+		return otherStr == runes.String()
+	}
+
+	s, ok := other.(String)
+	if !ok {
+		return false
+	}
+
+	if runes == nil {
+		return other == nil
 	}
 
 	if s == nil {
