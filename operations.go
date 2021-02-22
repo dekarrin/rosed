@@ -212,7 +212,7 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 		combined := combineColumnBlocks(leftCol, rightCol, minBetween)
 
 		fullTable.AppendBlock(combined)
-		fullTable.Append(_g(""))
+		fullTable.Append(gem.Zero)
 	}
 
 	if fullTable.Len() > 0 {

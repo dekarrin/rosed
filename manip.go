@@ -34,7 +34,7 @@ func wrap(text gem.String, width int, lineSep gem.String) block {
 		ch := toConsume.CharAt(i)
 		if ch[0] == ' ' {
 			curLine = appendWordToLine(lines, curWord, curLine, width)
-			curWord = gem.Z
+			curWord = gem.Zero
 		} else {
 			curWord = curWord.Add(gem.Char(ch))
 		}
@@ -42,7 +42,7 @@ func wrap(text gem.String, width int, lineSep gem.String) block {
 
 	if !curWord.IsEmpty() {
 		curLine = appendWordToLine(lines, curWord, curLine, width)
-		curWord = gem.Z
+		curWord = gem.Zero
 	}
 
 	if !curLine.IsEmpty() {
@@ -73,8 +73,8 @@ func appendWordToLine(lines block, curWord gem.String, curLine gem.String, width
 
 			curLine = curLine.Add(curWord)
 			lines.Append(curLine)
-			curLine = gem.Z
-			curWord = gem.Z
+			curLine = gem.Zero
+			curWord = gem.Zero
 		} else if curLine.Len()+addedChars > width {
 			if curLine.Len() == 0 {
 				curLine = curLine.Add(curWord.Sub(0, width-1))
@@ -82,13 +82,13 @@ func appendWordToLine(lines block, curWord gem.String, curLine gem.String, width
 				curWord = curWord.Sub(width-1, curWord.Len())
 			}
 			lines.Append(curLine)
-			curLine = gem.Z
+			curLine = gem.Zero
 		} else {
 			if curLine.Len() != 0 {
 				curLine = curLine.Add(_g(" "))
 			}
 			curLine = curLine.Add(curWord)
-			curWord = gem.Z
+			curWord = gem.Zero
 		}
 	}
 	return curLine

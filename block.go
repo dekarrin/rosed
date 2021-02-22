@@ -135,7 +135,7 @@ func (tb *block) AppendBlock(b block) {
 // AppendEmpty adds the given number of empty lines to the Block.
 func (tb *block) AppendEmpty(count int) {
 	for i := 0; i < count; i++ {
-		tb.Append(gem.Z)
+		tb.Append(gem.Zero)
 	}
 }
 
@@ -195,7 +195,7 @@ func (tb block) Join() gem.String {
 		if tb.TrailingSeparator {
 			return tb.LineSeparator
 		}
-		return gem.Z
+		return gem.Zero
 	}
 
 	full := strings.Join(gem.Strings(tb.Lines), tb.LineSeparator.String())

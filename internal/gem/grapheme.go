@@ -74,8 +74,8 @@ type runeString struct {
 }
 
 var (
-	// Z is a String of zero length.
-	Z String = New("")
+	// Zero is a String of zero length.
+	Zero String = New("")
 )
 
 func (runes *runeString) Sub(start, end int) String {

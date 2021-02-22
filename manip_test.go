@@ -17,11 +17,11 @@ func Test_Manip_Wrap(t *testing.T) {
 	}{
 		{
 			name:  "empty input",
-			input: _g(""),
+			input: gem.Zero,
 			width: 80,
 			sep:   _g("\n"),
 			expected: []gem.String{
-				_g(""),
+				gem.Zero,
 			},
 		},
 		{
