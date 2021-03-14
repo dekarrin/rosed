@@ -71,10 +71,7 @@ func (str String) Sub(start, end int) String {
 }
 
 // IsEmpty return whether the String is the empty string "".
-func (str *String) IsEmpty() bool {
-	if str == nil {
-		return true
-	}
+func (str String) IsEmpty() bool {
 	return len(str.r) == 0
 }
 

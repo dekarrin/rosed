@@ -17,16 +17,16 @@ func Test_String_Equal(t *testing.T) {
 		expect  bool
 	}{
 		{"Zero == Zero", Zero, Zero, true},
-		{"Zero == &Zero", Zero, &Zero, true},
-		{"Zero == nil", Zero, nil, true},
+		{"Zero != &Zero", Zero, &Zero, false},
+		{"Zero != nil", Zero, nil, false},
 		{"Zero == New empty", Zero, emptyStr, true},
-		{"Zero == &New empty", Zero, &emptyStr, true},
+		{"Zero != &New empty", Zero, &emptyStr, false},
 		{"New empty == Zero", emptyStr, Zero, true},
-		{"New empty == &Zero", emptyStr, &Zero, true},
+		{"New empty != &Zero", emptyStr, &Zero, false},
 		{"New empty == New empty", emptyStr, emptyStr, true},
-		{"New empty == &New empty", emptyStr, &emptyStr, true},
+		{"New empty != &New empty", emptyStr, &emptyStr, false},
 		{"filled == filled", testStr, testStr, true},
-		{"filled == &filled", testStr, &testStr, true},
+		{"filled != &filled", testStr, &testStr, false},
 		{"filled != Zero", testStr, Zero, false},
 		{"filled != &Zero", testStr, &Zero, false},
 		{"Zero != filled", Zero, testStr, false},
@@ -58,17 +58,17 @@ func Test_String_Equal_Ptr(t *testing.T) {
 		expect  bool
 	}{
 		{"&Zero == Zero", &Zero, Zero, true},
-		{"&Zero == &Zero", &Zero, &Zero, true},
-		{"&Zero == nil", &Zero, nil, true},
-		{"nil == Zero", nil, Zero, true},
+		{"&Zero != &Zero", &Zero, &Zero, false},
+		{"&Zero == nil", &Zero, nil, false},
+		{"nil == Zero", nil, Zero, false},
 		{"&Zero == New empty", &Zero, emptyStr, true},
-		{"&Zero == &New empty", &Zero, &emptyStr, true},
+		{"&Zero != &New empty", &Zero, &emptyStr, false},
 		{"&New empty == Zero", &emptyStr, Zero, true},
-		{"&New empty == &Zero", &emptyStr, &Zero, true},
+		{"&New empty != &Zero", &emptyStr, &Zero, false},
 		{"&New empty == New empty", &emptyStr, emptyStr, true},
-		{"&New empty == &New empty", &emptyStr, &emptyStr, true},
+		{"&New empty != &New empty", &emptyStr, &emptyStr, false},
 		{"&filled == filled", &testStr, testStr, true},
-		{"&filled == &filled", &testStr, &testStr, true},
+		{"&filled != &filled", &testStr, &testStr, false},
 		{"&filled != Zero", &testStr, Zero, false},
 		{"&filled != &Zero", &testStr, &Zero, false},
 		{"&Zero != filled", &Zero, testStr, false},
@@ -85,7 +85,12 @@ func Test_String_Equal_Ptr(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assertion.New(t)
-			actual := tc.input.Equal(tc.compare)
+			var actual bool
+			if tc.input == nil {
+				actual = tc.compare == nil
+			} else {
+				actual = tc.input.Equal(tc.compare)
+			}
 			assert.Equal(tc.expect, actual)
 		})
 	}
