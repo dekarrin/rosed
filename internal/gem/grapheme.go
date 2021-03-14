@@ -38,7 +38,7 @@ var (
 // If end or start are greater than Len, they are assumed to be Len. If start or
 // end are negative and point to an index less than 0 after calculating, it is
 // assumed that they are pointing to 0.
-func (str *String) Sub(start, end int) String {
+func (str String) Sub(start, end int) String {
 	copy := str.clone()
 
 	if start < 0 {
@@ -79,7 +79,7 @@ func (str *String) IsEmpty() bool {
 }
 
 // Less returns whether one String is lexigraphically less than another.
-func (str *String) Less(s String) bool {
+func (str String) Less(s String) bool {
 	sR := s.Runes()
 	minLen := len(sR)
 	if minLen > len(str.r) {
@@ -128,45 +128,17 @@ func Strings(from []String) []string {
 // another String struct, their resulting strings are compared. If the object is
 // a raw string object, it is compared to the output of calling String() on the
 // gem.String. Otherwise, false is returned.
-func (str *String) Equal(other interface{}) bool {
-	otherStr, otherIsRawStr := other.(string)
-	if !otherIsRawStr {
-		if sPtr, ok := other.(*string); ok {
-			if sPtr == nil {
-				return str.IsEmpty()
-			}
-			otherStr = *sPtr
-			otherIsRawStr = true
-		}
+func (str String) Equal(other interface{}) bool {
+	if other == nil {
+		return false
 	}
-
-	// not else because original condition being wrong may make this true
-	// and re-evaluation is required.
+	otherStr, otherIsRawStr := other.(string)
 	if otherIsRawStr {
-		if str == nil {
-			return otherStr == ""
-		}
 		return str.String() == otherStr
 	}
 
 	s2, otherIsString := other.(String)
 	if !otherIsString {
-		if sPtr, ok := other.(*String); ok {
-			if sPtr == nil {
-				return str.IsEmpty()
-			}
-			s2 = *sPtr
-			otherIsString = true
-		}
-	}
-
-	if !otherIsString {
-		return false
-	}
-
-	if str == nil {
-		// only other two valid pointers (String and string) have already been
-		// checked for nil equality.
 		return false
 	}
 
@@ -183,7 +155,7 @@ func (str *String) Equal(other interface{}) bool {
 
 // Runes returns the string's raw Runes. Modifying the returned slice has no
 // effect on the String.
-func (str *String) Runes() []rune {
+func (str String) Runes() []rune {
 	r := make([]rune, len(str.r))
 	for i := range str.r {
 		r[i] = str.r[i]
@@ -193,7 +165,7 @@ func (str *String) Runes() []rune {
 
 // SetCharAt sets the character at the given index to the given value and
 // returns the resulting String. The original String is not modified.
-func (str *String) SetCharAt(idx int, r []rune) String {
+func (str String) SetCharAt(idx int, r []rune) String {
 	copy := str.clone()
 
 	if copy.gc == nil {
@@ -223,14 +195,14 @@ func (str *String) Format(f fmt.State, verb rune) {
 }
 
 // String gets the contents as the built-in string type.
-func (str *String) String() string {
+func (str String) String() string {
 	return string(str.r)
 }
 
 // CharAt returns the runes that make up the user-perceived character (grapheme
 // cluster) of the given index. Modifying the returned slice will not modify the
 // String.
-func (str *String) CharAt(idx int) []rune {
+func (str String) CharAt(idx int) []rune {
 	gc := str.gc
 	if gc == nil {
 		gc = Split(str.r)
@@ -251,7 +223,7 @@ func (str *String) CharAt(idx int) []rune {
 
 // Add adds two strings together and returns the result. The original String is
 // not modified.
-func (str *String) Add(s2 String) String {
+func (str String) Add(s2 String) String {
 	r2 := str.clone()
 	r2.gc = nil
 	r2.r = append(r2.r, s2.Runes()...)
@@ -263,7 +235,7 @@ func (str *String) Add(s2 String) String {
 //
 // This function may trigger UAX29 analysis on the String if it hasn't yet
 // occured.
-func (str *String) Len() int {
+func (str String) Len() int {
 	gc := str.gc
 	if gc == nil {
 		if len(str.r) == 0 {
@@ -281,7 +253,7 @@ func (str *String) Len() int {
 // modify the original. calling this is not needed unless a modification is
 // about to occur, even though passing String by value does pass pointers (via
 // slice-type members)
-func (str *String) clone() String {
+func (str String) clone() String {
 	gc := str.gc
 	clone := String{
 		r: make([]rune, len(str.r)),

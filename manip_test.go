@@ -14,8 +14,7 @@ func Test_Manip_collapseSpace(t *testing.T) {
 		sep    gem.String
 		expect gem.String
 	}{
-		{"empty input (blank)", gem.Zero, gem.Zero, gem.Zero},
-		{"empty input (nil)", nil, gem.Zero, gem.Zero},
+		{"empty input", gem.Zero, gem.Zero, gem.Zero},
 		{"no space to collapse", _g("no_spaces"), gem.Zero, _g("no_spaces")},
 		{"one space mid-text is not collapsed (odd runecount)", _g("testA testB"), gem.Zero, _g("testA testB")},
 		{"one space mid-text is not collapsed (even runecount)", _g("test testB"), gem.Zero, _g("test testB")},

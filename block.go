@@ -75,11 +75,11 @@ func (tb block) Equal(other interface{}) bool {
 		return false
 	}
 
-	if tb.LineSeparator == nil {
-		if b2.LineSeparator != nil {
+	if tb.LineSeparator.IsEmpty() {
+		if !b2.LineSeparator.IsEmpty() {
 			return false
 		}
-	} else if b2.LineSeparator == nil {
+	} else if b2.LineSeparator.IsEmpty() {
 		return false
 	} else if !tb.LineSeparator.Equal(b2.LineSeparator) {
 		return false
