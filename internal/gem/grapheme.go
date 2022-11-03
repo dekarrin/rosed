@@ -44,6 +44,10 @@ func (str String) Sub(start, end int) String {
 		str.gc = Split(str.r)
 	}
 	
+	if start == end {
+		return Zero
+	}
+	
 	copy := str.clone()
 
 	if start < 0 {
