@@ -39,6 +39,13 @@ var (
 // end are negative and point to an index less than 0 after calculating, it is
 // assumed that they are pointing to 0.
 func (str String) Sub(start, end int) String {
+	
+	fmt.Printf("GET (%d:%d)\n", start, end)
+	if str.gc == nil {
+		// we need a split operation on the graphemes
+		str.gc = Split(str.r)
+	}
+	
 	copy := str.clone()
 
 	if start < 0 {
@@ -59,12 +66,16 @@ func (str String) Sub(start, end int) String {
 	if start > copy.Len() {
 		start = copy.Len()
 	}
-
+	
+	fmt.Printf("sadlkfjalkdsjflkdsajf %v\n", copy.gc)
+	
 	var runesStart int
 	if start > 0 {
 		runesStart = copy.gc[start-1]
 	}
-	runesEnd := copy.gc[end]
+	runesEnd := copy.gc[end-1]
+	
+	fmt.Printf("WE WANT (%d:%d) OF %v. RUNES_END IS THERFORE: %v\n", start, end, copy.gc, runesEnd)
 	copy.r = copy.r[runesStart:runesEnd]
 	copy.gc = copy.gc[start:end]
 	return copy

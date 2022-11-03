@@ -17,7 +17,7 @@ import (
 // be set on the Block.
 func wrap(text gem.String, width int, lineSep gem.String) block {
 	if width < 2 {
-		panic(fmt.Sprintf("invalid width: %v", width))
+		width = 2
 	}
 
 	lines := block{LineSeparator: lineSep}
@@ -95,15 +95,17 @@ func appendWordToLine(lines block, curWord gem.String, curLine gem.String, width
 }
 
 func collapseSpace(text gem.String, lineSep gem.String) gem.String {
-	// handle the separator but do not use the empty or nil string.
-	text = _g(strings.ReplaceAll(text.String(), lineSep.String(), " "))
+	// handle the separator but do not use the empty string.
+	if !lineSep.IsEmpty() {
+		text = _g(strings.ReplaceAll(text.String(), lineSep.String(), " "))
+	}
 	for i := 0; i < text.Len(); i++ {
 		if unicode.IsSpace(text.CharAt(i)[0]) {
 			text = text.SetCharAt(i, []rune{' '}) // set it to actual space char
 		}
 	}
 	collapsed := spaceCollapser.ReplaceAllString(text.String(), " ")
-	collapsed = strings.TrimSpace(collapsed)
+	//collapsed = strings.TrimSpace(collapsed)
 	return _g(collapsed)
 }
 

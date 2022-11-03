@@ -29,7 +29,7 @@ func Test_Manip_collapseSpace(t *testing.T) {
 		{"ws run is collapsed (spacechar)", _g("       testA  testB  "), gem.Zero, _g(" testA testB ")},
 		{"ws run is collapsed (mixed ws)", _g("\u205f\u202ftestA\u200a  \t\n testB\t"), gem.Zero, _g(" testA testB ")},
 		{"non-ws separator", _g("testA\n  testB <SEP>\u205f  testC"), _g("<SEP>"), _g("testA testB testC")},
-		{"ws separator", _g("testA\n  testB <SEP>\u205f  testC"), _g("<SEP>"), _g("testA testB <SEP> testC")},
+		{"ws separator",     _g("testA\n  testB <SEP>\n\n\u205f  testC"), _g("\n\n"), _g("testA testB <SEP> testC")},
 	}
 
 	for _, tc := range testCases {
@@ -147,7 +147,7 @@ func Test_Manip_Wrap(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assertion.New(t)
 			actual := wrap(tc.input, tc.width, tc.sep).Lines
-			assert.EqualSlices(tc.expected, actual)
+			assert.Equal(tc.expected, actual)
 		})
 	}
 }
