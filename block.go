@@ -23,7 +23,7 @@ type block struct {
 
 // String returns the string representation of the block.
 func (tb block) String() string {
-	return fmt.Sprintf("<Block LineSeparator:%q TrailingSeparator:%v Content:%q>", tb.LineSeparator, tb.TrailingSeparator, tb.Lines)
+	return fmt.Sprintf("<block LineSeparator:%q TrailingSeparator:%v Lines:%q>", tb.LineSeparator, tb.TrailingSeparator, tb.Lines)
 }
 
 // newBlock creates a block of text.

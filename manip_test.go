@@ -54,99 +54,126 @@ func Test_Manip_Wrap(t *testing.T) {
 			input: gem.Zero,
 			width: 80,
 			sep:   _g("\n"),
-			expected: block{Lines: []gem.String{
-				gem.Zero,
-			}},
+			expected: block{
+				Lines: []gem.String{
+					gem.Zero,
+				},
+				LineSeparator: _g("\n"),
+			},
 		},
 		{
 			name:  "not enough to wrap",
 			input: _g("a test string"),
 			width: 80,
 			sep:   _g("\n"),
-			expected: block{Lines: []gem.String{
-				_g("a test string"),
-			}},
+			expected: block{
+				Lines: []gem.String{
+					_g("a test string"),
+				},
+				LineSeparator: _g("\n"),
+			},
 		},
 		{
 			name:  "2 line wrap",
 			input: _g("a string long enough to be wrapped"),
 			width: 20,
 			sep:   _g("\n"),
-			expected: block{Lines: []gem.String{
-				_g("a string long enough"),
-				_g("to be wrapped"),
-			}},
+			expected: block{
+				Lines: []gem.String{
+					_g("a string long enough"),
+					_g("to be wrapped"),
+				},
+				LineSeparator: _g("\n"),
+			},
 		},
 		{
 			name:  "multi line wrap",
 			input: _g("a string long enough to be wrapped more than once"),
 			width: 20,
 			sep:   _g("\n"),
-			expected: block{Lines: []gem.String{
-				_g("a string long enough"),
-				_g("to be wrapped more"),
-				_g("than once"),
-			}},
+			expected: block{
+				Lines: []gem.String{
+					_g("a string long enough"),
+					_g("to be wrapped more"),
+					_g("than once"),
+				},
+				LineSeparator: _g("\n"),
+			},
 		},
 		{
 			name:  "invalid width of -1 is interpreted as 2",
 			input: _g("test"),
 			width: -1,
 			sep:   _g("\n"),
-			expected: block{Lines: []gem.String{
-				_g("t-"),
-				_g("e-"),
-				_g("st"),
-			}},
+			expected: block{
+				Lines: []gem.String{
+					_g("t-"),
+					_g("e-"),
+					_g("st"),
+				},
+				LineSeparator: _g("\n"),
+			},
 		},
 		{
 			name:  "invalid width of 0 is interpreted as 2",
 			input: _g("test"),
 			width: 0,
 			sep:   _g("\n"),
-			expected: block{Lines: []gem.String{
-				_g("t-"),
-				_g("e-"),
-				_g("st"),
-			}},
+			expected: block{
+				Lines: []gem.String{
+					_g("t-"),
+					_g("e-"),
+					_g("st"),
+				},
+				LineSeparator: _g("\n"),
+			},
 		},
 		{
 			name:  "invalid width of 1 is interpreted as 2",
 			input: _g("test"),
 			width: 1,
 			sep:   _g("\n"),
-			expected: block{Lines: []gem.String{
-				_g("t-"),
-				_g("e-"),
-				_g("st"),
-			}},
+			expected: block{
+				Lines: []gem.String{
+					_g("t-"),
+					_g("e-"),
+					_g("st"),
+				},
+				LineSeparator: _g("\n"),
+			},
 		},
 		{
 			name:  "valid width of 2",
 			input: _g("test"),
 			width: 2,
 			sep:   _g("\n"),
-			expected: block{Lines: []gem.String{
-				_g("t-"),
-				_g("e-"),
-				_g("st"),
-			}},
+			expected: block{
+				Lines: []gem.String{
+					_g("t-"),
+					_g("e-"),
+					_g("st"),
+				},
+				LineSeparator: _g("\n"),
+			},
 		},
 		{
 			name:  "valid width of 3",
 			input: _g("test"),
 			width: 3,
 			sep:   _g("\n"),
-			expected: block{Lines: []gem.String{
-				_g("te-"),
-				_g("st"),
-			}},
+			expected: block{
+				Lines: []gem.String{
+					_g("te-"),
+					_g("st"),
+				},
+				LineSeparator: _g("\n"),
+			},
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assertion.New(t)
-			actual := wrap(tc.input, tc.width, tc.sep).Lines
+			actual := wrap(tc.input, tc.width, tc.sep)
 			assert.Equal(tc.expected, actual)
 		})
 	}

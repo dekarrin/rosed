@@ -25,6 +25,7 @@ func wrap(text gem.String, width int, lineSep gem.String) block {
 	// normalize string to convert all whitespace to single space char.
 	text = collapseSpace(text, lineSep)
 	if text.String() == "" {
+		lines.Append(gem.Zero)
 		return lines
 	}
 
@@ -33,7 +34,7 @@ func wrap(text gem.String, width int, lineSep gem.String) block {
 	for i := 0; i < toConsume.Len(); i++ {
 		ch := toConsume.CharAt(i)
 		if ch[0] == ' ' {
-			curLine = appendWordToLine(lines, curWord, curLine, width)
+			curLine = appendWordToLine(&lines, curWord, curLine, width)
 			curWord = gem.Zero
 		} else {
 			curWord = curWord.Add(gem.Char(ch))
@@ -41,7 +42,7 @@ func wrap(text gem.String, width int, lineSep gem.String) block {
 	}
 
 	if !curWord.IsEmpty() {
-		curLine = appendWordToLine(lines, curWord, curLine, width)
+		curLine = appendWordToLine(&lines, curWord, curLine, width)
 		curWord = gem.Zero
 	}
 
@@ -53,7 +54,7 @@ func wrap(text gem.String, width int, lineSep gem.String) block {
 }
 
 // lines will be modified to add the appended line if curLine is full.
-func appendWordToLine(lines block, curWord gem.String, curLine gem.String, width int) (newCurLine gem.String) {
+func appendWordToLine(lines *block, curWord gem.String, curLine gem.String, width int) (newCurLine gem.String) {
 	// any width less than 2 is not possible and will result in an infinite loop,
 	// as at least one character is required for next in word, and one character for
 	// line continuation.
