@@ -81,7 +81,7 @@ func Test_Wrap(t *testing.T) {
 
 			// Edit().String returns one string; turn it into actual lines
 			actual := strings.Split(actualText, tc.options.WithDefaults().LineSeparator)
-			if !reflect.DeepEqual(actual, tc.input) {
+			if !reflect.DeepEqual(actual, tc.expected) {
 				t.Fatalf("expected result to be:\n%q\nbut was:\n%q", tc.expected, actual)
 			}
 		})
