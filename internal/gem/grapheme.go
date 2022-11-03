@@ -39,8 +39,6 @@ var (
 // end are negative and point to an index less than 0 after calculating, it is
 // assumed that they are pointing to 0.
 func (str String) Sub(start, end int) String {
-	
-	fmt.Printf("GET (%d:%d)\n", start, end)
 	if str.gc == nil {
 		// we need a split operation on the graphemes
 		str.gc = Split(str.r)
@@ -67,18 +65,17 @@ func (str String) Sub(start, end int) String {
 		start = copy.Len()
 	}
 	
-	fmt.Printf("sadlkfjalkdsjflkdsajf %v\n", copy.gc)
-	
 	var runesStart int
 	if start > 0 {
 		runesStart = copy.gc[start-1]
 	}
 	runesEnd := copy.gc[end-1]
 	
-	fmt.Printf("WE WANT (%d:%d) OF %v. RUNES_END IS THERFORE: %v\n", start, end, copy.gc, runesEnd)
 	copy.r = copy.r[runesStart:runesEnd]
 	
 	// ANY further ops require resplitting
+	// TODO: shouldnt we be able to calc it? I mean we know what was removed from the
+	// rune slice
 	copy.gc = nil
 	return copy
 }
