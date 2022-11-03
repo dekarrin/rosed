@@ -77,7 +77,9 @@ func (str String) Sub(start, end int) String {
 	
 	fmt.Printf("WE WANT (%d:%d) OF %v. RUNES_END IS THERFORE: %v\n", start, end, copy.gc, runesEnd)
 	copy.r = copy.r[runesStart:runesEnd]
-	copy.gc = copy.gc[start:end]
+	
+	// ANY further ops require resplitting
+	copy.gc = nil
 	return copy
 }
 
