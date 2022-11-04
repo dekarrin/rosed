@@ -6,6 +6,27 @@ import (
 	"github.com/dekarrin/assertion"
 )
 
+func Test_New(t *testing.T) {
+	testCases := []struct {
+		name string
+		input string
+		expect String
+	}{
+		{"empty string", "", String{r: []rune{}}},
+		{"one-char string", "1", String{r: []rune{'1'}}},
+		{"two-char string", "12", String{r: []rune{'1', '2'}}},
+		{"two-char string", "123", String{r: []rune{'1', '2', '3'}}},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assertion.New(t)
+			actual := New(tc.input)
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
 func Test_String_Equal(t *testing.T) {
 	emptyStr := New("")
 	testStr := New("test")
