@@ -1,5 +1,9 @@
 package rosed
 
+import (
+	"fmt"
+)
+
 const (
 	// DefaultParagraphSeparator is the sequence that separates paragraphs.
 	DefaultParagraphSeparator = "\n\n"
@@ -46,6 +50,15 @@ type Options struct {
 	// characters (such as wrap) should preserve paragraphs and their
 	// separators.
 	PreserveParagraphs bool
+}
+
+func (opts Options) String() string {
+	fmtStr := "Options{ParagraphSeparator: %q,"
+	fmtStr += " LineSeparator: %q,"
+	fmtStr += " IndentStr: %q,"
+	fmtStr += " NoTrailingLineSeparators: %v,"
+	fmtStr += " PreserveParagraphs: %v}"
+	return fmt.Sprintf(fmtStr, opts.ParagraphSeparator, opts.LineSeparator, opts.IndentStr, opts.NoTrailingLineSeparators, opts.PreserveParagraphs)
 }
 
 // WithLineSeparator returns a new Options identical to this one but with the
