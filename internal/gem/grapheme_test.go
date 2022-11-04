@@ -246,3 +246,26 @@ func Test_String_SetCharAt(t *testing.T) {
 		})
 	}
 }
+
+func Test_String_Runes(t *testing.T) {
+	testCases := []struct {
+		name string
+		str String
+		expect []rune
+	}{
+		{"empty string", Zero, []rune{}},
+		{"one-char string", New("1"), []rune{'1'}},
+		{"multi-char string", New("test"), []rune{'t', 'e', 's', 't'}},
+		{"multi-char string with combining mark", New("FRANC\u0327AIS"), []rune{'F', 'R', 'A', 'N', 'C', '\u0327', 'A', 'I', 'S'}},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assertion.New(t)
+			
+			actual := tc.str.Runes()
+			
+			assert.EqualSlices(tc.expect, actual)
+		})
+	}
+}
