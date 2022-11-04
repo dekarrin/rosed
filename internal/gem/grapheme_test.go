@@ -165,3 +165,41 @@ func Test_String_Add(t *testing.T) {
 		})
 	}
 }
+
+func Test_String_CharAt(t *testing.T) {
+	testCases := []struct {
+		name string
+		str String
+		input int
+		expect []rune
+		expectPanic bool
+	}{
+		{"empty string panics at idx 0", Zero, 0, nil, true},
+		{"empty string panics at idx 1", Zero, 1, nil, true},
+		{"empty string panics at idx -1", Zero, -1, nil, true},
+		{"empty string panics at high idx", Zero, 382834, nil, true},
+		{"empty string panics at low idx", Zero, -382834, nil, true},
+		{"1-char string at idx 0", New("1"), 0, []rune{'1'}, false},
+		{"1-char string panics at idx 1", New("1"), 1, nil, true},
+		{"1-char string panics at idx -1", New("1"), -1, nil, true},
+		{"multichar string", New("test"), 2, []rune{'s'}, false},
+		{"multichar string with combining mark, after mark", New("test C\u0327 test"), 7, []rune{'t'}, false},
+		{"multichar string with combining mark, before mark", New("test C\u0327 test"), 1, []rune{'e'}, false},
+		{"multichar string with combining mark, on mark", New("test C\u0327 test"), 5, []rune{'C', '\u0327'}, false},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assertion.New(t)
+			
+			if tc.expectPanic {
+				assert.Panics(func() {
+					tc.str.CharAt(tc.input)
+				})
+			} else {
+				actual := tc.str.CharAt(tc.input)
+				assert.EqualSlices(tc.expect, actual)
+			}
+		})
+	}
+}
