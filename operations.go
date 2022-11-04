@@ -107,12 +107,13 @@ func (ed Editor) ApplyParagraphsOpts(op ParagraphOperation, opts Options) Editor
 
 func (ed Editor) applyGParagraphsOpts(op gParagraphOperation, opts Options) Editor {
 	opts = opts.WithDefaults()
-
+	
 	// split the paragraph separator about its line separators so we can see any
 	// extra chars that will be chopped off while in a preserve-mode wrap that
 	// messes with line separators
 	var paraSepPrevSuffix, paraSepNextPrefix gem.String
 	parts := strings.Split(opts.ParagraphSeparator, opts.LineSeparator)
+	
 	paraSepPrevSuffix = _g(parts[0])
 	if len(parts) > 1 {
 		paraSepNextPrefix = _g(parts[len(parts)-1])
@@ -138,6 +139,7 @@ func (ed Editor) applyGParagraphsOpts(op gParagraphOperation, opts Options) Edit
 	}
 
 	ed.Text = strings.Join(transformed, opts.ParagraphSeparator)
+	
 	return ed
 }
 
@@ -374,15 +376,15 @@ func (ed Editor) WrapOpts(width int, opts Options) Editor {
 	}
 
 	if opts.PreserveParagraphs {
-		return ed.applyGParagraphsOpts(func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String {
+		edi := ed.applyGParagraphsOpts(func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String {
 			// need to include the separator prefix/suffix if any
 			sepStart := _g(strings.Repeat("", sepPrefix.Len()))
 			sepEnd := _g(strings.Repeat("", sepSuffix.Len()))
 			textBlock := wrap(sepStart.Add(para).Add(sepEnd), width, _g(opts.LineSeparator))
 			text := textBlock.Join()
-			text = text.Sub(sepStart.Len(), -sepEnd.Len())
 			return []gem.String{text}
 		}, opts)
+		return edi
 	}
 
 	textBlock := wrap(_g(ed.Text), width, _g(opts.LineSeparator))
