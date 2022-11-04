@@ -41,7 +41,7 @@ func Test_Manip_collapseSpace(t *testing.T) {
 	}
 }
 
-func Test_Manip_Wrap(t *testing.T) {
+func Test_Manip_wrap(t *testing.T) {
 	testCases := []struct {
 		name     string
 		input    gem.String
