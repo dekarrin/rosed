@@ -15,7 +15,7 @@ func Test_New(t *testing.T) {
 		{"empty string", "", String{r: []rune{}}},
 		{"one-char string", "1", String{r: []rune{'1'}}},
 		{"two-char string", "12", String{r: []rune{'1', '2'}}},
-		{"two-char string", "123", String{r: []rune{'1', '2', '3'}}},
+		{"three-char string", "123", String{r: []rune{'1', '2', '3'}}},
 	}
 	
 	for _, tc := range testCases {
@@ -112,6 +112,31 @@ func Test_String_Equal_Ptr(t *testing.T) {
 			} else {
 				actual = tc.input.Equal(tc.compare)
 			}
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
+func Test_String_Len(t *testing.T) {
+	testCases := []struct {
+		name string
+		input String
+		expect int
+	}{
+		{"empty string", Zero, 0},
+		{"one-char string", New("1"), 1},
+		{"two-char string", New("12"), 2},
+		{"three-char string", New("123"), 3},
+		{"c-with-cedilla is 1 char", New("Ç"), 1},
+		{"c followed by combining-char-cedilla is 1 char (UAX29 analysis)", New("C\u0327"), 1},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assertion.New(t)
+			
+			actual := tc.input.Len()
+			
 			assert.Equal(tc.expect, actual)
 		})
 	}
