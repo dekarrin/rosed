@@ -177,6 +177,10 @@ func (str String) Runes() []rune {
 // SetCharAt sets the character at the given index to the given value and
 // returns the resulting String. The original String is not modified.
 func (str String) SetCharAt(idx int, r []rune) String {
+	if len(r) == 0 {
+		panic("SetCharAt received empty or nil replacement runes slice r")
+	}
+	
 	copy := str.clone()
 
 	if copy.gc == nil {

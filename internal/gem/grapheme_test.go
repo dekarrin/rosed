@@ -203,3 +203,46 @@ func Test_String_CharAt(t *testing.T) {
 		})
 	}
 }
+
+func Test_String_SetCharAt(t *testing.T) {
+	testCases := []struct {
+		name string
+		str String
+		idx int
+		setTo []rune
+		expect String
+		expectPanic bool
+	}{
+		{"empty string panics at idx 0", Zero, 0, []rune{'1'}, Zero, true},
+		{"empty string panics at idx 1", Zero, 1, []rune{'1'}, Zero, true},
+		{"empty string panics at idx -1", Zero, -1, []rune{'1'}, Zero, true},
+		{"empty string panics at high idx", Zero, 382834, []rune{'1'}, Zero, true},
+		{"empty string panics at low idx", Zero, -382834, []rune{'1'}, Zero, true},
+		{"1-char string at idx 0", New("1"), 0, []rune{'8'}, New("8"), false},
+		{"1-char string panics at idx 1", New("1"), 1, []rune{'8'}, Zero, true},
+		{"1-char string panics at idx -1", New("1"), -1, []rune{'8'}, Zero, true},
+		{"multichar string", New("test"), 2, []rune{'8'}, New("te8t"), false},
+		{"multichar string with combining mark, after mark", New("test C\u0327 test"), 7, []rune{'8'}, New("test C\u0327 8est"), false},
+		{"multichar string with combining mark, before mark", New("test C\u0327 test"), 1, []rune{'8'}, New("t8st C\u0327 test"), false},
+		{"multichar string with combining mark, on mark", New("test C\u0327 test"), 5, []rune{'8'}, New("test 8 test"), false},
+		{"add combining mark to multichar string", New("test"), 2, []rune{'C', '\u0327'}, New("teC\u0327t"), false},
+		{"empty replacement runes panics", New("test"), 2, []rune{}, Zero, true},
+		{"nil replacement runes panics", New("test"), 2, nil, Zero, true},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assertion.New(t)
+			
+			if tc.expectPanic {
+				assert.Panics(func() {
+					tc.str.SetCharAt(tc.idx, tc.setTo)
+				})
+			} else {
+				actual := tc.str.SetCharAt(tc.idx, tc.setTo)
+				isEqual := actual.Equal(tc.expect)
+				assert.Equal(true, isEqual)
+			}
+		})
+	}
+}
