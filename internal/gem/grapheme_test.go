@@ -141,3 +141,27 @@ func Test_String_Len(t *testing.T) {
 		})
 	}
 }
+
+func Test_String_Add(t *testing.T) {
+	testCases := []struct {
+		name string
+		input1 String
+		input2 String
+		expect String
+	}{
+		{"empty string + empty string", Zero, Zero, Zero},
+		{"empty string + non-empty string", Zero, New("test"), New("test")},
+		{"non-empty string + empty string", New("test"), Zero, New("test")},
+		{"2 non-empty strings", New("test1 + "), New("test2"), New("test1 + test2")},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assertion.New(t)
+			
+			actual := tc.input1.Add(tc.input2)
+			
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
