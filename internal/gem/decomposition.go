@@ -11,40 +11,6 @@ func getDecompositionMapping(r rune) (string, []rune) {
 	}
 }
 
-// Applies canonical decomposition to every rune in the in string until there are no more changes.
-func getNFD(runes []rune) []rune {
-	if len(runes) < 1 {
-		return nil
-	}
-	
-	var decomposed []rune
-	
-	changed := true
-	for changed {
-		decomposed = make([]rune, 0)
-		changed = false
-		for _, ch := range runes {
-			decompType, decompMapping := getDecompositionMapping(ch)
-			
-			if decompType != "" {
-				// only do canonical decomps
-				decompMapping = []rune{ch}
-			}
-			
-			// now check if we do anything different
-			if len(decompMapping) > 1 || decompMapping[0] != ch {
-				changed = true
-			}
-			
-			// and keep the decomposed mapping
-			decomposed = append(decomposed, decompMapping...)
-		}
-		runes = decomposed
-	}
-	
-	return decomposed
-}
-
 type decompEntry struct {
 	Type string
 	Mapping string
