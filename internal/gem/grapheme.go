@@ -91,17 +91,22 @@ func (str String) IsEmpty() bool {
 
 // Less returns whether one String is lexigraphically less than another.
 func (str String) Less(s String) bool {
+	fmt.Printf("START (%q <? %q)\n", str, s)
+	defer func() {
+		fmt.Printf("END\n")
+	}()
+	
 	sR := s.Runes()
 	minLen := len(sR)
 	if minLen > len(str.r) {
 		minLen = len(str.r)
 	}
-	for i := 0; i <= minLen; i++ {
+	
+	for i := 0; i < minLen; i++ {
 		if str.r[i] < sR[i] {
 			return true
 		}
-
-		// runes"2" s"1"
+		
 		if str.r[i] > sR[i] {
 			return false
 		}

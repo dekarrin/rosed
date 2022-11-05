@@ -269,3 +269,48 @@ func Test_String_Runes(t *testing.T) {
 		})
 	}
 }
+
+
+func Test_String_Less(t *testing.T) {
+	testCases := []struct {
+		name string
+		leftStr String
+		rightStr String
+		expect bool
+	}{
+		{"empty string !< empty string", Zero, Zero, false},
+		{"empty string < 1-char string", Zero, New("1"), true},
+		{"empty string < 2-char string", Zero, New("12"), true},
+		{"empty string < 3-char string", Zero, New("123"), true},
+		{"1-char string !< empty string", New("1"), Zero, false},
+		{"2-char string !< empty string", New("12"), Zero, false},
+		{"3-char string !< empty string", New("123"), Zero, false},
+		{"large string < small string", New("aadvark"), New("abby"), true},
+		{"small string !< large string", New("abby"), New("aardvark"), false},
+		{"large string !< small string", New("testing"), New("glub"), false},
+		{"small string < large string", New("glub"), New("testing"), true},
+		{"string < equal length string", New("glub"), New("test"), true},
+		{"string !< equal length string", New("test"), New("glub"), false},
+		{"two strings same except for last char, left < right", New("test"), New("tesu"), true},
+		{"two strings same except for last char, left !< right", New("tesu"), New("test"), false},
+		{"string !< itself", New("test"), New("test"), false},
+		{"string < itself + suffix", New("test"), New("test1"), true},
+		{"string !< itself - suffix", New("test1"), New("test"), false},
+		
+		// lower c + combing cedilla is \u0063\u0327, lower c with cidilla is \u00e7.
+		// so a naive check would ALWAYS put c with cedilla AFTER. we ensure that
+		// only normalized forms are compared by giving a case where the string that
+		// contains C-with-cedilla should come before one with C + combining cedilla.
+		{"UAX29 analysis used to normalize combining sequences", New("comment ça va"), New("comment c\u0327a vaSUFFIX"), true},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assertion.New(t)
+			
+			actual := tc.leftStr.Less(tc.rightStr)
+			
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
