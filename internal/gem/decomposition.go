@@ -21,10 +21,11 @@ func getNFD(runes []rune) []rune {
 	
 	changed := true
 	for changed {
-		decomposed = make([]rune, len(runes))
+		decomposed = make([]rune, 0)
 		changed = false
 		for _, ch := range runes {
 			decompType, decompMapping := getDecompositionMapping(ch)
+			
 			if decompType != "" {
 				// only do canonical decomps
 				decompMapping = []rune{ch}

@@ -93,7 +93,6 @@ func (str String) IsEmpty() bool {
 
 // Less returns whether one String is lexigraphically less than another.
 func (str String) Less(s String) bool {
-	decomp := getNFD([]rune{'\U000000c5'})
 	fmt.Printf("COMP:1 %v\n", decomp) 
 	fmt.Printf("START (%q <? %q)\n", str, s)
 	defer func() {
