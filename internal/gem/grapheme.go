@@ -1,5 +1,7 @@
 // Package gem provides operations for individual user-perceived
-// characters and implements UAX #29 by Unicode for grapheme boundary finding.
+// characters and implements UAX #29 by Unicode for grapheme boundary finding,
+// and UAX #15 (Unicode 3.11) for calculating the NFC of a string for certain
+// comparison operations.
 //
 // It can be used to show the number of characters as a user would perceive one
 // character to be, implementing the rules specified by Unicode to be safe
@@ -91,6 +93,8 @@ func (str String) IsEmpty() bool {
 
 // Less returns whether one String is lexigraphically less than another.
 func (str String) Less(s String) bool {
+	t, m := getDecompositionMapping('\U000000a0')
+	fmt.Printf("COMP: %v, %v\n", t, m) 
 	fmt.Printf("START (%q <? %q)\n", str, s)
 	defer func() {
 		fmt.Printf("END\n")
