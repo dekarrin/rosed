@@ -41,35 +41,38 @@ var (
 // end are negative and point to an index less than 0 after calculating, it is
 // assumed that they are pointing to 0.
 func (str String) Sub(start, end int) String {
-	if str.gc == nil {
-		// we need a split operation on the graphemes
-		str.gc = Split(str.r)
+	if start < 0 {
+		start += str.Len()
+		if start < 0 {
+			start = 0
+		}
+	}
+	if end < 0 {
+		end += str.Len()
+		if end < 0 {
+			end = 0
+		}
+	}
+	if end > str.Len() {
+		end = str.Len()
+	}
+	if start > str.Len() {
+		start = str.Len()
 	}
 	
 	if start == end {
 		return Zero
 	}
 	
+	if str.gc == nil {
+		// we need a split operation on the graphemes
+		str.gc = Split(str.r)
+	}
+	
 	copy := str.clone()
-
-	if start < 0 {
-		start += copy.Len()
-		if start < 0 {
-			start = 0
-		}
-	}
-	if end < 0 {
-		end += copy.Len()
-		if end < 0 {
-			end = 0
-		}
-	}
-	if end > copy.Len() {
-		end = copy.Len()
-	}
-	if start > copy.Len() {
-		start = copy.Len()
-	}
+	
+	
+	fmt.Printf("-- POST C2: (%d,%d)\n", start,end)
 	
 	var runesStart int
 	if start > 0 {

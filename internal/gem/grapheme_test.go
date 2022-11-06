@@ -2,7 +2,7 @@ package gem
 
 import (
 	"testing"
-
+	"fmt"
 	"github.com/dekarrin/assertion"
 )
 
@@ -332,6 +332,57 @@ func Test_String_IsEmpty(t *testing.T) {
 			actual := tc.str.IsEmpty()
 			
 			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
+func Test_String_Sub(t *testing.T) {
+	testCases := []struct {
+		name string
+		str String
+		start int
+		end int
+		expect String
+		expectPanic bool
+	}{
+		{"empty string, 0:0 is allowed", Zero, 0, 0, Zero, false},
+		{"empty string, 0:1 panics", Zero, 0, 1, Zero, true},
+		{"empty string, 1:0 panics", Zero, 1, 0, Zero, true},
+		{"empty string, -1:0 panics", Zero, -1, 0, Zero, true},
+		{"empty string, 0:-1 panics", Zero, 0, -1, Zero, true},
+		
+		{"1-char string, 0:0 is allowed", New("1"), 0, 0, Zero, false},
+		{"1-char string, 1:1 is allowed", New("1"), 1, 1, Zero, false},
+		{"1-char string, 0:1 gives back string", New("1"), 0, 1, New("1"), false},
+		{"1-char string, -1:0 is allowed (and is same as 0:0)", New("1"), -1, 0, Zero, false},
+		{"1-char string, 0:-1 is allowed (and is same as 0:0)", New("1"), 0, -1, Zero, false},
+		{"1-char string, -2:0 panics", New("1"), -2, 0, Zero, true},
+		{"1-char string, 0:-2 panics", New("1"), 0, -2, Zero, true},
+		{"1-grapheme string, decomposed sequence is preserved", New("C\u0327"), 0, 1, New("C\u0327"), false},
+		
+		{"8-char string, 0:8 gives back string", New("Test1234"), 0, 8, New("Test1234"), false},
+		{"8-char string, 1:8", New("Test1234"), 0, 8, New("est1234"), false},
+		{"8-char string, both negative indexes", New("Test1234"), -5, -2, New("t12"), false},
+		{"8-grapheme string, decomposed sequence is preserved at end", New("Test-C\u0327as"), 0, 6, New("Test-C\u0327"), false},
+		{"8-grapheme string, decomposed sequence is preserved at start", New("Test-C\u0327as"), 5, 7, New("C\u0327a"), false},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assertion.New(t)
+			
+			if tc.expectPanic {
+				assert.Panics(func() {
+					tc.str.Sub(tc.start, tc.end)
+				})
+			} else {
+				actual := tc.str.Sub(tc.start, tc.end)
+				
+				fmt.Printf("TESTO: %q.Sub(%d, %d) = %q\n", tc.str, tc.start, tc.end, actual)
+				isEqual := actual.Equal(tc.expect)
+				
+				assert.Equal(true, isEqual)
+			}
 		})
 	}
 }
