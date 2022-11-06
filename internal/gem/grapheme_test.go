@@ -312,3 +312,26 @@ func Test_String_Less(t *testing.T) {
 		})
 	}
 }
+
+func Test_String_IsEmpty(t *testing.T) {
+	testCases := []struct {
+		name string
+		str String
+		expect bool
+	}{
+		{"zero", Zero, true},
+		{"empty, manually created", New(""), true},
+		{"one char", New("1"), false},
+		{"many chars", New("test test test"), false},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assertion.New(t)
+			
+			actual := tc.str.IsEmpty()
+			
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
