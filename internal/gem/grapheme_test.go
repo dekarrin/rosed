@@ -6,6 +6,33 @@ import (
 	tassert "github.com/stretchr/testify/assert"
 )
 
+func Test_Slice(t *testing.T) {
+	testCases := []struct {
+		name string
+		input []string
+		expect []String
+	}{
+		{"empty slices", []string{}, []String{}},
+		{"1 empty string", []string{""}, []String{Zero}},
+		{"2 strings", []string{"hello", "world"}, []String{New("hello"), New("world")}},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := tassert.New(t)
+			
+			actual := Slice(tc.input)
+			
+			// we have custom equality on gem strings so need to check each one manually
+			assert.Len(actual, len(tc.expect))
+			
+			for idx := range actual {
+				assert.True(tc.expect[idx].Equal(actual[idx]))
+			}
+		})
+	}
+}
+
 func Test_Split(t *testing.T) {
 	testCases := []struct {
 		name string
