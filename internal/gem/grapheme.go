@@ -93,12 +93,6 @@ func (str String) IsEmpty() bool {
 
 // Less returns whether one String is lexigraphically less than another.
 func (str String) Less(s String) bool {
-	fmt.Printf("COMP:1 %v\n", decomp) 
-	fmt.Printf("START (%q <? %q)\n", str, s)
-	defer func() {
-		fmt.Printf("END\n")
-	}()
-	
 	sR := s.Runes()
 	minLen := len(sR)
 	if minLen > len(str.r) {
