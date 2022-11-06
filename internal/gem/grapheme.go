@@ -71,9 +71,6 @@ func (str String) Sub(start, end int) String {
 	
 	copy := str.clone()
 	
-	
-	fmt.Printf("-- POST C2: (%d,%d)\n", start,end)
-	
 	var runesStart int
 	if start > 0 {
 		runesStart = copy.gc[start-1]
