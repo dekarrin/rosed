@@ -179,8 +179,6 @@ func Test_Manip_wrap(t *testing.T) {
 	}
 }
 
-// // lines will be modified to add the appended line if curLine is full.
-//func appendWordToLine(lines *block, curWord gem.String, curLine gem.String, width int) (newCurLine gem.String) {
 func Test_Manip_justifyLine(t *testing.T) {
 	testCases := []struct {
 		name string
@@ -209,3 +207,57 @@ func Test_Manip_justifyLine(t *testing.T) {
 	}
 }
 
+func Test_Manip_combineColumnBlocks(t *testing.T) {
+	testCases := []struct {
+		name string
+		left block
+		right block
+		minSpace int
+		expect block
+	}{
+		{
+			name: "empty lines",
+			left: block{
+				Lines: []gem.String{_g("")},
+			},
+			right: block{
+				Lines: []gem.String{_g("")},
+			},
+			minSpace: 0,
+			expect: block{
+				Lines: []gem.String{_g("")},
+			},
+		},
+		{
+			name: "right col bigger",
+			left: block{
+				Lines: []gem.String{_g("This is a test string for the right side")},
+			},
+			right: block{
+				Lines: []gem.String{_g("Column number two is right here! And it has a lot of content that will be wrapped")},
+			},
+			minSpace: 2,
+			expect: block{
+				Lines: []gem.String{
+					_g("This is a test  Column number"),
+					_g("string for the  two is right"),
+					_g("right side      here! And it"),
+					_g("                has a lot of"),
+					_g("                content that"),
+					_g("                will be"),
+					_g("                wrapped"),
+				},
+			},
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assertion.New(t)
+			
+			actual := combineColumnBlocks(tc.left, tc.right, tc.minSpace)
+
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
