@@ -3,7 +3,30 @@ package gem
 import (
 	"testing"
 	"github.com/dekarrin/assertion"
+	tassert "github.com/stretchr/testify/assert"
 )
+
+func Test_Split(t *testing.T) {
+	testCases := []struct {
+		name string
+		input []rune
+		expect []int
+	}{
+		{"empty string", []rune{}, []int{}},
+		{"normal string", []rune{'t', 'e', 's', 't'}, []int{1, 2, 3, 4}},
+		{"string with decomposed sequence", []rune{'C', '\u0327', 'e', 's', 't'}, []int{2, 3, 4, 5}},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := tassert.New(t)
+			
+			actual := Split(tc.input)
+			
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
 
 func Test_New(t *testing.T) {
 	testCases := []struct {
