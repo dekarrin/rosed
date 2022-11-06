@@ -6,6 +6,28 @@ import (
 	tassert "github.com/stretchr/testify/assert"
 )
 
+func Test_Strings(t *testing.T) {
+	testCases := []struct {
+		name string
+		input []String
+		expect []string
+	}{
+		{"empty slices", []String{}, []string{}},
+		{"1 empty string", []String{Zero}, []string{""}},
+		{"2 strings", []String{New("hello"), New("world")}, []string{"hello", "world"}},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := tassert.New(t)
+			
+			actual := Strings(tc.input)
+			
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
 func Test_Slice(t *testing.T) {
 	testCases := []struct {
 		name string
