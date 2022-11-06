@@ -178,3 +178,34 @@ func Test_Manip_wrap(t *testing.T) {
 		})
 	}
 }
+
+// // lines will be modified to add the appended line if curLine is full.
+//func appendWordToLine(lines *block, curWord gem.String, curLine gem.String, width int) (newCurLine gem.String) {
+func Test_Manip_justifyLine(t *testing.T) {
+	testCases := []struct {
+		name string
+		input gem.String
+		width int
+		expect gem.String
+	}{
+		{"empty line", _g(""), 10, _g("")},
+		{"no spaces", _g("bluh"), 10, _g("bluh")},
+		{"2 words", _g("word1 word2"), 20, _g("word1          word2")},
+		{"3 words", _g("word1 word2 word3"), 20, _g("word1   word2  word3")},
+		{"3 words with runs of spaces", _g("word1        word2  word3"), 20, _g("word1   word2  word3")},
+		{"line longer than width", _g("hello"), 3, _g("hello")},
+		{"bad width", _g("hello"), -1, _g("hello")},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assertion.New(t)
+			
+			actual := justifyLine(tc.input, tc.width)
+			isEqual := tc.expect.Equal(actual)
+
+			assert.Equal(isEqual, true)
+		})
+	}
+}
+
