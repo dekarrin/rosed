@@ -260,6 +260,62 @@ func Test_Manip_combineColumnBlocks(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "left col bigger",
+			left: block{
+				Lines: []gem.String{
+					_g("Column number"),
+					_g("one is right"),
+					_g("here! And it"),
+					_g("has a lot of"),
+					_g("content that"),
+					_g("will be"),
+					_g("included"),
+				},
+			},
+			right: block{
+				Lines: []gem.String{
+					_g("This is a test"),
+					_g("string for the"),
+					_g("right side")},
+			},
+			minSpace: 2,
+			expect: block{
+				Lines: []gem.String{
+					_g("Column number  This is a test"),
+					_g("one is right   string for the"),
+					_g("here! And it   right side"),
+					_g("has a lot of   "),
+					_g("content that   "),
+					_g("will be        "),
+					_g("included       "),
+				},
+			},
+		},
+		{
+			name: "equal size columns",
+			left: block{
+				Lines: []gem.String{
+					_g("Column number"),
+					_g("one is right"),
+					_g("here!"),
+				},
+			},
+			right: block{
+				Lines: []gem.String{
+					_g("This is a test"),
+					_g("string for the"),
+					_g("right side")},
+			},
+			minSpace: 2,
+			expect: block{
+				Lines: []gem.String{
+					_g("Column number  This is a test"),
+					_g("one is right   string for the"),
+					_g("here!          right side"),
+				},
+			},
+		},
 	}
 	
 	for _, tc := range testCases {

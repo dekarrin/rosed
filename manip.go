@@ -118,13 +118,17 @@ func collapseSpace(text gem.String, lineSep gem.String) gem.String {
 // leftText and rightText are blocks where each Line is an already-wrapped line.
 // The returned block will have the lines joined and stored in its Lines property.
 //
-// The left and right column blocks do not need to be the same length; if one
-// has more lines than the other, the returned block will have a number of lines
-// equal to the greater number of lines between leftText and rightText. A nil
-// slice is considered equivalent to a column of line length 0.
+// The left and right column blocks do not need to have the same number of lines;
+// if one has more lines than the other, the returned block will have a number of
+// lines equal to the greater number of lines between leftText and rightText.
 //
 // The returned block will not have line terminator behavior set on it; callers
 // will need to handle line terminators themselves.
+//
+// Additionally, if the left column has more lines than the right column, note
+// that the last few lines will have the center spacing inserted still. So will
+// end where the right column would start if there was more of it.
+// 
 func combineColumnBlocks(left, right block, minSpaceBetween int) block {
 	if left.Len() == 0 && right.Len() == 0 {
 		return block{}
