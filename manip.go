@@ -115,8 +115,8 @@ func collapseSpace(text gem.String, lineSep gem.String) gem.String {
 // be separated by minSpaceBetween space characters at minimum from the left
 // column.
 //
-// leftText and rightText are slices where each item is a line. The returned
-// slice has a similar format.
+// leftText and rightText are blocks where each Line is an already-wrapped line.
+// The returned block will have the lines joined and stored in its Lines property.
 //
 // The left and right column blocks do not need to be the same length; if one
 // has more lines than the other, the returned block will have a number of lines
@@ -166,7 +166,7 @@ func combineColumnBlocks(left, right block, minSpaceBetween int) block {
 
 		combined.Append(_g(fmt.Sprintf("%s%s%s", leftLine, midSpacer, rightLine)))
 	}
-
+	
 	return combined
 }
 

@@ -231,10 +231,21 @@ func Test_Manip_combineColumnBlocks(t *testing.T) {
 		{
 			name: "right col bigger",
 			left: block{
-				Lines: []gem.String{_g("This is a test string for the right side")},
+				Lines: []gem.String{
+					_g("This is a test"),
+					_g("string for the"),
+					_g("right side")},
 			},
 			right: block{
-				Lines: []gem.String{_g("Column number two is right here! And it has a lot of content that will be wrapped")},
+				Lines: []gem.String{
+					_g("Column number"),
+					_g("two is right"),
+					_g("here! And it"),
+					_g("has a lot of"),
+					_g("content that"),
+					_g("will be"),
+					_g("included"),
+				},
 			},
 			minSpace: 2,
 			expect: block{
@@ -245,7 +256,7 @@ func Test_Manip_combineColumnBlocks(t *testing.T) {
 					_g("                has a lot of"),
 					_g("                content that"),
 					_g("                will be"),
-					_g("                wrapped"),
+					_g("                included"),
 				},
 			},
 		},
