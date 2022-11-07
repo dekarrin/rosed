@@ -85,3 +85,91 @@ func Test_Editor_WithOptions(t *testing.T) {
 		})
 	}
 }
+
+func Test_Editor_LineCount(t *testing.T) {
+	testCases := []struct{
+		name string
+		ed Editor
+		expect int
+	}{
+		{
+			name: "empty string gives 0 with default linesep and trailingseps",
+			ed: Editor{
+				Text: "",
+			},
+			expect: 0,
+		},
+		{
+			name: "empty string gives 0 with non-default linesep and default trailingseps",
+			ed: Editor{
+				Text: "",
+				Options: Options{
+					LineSeparator: "<P>",
+				},
+			},
+			expect: 0,
+		},
+		{
+			name: "empty string gives 1 with non-default linesep and trailingseps",
+			ed: Editor{
+				Text: "",
+				Options: Options{
+					LineSeparator: "<P>",
+					NoTrailingLineSeparators: true,
+				},
+			},
+			expect: 1,
+		},
+		{
+			name: "empty string gives 1 with default linesep and non-default trailingseps",
+			ed: Editor{
+				Text: "",
+				Options: Options{
+					NoTrailingLineSeparators: true,
+				},
+			},
+			expect: 1,
+		},
+		{
+			name: "1-line string (no trailing line sep) gives 1",
+			ed: Editor{
+				Text: "test",
+			},
+			expect: 1,
+		},
+		{
+			name: "1-line string (with default trailing line sep) gives 1",
+			ed: Editor{
+				Text: "test" + DefaultLineSeparator,
+			},
+			expect: 1,
+		},
+		{
+			name: "1-line string (with non-default trailing line sep) gives 1",
+			ed: Editor{
+				Text: "test<P>",
+				Options: Options{
+					LineSeparator: "<P>",
+				},
+			},
+			expect: 1,
+		},
+		{
+			name: "1-line string (with NoTrailing on) gives 1",
+			ed: Editor{
+				Text: "test",
+			},
+			expect: 1,
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			
+			actual := tc.ed.LineCount()
+			
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}

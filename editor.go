@@ -64,6 +64,10 @@ func (ed Editor) lines() []string {
 // split by the given separator string.
 func (ed Editor) linesSep(sep string) []string {
 	lines := strings.Split(ed.Text, sep)
+	
+	// unless we have notrailinglineseparators set, consider a final line that is the
+	// empty string to not be a line at all (due to no trailing sep), and thus remove
+	// it from the returned lines.
 	if len(lines) > 0 && !ed.Options.NoTrailingLineSeparators && lines[len(lines)-1] == "" {
 		lines = lines[:len(lines)-1]
 	}
