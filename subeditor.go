@@ -104,20 +104,25 @@ func (ed Editor) String() string {
 // the bytes in the Text; e.g. a start of 1 will specify the second character
 // regardless of how many bytes the first character takes up.
 //
-// The end may be negative, in which case it will be relative to the end of the
-// string; -1 would be all except the last codepoint, -2 would be all except the
-// last two codepoints, etc. If end is greater than the number of characters,
-// it is assumed to be the number of characters.
+// The start and end may be negative, in which case it will be relative to the
+// end of the string; -1 would be the last character, -2 would be the index
+// of the second-to-last character, etc.
 //
-// If start is negative, it is assumed to be 0. If start is greater than the
-// number of characters, it is assumed to be the number of characters.
+// If either start or end result in an index that are past the end of the string,
+// they are assumed to be the end of the string. If either result in a location
+// that is before the start of a string, it is assumed to be 0.
 //
 // If end is less than start, it is assumed to be equal to start.
 //
 // This function produces a sub-editor, whose Text field will contain only the
 // sub-section of text specified. Editing the parent's Text field after the
 // sub-editor has been created will have no effect on the sub-editor or any
-// Editor produced from it. The sub-editor as well as any Editors produced from
+// Editor produced from it. TODO: TECHNICALLY true but a user might be surprised
+// to find that a modified parent editor with an outstanding sub-editor
+// where the parent then makes changes in any way before the sub-editor calls
+// CommitAll() could result in impossible references.
+//
+// The sub-editor as well as any Editors produced from
 // it can be merged back into the original Editor by calling Commit().
 // Alternatively, all such sub-editors can be merged recursively by calling
 // CommitAll().
