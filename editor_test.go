@@ -161,6 +161,13 @@ func Test_Editor_LineCount(t *testing.T) {
 			},
 			expect: 1,
 		},
+		{
+			name: "multi-line string",
+			ed: Editor{
+				Text: "test1\ntest2\ntest3\ntest4",
+			},
+			expect: 4,
+		},
 	}
 	
 	for _, tc := range testCases {
