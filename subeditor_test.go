@@ -13,7 +13,6 @@ func Test_Editor_Chars(t *testing.T) {
 		start int
 		end int
 		expect Editor
-		expectPanic bool
 	}{
 		{
 			name: "typical subsection",
@@ -119,20 +118,14 @@ func Test_Editor_Chars(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
+			actual := tc.ed.Chars(tc.start, tc.end)
 			
-			if tc.expectPanic {
-				assert.Panics(func() {
-					tc.ed.Chars(tc.start, tc.end)
-				})
-			} else {
-				actual := tc.ed.Chars(tc.start, tc.end)
-				
-				// don't do a full Equal as that will compare unexported
-				// fields; instead just check the ones we care about
-				
-				assert.Equal(tc.expect.Options, actual.Options)
-				assert.Equal(tc.expect.Text, actual.Text)
-			}
+			// don't do a full Equal as that will compare unexported
+			// fields; instead just check the ones we care about
+			
+			assert.Equal(tc.expect.Options, actual.Options)
+			assert.Equal(tc.expect.Text, actual.Text)
 		})
 	}
 }
+
