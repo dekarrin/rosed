@@ -8,7 +8,10 @@
 // across multiple character ranges.
 package gem
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/dekarrin/rosed/internal/util"
+)
 
 // String is a series of user-perceived characters. The contents are immutable;
 // operations on the String produce a new String. However, some transient state
@@ -41,24 +44,7 @@ var (
 // end are negative and point to an index less than 0 after calculating, it is
 // assumed that they are pointing to 0.
 func (str String) Sub(start, end int) String {
-	if start < 0 {
-		start += str.Len()
-		if start < 0 {
-			start = 0
-		}
-	}
-	if end < 0 {
-		end += str.Len()
-		if end < 0 {
-			end = 0
-		}
-	}
-	if end > str.Len() {
-		end = str.Len()
-	}
-	if start > str.Len() {
-		start = str.Len()
-	}
+	start, end = util.RangeToIndexes(str.Len(), start, end)
 	
 	if start == end {
 		return Zero
