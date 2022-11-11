@@ -162,6 +162,35 @@ func (str String) Runes() []rune {
 	return r
 }
 
+// GraphemeIndexes returns a slice of rune start and end indexes within the
+// string of the rune(s) that make up each grapheme. Note that these cannot
+// be used by callers for other calls into the String (e.g. Sub() takes
+// grapheme indexes, not rune indexes) and this function is purely to query
+// a gem String.
+//
+// The end indexes will be exclusive; e.g. a gem.String with contents "test"
+// would produce [][]int{{0, 1}, {1, 2}, {2, 3}, {3, 4}}.
+func (str String) GraphemeIndexes() [][]int {
+	gc := str.gc
+	if gc == nil {
+		gc = Split(str.r)
+		str.gc = gc
+	}
+	
+	indexes := make([][]int, len(gc))
+	prevEnd := 0
+	for i := range gc {
+		grapheme := make([]int, 2)
+		grapheme[0] = prevEnd
+		grapheme[1] = gc[i]
+		indexes[i] = grapheme
+		
+		prevEnd = gc[i]
+	}
+	
+	return indexes
+}
+
 // SetCharAt sets the character at the given index to the given value and
 // returns the resulting String. The original String is not modified.
 func (str String) SetCharAt(idx int, r []rune) String {
@@ -256,6 +285,9 @@ func (str String) Len() int {
 // modify the original. calling this is not needed unless a modification is
 // about to occur, even though passing String by value does pass pointers (via
 // slice-type members)
+//
+// TODO: gem.String is generally passed by value now and immutable. Is this still
+// needed?
 func (str String) clone() String {
 	gc := str.gc
 	clone := String{

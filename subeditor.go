@@ -3,7 +3,8 @@ package rosed
 // this file contains functions for splitting an Editor into a sub-Editor.
 
 import (
-	"unicode/utf8"
+	"github.com/dekarrin/rosed/internal/util"
+	"github.com/dekarrin/rosed/internal/gem"
 )
 
 // reference to parent for sub-editors. ed[start:end] gives the Text of the
@@ -127,43 +128,37 @@ func (ed Editor) String() string {
 // Alternatively, all such sub-editors can be merged recursively by calling
 // CommitAll().
 func (ed Editor) Chars(start, end int) Editor {
-	if start < 0 {
-		start = 0
+	// ask gem string for the grapheme-based char positions
+	indexes := gem.New(ed.Text).GraphemeIndexes()
+	start, end = util.RangeToIndexes(len(indexes), start, end)
+	
+	// 0 cannot be subtracted from
+	if end != 0 {
+		end -= 1
 	}
-
-	if end < 0 {
-		// then we must get a char count to convert it into a proper value
-		end += utf8.RuneCountInString(ed.Text)
-		if end < 0 {
-			end = 0
-		}
-	}
-
-	if end < start {
-		end = start
-	}
+	
+	runeStart := indexes[start][0]
+	runeEnd := indexes[end][1]
+	// now that we have rune indexes we do string analysis to find the byte
+	// boundaries of the chars
 
 	chIdx := -1
 	byteStart := -1
 	byteEnd := -1
 	for byteIdx := range ed.Text {
 		chIdx++
-		if chIdx == start {
+		if chIdx == runeStart {
 			byteStart = byteIdx
 		}
-		if chIdx == end {
+		if chIdx == runeEnd {
 			byteEnd = byteIdx
 			break
 		}
 	}
-
-	if byteStart == -1 {
-		byteStart = len(ed.Text)
-	}
 	if byteEnd == -1 {
 		byteEnd = len(ed.Text)
 	}
-
+	
 	return ed.subEd(byteStart, byteEnd)
 }
 
