@@ -37,6 +37,83 @@ func Test_Editor_Chars(t *testing.T) {
 				Text: "est",
 			},
 		},
+		{
+			name: "start < 0",
+			ed: Editor{
+				Text: "test",
+			},
+			start: -3,
+			end: 2,
+			expect: Editor{
+				Text: "e",
+			},
+		},
+		{
+			name: "start > end",
+			ed: Editor{
+				Text: "test",
+			},
+			start: 2,
+			end: 1,
+			expect: Editor{
+				Text: "",
+			},
+		},
+		{
+			name: "start = end",
+			ed: Editor{
+				Text: "test",
+			},
+			start: 2,
+			end: 2,
+			expect: Editor{
+				Text: "",
+			},
+		},
+		{
+			name: "both < 0",
+			ed: Editor{
+				Text: "test",
+			},
+			start: 2,
+			end: 2,
+			expect: Editor{
+				Text: "",
+			},
+		},
+		{
+			name: "get before decomposed grapheme",
+			ed: Editor{
+				Text: "Franc\u0327ais",
+			},
+			start: 1,
+			end: 4,
+			expect: Editor{
+				Text: "ran",
+			},
+		},
+		{
+			name: "get after decomposed grapheme",
+			ed: Editor{
+				Text: "Franc\u0327ais",
+			},
+			start: 5,
+			end: 7,
+			expect: Editor{
+				Text: "ai",
+			},
+		},
+		{
+			name: "get across decomposed grapheme",
+			ed: Editor{
+				Text: "Franc\u0327ais",
+			},
+			start: 3,
+			end: 7,
+			expect: Editor{
+				Text: "nc\u0327ai",
+			},
+		},
 	}
 	
 	for _, tc := range testCases {
