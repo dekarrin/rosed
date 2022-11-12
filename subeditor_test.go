@@ -762,3 +762,182 @@ func Test_Editor_LinesFrom(t *testing.T) {
 	}
 }
 
+func Test_Editor_LinesTo(t *testing.T) {
+	testCases := []struct{
+		name string
+		ed Editor
+		end int
+		expect Editor
+	}{
+		{
+			name: "empty string",
+			ed: Editor{
+				Text: "",
+			},
+			end: 0,
+			expect: Editor{
+				Text: "",
+			},
+		},
+		{
+			name: "in middle",
+			ed: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator +
+				        "line3" + DefaultLineSeparator +
+				        "line4" + DefaultLineSeparator,
+			},
+			end: 3,
+			expect: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator,
+			},
+		},
+		{
+			name: "entire string",
+			ed: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator +
+				        "line3" + DefaultLineSeparator +
+				        "line4" + DefaultLineSeparator,
+			},
+			end: 5,
+			expect: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator +
+				        "line3" + DefaultLineSeparator +
+				        "line4" + DefaultLineSeparator,
+			},
+		},
+		{
+			name: "end > end of the string",
+			ed: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator,
+			},
+			end: 20,
+			expect: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator,
+			},
+		},
+		{
+			name: "end < 0",
+			ed: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator +
+				        "line3" + DefaultLineSeparator +
+				        "line4" + DefaultLineSeparator,
+			},
+			end: -2,
+			expect: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator,
+			},
+		},
+		{
+			name: "preserve options",
+			ed: Editor{
+				Text:   "line0" + DefaultLineSeparator,
+				Options: Options{
+					IndentStr: DefaultIndentString,	
+				},
+			},
+			end: 1,
+			expect: Editor{
+				Text:   "line0" + DefaultLineSeparator,
+				Options: Options{
+					IndentStr: DefaultIndentString,
+				},
+			},
+		},
+		{
+			name: "no trailing line sep, default options",
+			ed: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1",
+			},
+			end: 2,
+			expect: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1",
+			},
+		},
+		{
+			name: "no trailing line sep, specified in options",
+			ed: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1",
+				Options: Options{
+					NoTrailingLineSeparators: true,
+				},
+			},
+			end: 2,
+			expect: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1",
+				Options: Options{
+					NoTrailingLineSeparators: true,
+				},
+			},
+		},
+		{
+			name: "non-default line separator",
+			ed: Editor{
+				Text:   "line0<P>" +
+				        "line1<P>" +
+				        "line2<P>",
+				Options: Options{
+					LineSeparator: "<P>",
+				},
+			},
+			end: 2,
+			expect: Editor{
+				Text:   "line0<P>" +
+				        "line1<P>",
+				Options: Options{
+					LineSeparator: "<P>",
+				},
+			},
+		},
+		{
+			name: "decomposed grapheme line sep",
+			ed: Editor{
+				Text:   "line0c\u0327" +
+				        "line1c\u0327" +
+				        "line2c\u0327",
+				Options: Options{
+					LineSeparator: "c\u0327",
+				},
+			},
+			end: 1,
+			expect: Editor{
+				Text:   "line0c\u0327",
+				Options: Options{
+					LineSeparator: "c\u0327",
+				},
+			},
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			actual := tc.ed.LinesTo(tc.end)
+			
+			// don't do a full Equal as that will compare unexported
+			// fields; instead just check the ones we care about
+			
+			assert.Equal(tc.expect.Options, actual.Options)
+			assert.Equal(tc.expect.Text, actual.Text)
+		})
+	}
+}
