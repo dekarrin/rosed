@@ -37,7 +37,7 @@ func wrap(text gem.String, width int, lineSep gem.String) block {
 			curLine = appendWordToLine(&lines, curWord, curLine, width)
 			curWord = gem.Zero
 		} else {
-			curWord = curWord.Add(gem.Char(ch))
+			curWord = curWord.Add(gem.New(string(ch)))
 		}
 	}
 

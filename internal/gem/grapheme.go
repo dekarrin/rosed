@@ -313,12 +313,6 @@ func New(s string) String {
 	return String{r: []rune(s)}
 }
 
-// Char creates a String from single user-perceived character made up of the
-// given runes.
-func Char(ch []rune) String {
-	return New(string(ch))
-}
-
 // Split splits the given runes into a series of grapheme clusters. The
 // returned slice contains slices of indexes that give the exclusive ending
 // index of runes that make up each grapheme at that position; e.g. the returned
