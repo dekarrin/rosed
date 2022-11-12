@@ -74,10 +74,10 @@ func Test_Editor_Chars(t *testing.T) {
 			ed: Editor{
 				Text: "test",
 			},
-			start: 2,
-			end: 2,
+			start: -4,
+			end: -2,
 			expect: Editor{
-				Text: "",
+				Text: "te",
 			},
 		},
 		{
@@ -314,3 +314,151 @@ func Test_Editor_CharsTo(t *testing.T) {
 		})
 	}
 }
+
+func Test_Editor_Lines(t *testing.T) {
+	testCases := []struct{
+		name string
+		ed Editor
+		start int
+		end int
+		expect Editor
+	}{
+		{
+			name: "empty string",
+			ed: Editor{
+				Text: "",
+			},
+			start: 0,
+			end: 0,
+			expect: Editor{
+				Text: "",
+			},
+		},
+		{
+			name: "in middle",
+			ed: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator +
+				        "line3" + DefaultLineSeparator +
+				        "line4" + DefaultLineSeparator,
+			},
+			start: 1,
+			end: 3,
+			expect: Editor{
+				Text:   "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator,
+			},
+		},
+		{
+			name: "entire string",
+			ed: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator +
+				        "line3" + DefaultLineSeparator +
+				        "line4" + DefaultLineSeparator,
+			},
+			start: 0,
+			end: 5,
+			expect: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator +
+				        "line3" + DefaultLineSeparator +
+				        "line4" + DefaultLineSeparator,
+			},
+		},
+		{
+			name: "end > end of the string",
+			ed: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator,
+			},
+			start: 1,
+			end: 20,
+			expect: Editor{
+				Text:   "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator,
+			},
+		},
+		{
+			name: "start < 0",
+			ed: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator +
+				        "line3" + DefaultLineSeparator +
+				        "line4" + DefaultLineSeparator,
+			},
+			start: -3,
+			end: 4,
+			expect: Editor{
+				Text:   "line2" + DefaultLineSeparator +
+				        "line3" + DefaultLineSeparator,
+			},
+		},
+		{
+			name: "start > end",
+			ed: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator +
+				        "line3" + DefaultLineSeparator +
+				        "line4" + DefaultLineSeparator,
+			},
+			start: 2,
+			end: 1,
+			expect: Editor{
+				Text: "",
+			},
+		},
+		{
+			name: "start = end",
+			ed: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator +
+				        "line3" + DefaultLineSeparator +
+				        "line4" + DefaultLineSeparator,
+			},
+			start: 2,
+			end: 2,
+			expect: Editor{
+				Text: "",
+			},
+		},
+		{
+			name: "both < 0",
+			ed: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator +
+				        "line3" + DefaultLineSeparator +
+				        "line4" + DefaultLineSeparator,
+			},
+			start: -4,
+			end: -2,
+			expect: Editor{
+				Text:   "line1" + DefaultLineSeparator +
+				        "line2" + DefaultLineSeparator,
+			},
+		},
+		// TODO: for line-ending variations, try where it is decomposed char
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			actual := tc.ed.Lines(tc.start, tc.end)
+			
+			// don't do a full Equal as that will compare unexported
+			// fields; instead just check the ones we care about
+			
+			assert.Equal(tc.expect.Options, actual.Options)
+			assert.Equal(tc.expect.Text, actual.Text)
+		})
+	}
+}
+
