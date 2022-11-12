@@ -6,6 +6,150 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_Editor_Commit(t *testing.T) {
+	testCases := []struct{
+		name string
+		ed Editor
+		expect Editor
+	}{
+		{
+			name: "empty string",
+			ed: Editor{
+				Text: "",
+				ref: &parentRef{
+					start: 0,
+					end: 0,
+					parent: &Editor{
+						Text: "",
+					},
+				},
+			},
+			expect: Editor{
+				Text: "",
+			},
+		},
+		{
+			name: "non sub-editor returns self",
+			ed: Editor{
+				Text: "test",
+				ref: nil,
+			},
+			expect: Editor{
+				Text: "test",
+			},
+		},
+		{
+			name: "replace middle",
+			ed: Editor{
+				Text: "test",
+				ref: &parentRef{
+					start: 2,
+					end: 8,
+					parent: &Editor{
+						Text: "a useful execution",
+					},
+				},
+			},
+			expect: Editor{
+				Text: "a test execution",
+			},
+		},
+		{
+			name: "insert middle",
+			ed: Editor{
+				Text: " test",
+				ref: &parentRef{
+					start: 3,
+					end: 3,
+					parent: &Editor{
+						Text: "one execution",
+					},
+				},
+			},
+			expect: Editor{
+				Text: "one test execution",
+			},
+		},
+		{
+			name: "replace end",
+			ed: Editor{
+				Text: "test case",
+				ref: &parentRef{
+					start: 4,
+					end: 13,
+					parent: &Editor{
+						Text: "one execution",
+					},
+				},
+			},
+			expect: Editor{
+				Text: "one test case",
+			},
+		},
+		{
+			name: "insert end",
+			ed: Editor{
+				Text: " case",
+				ref: &parentRef{
+					start: 8,
+					end: 8,
+					parent: &Editor{
+						Text: "one test",
+					},
+				},
+			},
+			expect: Editor{
+				Text: "one test case",
+			},
+		},
+		{
+			name: "replace start",
+			ed: Editor{
+				Text: "a single",
+				ref: &parentRef{
+					start: 0,
+					end: 3,
+					parent: &Editor{
+						Text: "one test",
+					},
+				},
+			},
+			expect: Editor{
+				Text: "a single test",
+			},
+		},
+		{
+			name: "insert start",
+			ed: Editor{
+				Text: "one test ",
+				ref: &parentRef{
+					start: 0,
+					end: 0,
+					parent: &Editor{
+						Text: "case",
+					},
+				},
+			},
+			expect: Editor{
+				Text: "one test case",
+			},
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			actual := tc.ed.Commit()
+			
+			// do a full equal assertion because we care about all fields of
+			// the returned editor.
+			
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
+
 func Test_Editor_Chars(t *testing.T) {
 	testCases := []struct{
 		name string

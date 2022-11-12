@@ -77,11 +77,11 @@ func (ed Editor) Commit() Editor {
 
 	parent, subStart, subEnd := ed.ref.parent, ed.ref.start, ed.ref.end
 
-	prefix := parent.Text[0:subStart]
-	suffix := parent.Text[subEnd:len(parent.Text)]
+	prefix := parent.Text[:subStart]
+	suffix := parent.Text[subEnd:]
 
 	full := prefix + ed.Text + suffix
-
+	
 	// copy via value assignment
 	ed = *parent
 	ed.Text = full
