@@ -113,6 +113,23 @@ func Test_Editor_Chars(t *testing.T) {
 				Text: "nc\u0327ai",
 			},
 		},
+		{
+			name: "preserve options",
+			ed: Editor{
+				Text: "test",
+				Options: Options{
+					LineSeparator: DefaultLineSeparator + DefaultLineSeparator,	
+				},
+			},
+			start: 0,
+			end: 4,
+			expect: Editor{
+				Text: "test",
+				Options: Options{
+					LineSeparator: DefaultLineSeparator + DefaultLineSeparator,	
+				},
+			},
+		},
 	}
 	
 	for _, tc := range testCases {
