@@ -149,6 +149,76 @@ func Test_Editor_Commit(t *testing.T) {
 	}
 }
 
+func Test_Editor_CommitAll(t *testing.T) {
+	testCases := []struct{
+		name string
+		ed Editor
+		expect Editor
+	}{
+		{
+			name: "non sub-editor returns self",
+			ed: Editor{
+				Text: "test",
+				ref: nil,
+			},
+			expect: Editor{
+				Text: "test",
+			},
+		},
+		{
+			name: "1 sub-Editor chain",
+			ed: Editor{
+				Text: " full",
+				ref: &parentRef{
+					start: 1,
+					end: 1,
+					parent: &Editor{
+						Text: "a string",
+					},
+				},
+			},
+			expect: Editor{
+				Text: "a full string",
+			},
+		},
+		{
+			name: "2 sub-Editor chain",
+			ed: Editor{
+				Text: "and grand",
+				ref: &parentRef{
+					start: 7,
+					end: 7,
+					parent: &Editor{
+						Text: "middle child",
+						ref: &parentRef{
+							start: 0,
+							end: 6,
+							parent: &Editor{
+								Text: "parent text",
+							},
+						},
+					},
+				},
+			},
+			expect: Editor{
+				Text: "middle and grandchild text",
+			},
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			actual := tc.ed.CommitAll()
+			
+			// do a full equal assertion because we care about all fields of
+			// the returned editor.
+			
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
 
 func Test_Editor_Chars(t *testing.T) {
 	testCases := []struct{
