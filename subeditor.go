@@ -253,6 +253,7 @@ func (ed Editor) Lines(start, end int) Editor {
 	}
 
 	lineSep := ed.Options.WithDefaults().LineSeparator
+	
 	lineIdx := 0
 	byteStart := 0
 	for lineIdx != start {
@@ -267,13 +268,14 @@ func (ed Editor) Lines(start, end int) Editor {
 		
 		// byteStart is also the start of the line we are searching from
 		// during the for-loop
-		byteStart = lineSepStart + len(lineSep)
+		byteStart += lineSepStart + len(lineSep)
 		lineIdx++
 	}
 	
 	// byteStart should now be the correct value,
 	// now find byteEnd
 	byteEnd := byteStart
+	
 	for lineIdx != end {
 		lineSepStart := strings.Index(ed.Text[byteEnd:], lineSep)
 		if lineSepStart == -1 {
@@ -285,7 +287,7 @@ func (ed Editor) Lines(start, end int) Editor {
 		
 		// byteEnd is also the start of the line we are searching from
 		// during the for-loop
-		byteEnd = lineSepStart + len(lineSep)
+		byteEnd += lineSepStart + len(lineSep)
 		lineIdx++
 	}
 

@@ -488,8 +488,8 @@ func Test_Editor_Lines(t *testing.T) {
 			start: 0,
 			end: 2,
 			expect: Editor{
-				Text:   "line1" + DefaultLineSeparator +
-				        "line2",
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1",
 			},
 		},
 		{
@@ -504,8 +504,8 @@ func Test_Editor_Lines(t *testing.T) {
 			start: 0,
 			end: 2,
 			expect: Editor{
-				Text:   "line1" + DefaultLineSeparator +
-				        "line2",
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1",
 				Options: Options{
 					NoTrailingLineSeparators: true,
 				},
