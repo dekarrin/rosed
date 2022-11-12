@@ -462,7 +462,94 @@ func Test_Editor_Lines(t *testing.T) {
 				        "line2" + DefaultLineSeparator,
 			},
 		},
-		// TODO: for line-ending variations, try where it is decomposed char
+		{
+			name: "preserve options",
+			ed: Editor{
+				Text:   "line0" + DefaultLineSeparator,
+				Options: Options{
+					IndentStr: DefaultIndentString,	
+				},
+			},
+			start: 0,
+			end: 1,
+			expect: Editor{
+				Text:   "line0" + DefaultLineSeparator,
+				Options: Options{
+					IndentStr: DefaultIndentString,
+				},
+			},
+		},
+		{
+			name: "no trailing line sep, default options",
+			ed: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1",
+			},
+			start: 0,
+			end: 2,
+			expect: Editor{
+				Text:   "line1" + DefaultLineSeparator +
+				        "line2",
+			},
+		},
+		{
+			name: "no trailing line sep, specified in options",
+			ed: Editor{
+				Text:   "line0" + DefaultLineSeparator +
+				        "line1",
+				Options: Options{
+					NoTrailingLineSeparators: true,
+				},
+			},
+			start: 0,
+			end: 2,
+			expect: Editor{
+				Text:   "line1" + DefaultLineSeparator +
+				        "line2",
+				Options: Options{
+					NoTrailingLineSeparators: true,
+				},
+			},
+		},
+		{
+			name: "non-default line separator",
+			ed: Editor{
+				Text:   "line0<P>" +
+				        "line1<P>" +
+				        "line2<P>",
+				Options: Options{
+					LineSeparator: "<P>",
+				},
+			},
+			start: 0,
+			end: 1,
+			expect: Editor{
+				Text:   "line0<P>",
+				Options: Options{
+					LineSeparator: "<P>",
+				},
+			},
+		},
+		{
+			name: "decomposed grapheme line sep",
+			ed: Editor{
+				Text:   "line0c\u0327" +
+				        "line1c\u0327" +
+				        "line2c\u0327",
+				Options: Options{
+					LineSeparator: "c\u0327",
+				},
+			},
+			start: 0,
+			end: 2,
+			expect: Editor{
+				Text:   "line0c\u0327" +
+				        "line1c\u0327",
+				Options: Options{
+					LineSeparator: "c\u0327",
+				},
+			},
+		},
 	}
 	
 	for _, tc := range testCases {
