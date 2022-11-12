@@ -3,6 +3,8 @@ package rosed
 // this file contains functions for splitting an Editor into a sub-Editor.
 
 import (
+	"strings"
+	
 	"github.com/dekarrin/rosed/internal/util"
 	"github.com/dekarrin/rosed/internal/gem"
 )
@@ -240,63 +242,51 @@ func (ed Editor) Lines(start, end int) Editor {
 	if ed.Text == "" {
 		return ed.subEd(0, 0)
 	}
-
-	if start < 0 {
-		start = 0
+	
+	lc := ed.LineCount()
+	start, end = util.RangeToIndexes(lc, start, end)
+	
+	// if we know we are about to get past the end of the lines
+	// skip the costly search and just get the end
+	if start >= lc {
+		return ed.subEd(len(ed.Text), len(ed.Text))
 	}
 
-	if end < 0 {
-		// then we must get a char count to convert it into a proper value
-		end += ed.LineCount()
-		if end < 0 {
-			end = 0
-		}
-	}
-
-	if end < start {
-		end = start
-	}
-
-	byteStart := -1
-	byteEnd := -1
-
-	lineSep := ed.Options.LineSeparator
-	if lineSep == "" {
-		lineSep = DefaultLineSeparator
-	}
-	lineSepRunes := []rune(lineSep)
-	lineSepMatchPos := 0
+	lineSep := ed.Options.WithDefaults().LineSeparator
 	lineIdx := 0
-
-	if start == 0 {
-		byteStart = 0
-	}
-	if end == 0 {
-		return ed.subEd(0, 0)
-	}
-
-	for byteIdx, ch := range ed.Text {
-		if ch == lineSepRunes[lineSepMatchPos] {
-			lineSepMatchPos++
-			if lineSepMatchPos >= len(lineSepRunes) {
-				lineSepMatchPos = 0
-				lineIdx++
-				if lineIdx == start {
-					byteStart = byteIdx
-				}
-				if lineIdx == end {
-					byteEnd = byteIdx
-					break
-				}
-			}
+	byteStart := 0
+	for lineIdx != start {
+		lineSepStart := strings.Index(ed.Text[byteStart:], lineSep)
+		if lineSepStart == -1 {
+			// we are on the last line and haven't gotten to
+			// the start, so user is asking for lines beyond the end.
+			// should never happen due to above checks but handle it
+			// anyways just in case
+			return ed.subEd(len(ed.Text), len(ed.Text))
 		}
+		
+		// byteStart is also the start of the line we are searching from
+		// during the for-loop
+		byteStart = lineSepStart + len(lineSep)
+		lineIdx++
 	}
-
-	if byteStart == -1 {
-		byteStart = len(ed.Text)
-	}
-	if byteEnd == -1 {
-		byteEnd = len(ed.Text)
+	
+	// byteStart should now be the correct value,
+	// now find byteEnd
+	byteEnd := byteStart
+	for lineIdx != end {
+		lineSepStart := strings.Index(ed.Text[byteEnd:], lineSep)
+		if lineSepStart == -1 {
+			// we are on the last line and there is no trailing newline.
+			// we don't actually care about that tho, only relevant info is
+			// that we are on the last line and so can stop searching
+			return ed.subEd(byteStart, len(ed.Text))
+		}
+		
+		// byteEnd is also the start of the line we are searching from
+		// during the for-loop
+		byteEnd = lineSepStart + len(lineSep)
+		lineIdx++
 	}
 
 	return ed.subEd(byteStart, byteEnd)
