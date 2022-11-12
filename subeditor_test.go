@@ -221,3 +221,96 @@ func Test_Editor_CharsFrom(t *testing.T) {
 		})
 	}
 }
+
+func Test_Editor_CharsTo(t *testing.T) {
+	testCases := []struct{
+		name string
+		ed Editor
+		end int
+		expect Editor
+	}{
+		{
+			name: "to middle",
+			ed: Editor{
+				Text: "some testing text to edit",
+			},
+			end: 17,
+			expect: Editor{
+				Text: "some testing text",
+			},
+		},
+		{
+			name: "entire string",
+			ed: Editor{
+				Text: "test",
+			},
+			end: 4,
+			expect: Editor{
+				Text: "test",
+			},
+		},
+		{
+			name: "empty string",
+			ed: Editor{
+				Text: "",
+			},
+			end: 0,
+			expect: Editor{
+				Text: "",
+			},
+		},
+		{
+			name: "end > end of the string",
+			ed: Editor{
+				Text: "test",
+			},
+			end: 20,
+			expect: Editor{
+				Text: "test",
+			},
+		},
+		{
+			name: "end < 0",
+			ed: Editor{
+				Text: "test",
+			},
+			end: -2,
+			expect: Editor{
+				Text: "te",
+			},
+		},
+		{
+			name: "get before decomposed grapheme",
+			ed: Editor{
+				Text: "Franc\u0327ais",
+			},
+			end: 3,
+			expect: Editor{
+				Text: "Fra",
+			},
+		},
+		{
+			name: "get across decomposed grapheme",
+			ed: Editor{
+				Text: "Franc\u0327ais",
+			},
+			end: 6,
+			expect: Editor{
+				Text: "Franc\u0327a",
+			},
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			actual := tc.ed.CharsTo(tc.end)
+			
+			// don't do a full Equal as that will compare unexported
+			// fields; instead just check the ones we care about
+			
+			assert.Equal(tc.expect.Options, actual.Options)
+			assert.Equal(tc.expect.Text, actual.Text)
+		})
+	}
+}
