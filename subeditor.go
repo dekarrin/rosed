@@ -132,6 +132,14 @@ func (ed Editor) Chars(start, end int) Editor {
 	indexes := gem.New(ed.Text).GraphemeIndexes()
 	start, end = util.RangeToIndexes(len(indexes), start, end)
 	
+	// interface treats these as python-style slice indexes which means we
+	// accept start == the end of the string, but we are about to use them
+	// as proper indexes which means that will panic. So if start is past the
+	// end, immediately return the subEd of that without further checking
+	if start >= len(indexes) {
+		return ed.subEd(start, end)
+	}
+	
 	// 0 cannot be subtracted from
 	if end != 0 {
 		end -= 1
