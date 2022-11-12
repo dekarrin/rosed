@@ -166,16 +166,6 @@ func (tb *block) Apply(transform LineOperation) {
 	tb.Lines = applied
 }
 
-func (tb *block) applyGFunc(transform LineOperation) {
-	var applied []gem.String
-
-	for idx, line := range tb.Lines {
-		applied = append(applied, gem.Slice(transform(idx, line.String()))...)
-	}
-
-	tb.Lines = applied
-}
-
 // Line gives the line at a position. pos is not checked for validity before
 // accessing; callers must do so.
 func (tb block) Line(pos int) gem.String {
