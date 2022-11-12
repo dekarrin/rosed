@@ -4,9 +4,9 @@ package rosed
 
 import (
 	"strings"
-	
-	"github.com/dekarrin/rosed/internal/util"
+
 	"github.com/dekarrin/rosed/internal/gem"
+	"github.com/dekarrin/rosed/internal/util"
 )
 
 // reference to parent for sub-editors. ed[start:end] gives the Text of the
@@ -81,7 +81,7 @@ func (ed Editor) Commit() Editor {
 	suffix := parent.Text[subEnd:]
 
 	full := prefix + ed.Text + suffix
-	
+
 	// copy via value assignment
 	ed = *parent
 	ed.Text = full
@@ -133,7 +133,7 @@ func (ed Editor) Chars(start, end int) Editor {
 	// ask gem string for the grapheme-based char positions
 	indexes := gem.New(ed.Text).GraphemeIndexes()
 	start, end = util.RangeToIndexes(len(indexes), start, end)
-	
+
 	// interface treats these as python-style slice indexes which means we
 	// accept start == the end of the string, but we are about to use them
 	// as proper indexes which means that will panic. So if start is past the
@@ -141,12 +141,12 @@ func (ed Editor) Chars(start, end int) Editor {
 	if start >= len(indexes) {
 		return ed.subEd(start, end)
 	}
-	
+
 	// 0 cannot be subtracted from
 	if end != 0 {
 		end -= 1
 	}
-	
+
 	runeStart := indexes[start][0]
 	runeEnd := indexes[end][1]
 	// now that we have rune indexes we do string analysis to find the byte
@@ -168,7 +168,7 @@ func (ed Editor) Chars(start, end int) Editor {
 	if byteEnd == -1 {
 		byteEnd = len(ed.Text)
 	}
-	
+
 	return ed.subEd(byteStart, byteEnd)
 }
 
@@ -242,10 +242,10 @@ func (ed Editor) Lines(start, end int) Editor {
 	if ed.Text == "" {
 		return ed.subEd(0, 0)
 	}
-	
+
 	lc := ed.LineCount()
 	start, end = util.RangeToIndexes(lc, start, end)
-	
+
 	// if we know we are about to get past the end of the lines
 	// skip the costly search and just get the end
 	if start >= lc {
@@ -253,7 +253,7 @@ func (ed Editor) Lines(start, end int) Editor {
 	}
 
 	lineSep := ed.Options.WithDefaults().LineSeparator
-	
+
 	lineIdx := 0
 	byteStart := 0
 	for lineIdx != start {
@@ -265,17 +265,17 @@ func (ed Editor) Lines(start, end int) Editor {
 			// anyways just in case
 			return ed.subEd(len(ed.Text), len(ed.Text))
 		}
-		
+
 		// byteStart is also the start of the line we are searching from
 		// during the for-loop
 		byteStart += lineSepStart + len(lineSep)
 		lineIdx++
 	}
-	
+
 	// byteStart should now be the correct value,
 	// now find byteEnd
 	byteEnd := byteStart
-	
+
 	for lineIdx != end {
 		lineSepStart := strings.Index(ed.Text[byteEnd:], lineSep)
 		if lineSepStart == -1 {
@@ -284,7 +284,7 @@ func (ed Editor) Lines(start, end int) Editor {
 			// that we are on the last line and so can stop searching
 			return ed.subEd(byteStart, len(ed.Text))
 		}
-		
+
 		// byteEnd is also the start of the line we are searching from
 		// during the for-loop
 		byteEnd += lineSepStart + len(lineSep)

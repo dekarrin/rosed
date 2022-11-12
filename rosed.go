@@ -8,9 +8,9 @@
 // Additionally, if desired, the Editor can have its Text property set to the
 // text to operate on.
 //
-//   ed := Editor{}
+//	ed := Editor{}
 //
-//   ed := Edit("my text")
+//	ed := Edit("my text")
 //
 // Editing Partial Sections:
 //
@@ -24,7 +24,7 @@
 // If multiple sub-selections have been made, CommitAll() can be used to apply
 // all changes in sequence and return to the Editor operating on the full text.
 //
-// Getting Output
+// # Getting Output
 //
 // Most functions return a new Editor. To get the modified text, use String().
 // The Editor.Text member can be accessed directly, but this might not be the

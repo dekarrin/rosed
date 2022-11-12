@@ -107,13 +107,13 @@ func (ed Editor) ApplyParagraphsOpts(op ParagraphOperation, opts Options) Editor
 
 func (ed Editor) applyGParagraphsOpts(op gParagraphOperation, opts Options) Editor {
 	opts = opts.WithDefaults()
-	
+
 	// split the paragraph separator about its line separators so we can see any
 	// extra chars that will be chopped off while in a preserve-mode wrap that
 	// messes with line separators
 	var paraSepPrevSuffix, paraSepNextPrefix gem.String
 	parts := strings.Split(opts.ParagraphSeparator, opts.LineSeparator)
-	
+
 	paraSepPrevSuffix = _g(parts[0])
 	if len(parts) > 1 {
 		paraSepNextPrefix = _g(parts[len(parts)-1])
@@ -139,7 +139,7 @@ func (ed Editor) applyGParagraphsOpts(op gParagraphOperation, opts Options) Edit
 	}
 
 	ed.Text = strings.Join(transformed, opts.ParagraphSeparator)
-	
+
 	return ed
 }
 

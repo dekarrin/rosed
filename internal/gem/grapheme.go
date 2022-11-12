@@ -45,26 +45,26 @@ var (
 // assumed that they are pointing to 0.
 func (str String) Sub(start, end int) String {
 	start, end = util.RangeToIndexes(str.Len(), start, end)
-	
+
 	if start == end {
 		return Zero
 	}
-	
+
 	if str.gc == nil {
 		// we need a split operation on the graphemes
 		str.gc = Split(str.r)
 	}
-	
+
 	copy := str.clone()
-	
+
 	var runesStart int
 	if start > 0 {
 		runesStart = copy.gc[start-1]
 	}
 	runesEnd := copy.gc[end-1]
-	
+
 	copy.r = copy.r[runesStart:runesEnd]
-	
+
 	// ANY further ops require resplitting
 	// TODO: shouldnt we be able to calc it? I mean we know what was removed from the
 	// rune slice
@@ -84,12 +84,12 @@ func (str String) Less(s String) bool {
 	if minLen > len(str.r) {
 		minLen = len(str.r)
 	}
-	
+
 	for i := 0; i < minLen; i++ {
 		if str.r[i] < sR[i] {
 			return true
 		}
-		
+
 		if str.r[i] > sR[i] {
 			return false
 		}
@@ -176,7 +176,7 @@ func (str String) GraphemeIndexes() [][]int {
 		gc = Split(str.r)
 		str.gc = gc
 	}
-	
+
 	indexes := make([][]int, len(gc))
 	prevEnd := 0
 	for i := range gc {
@@ -184,10 +184,10 @@ func (str String) GraphemeIndexes() [][]int {
 		grapheme[0] = prevEnd
 		grapheme[1] = gc[i]
 		indexes[i] = grapheme
-		
+
 		prevEnd = gc[i]
 	}
-	
+
 	return indexes
 }
 
@@ -197,7 +197,7 @@ func (str String) SetCharAt(idx int, r []rune) String {
 	if len(r) == 0 {
 		panic("SetCharAt received empty or nil replacement runes slice r")
 	}
-	
+
 	copy := str.clone()
 
 	if copy.gc == nil {

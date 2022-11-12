@@ -29,7 +29,7 @@ func Test_Manip_collapseSpace(t *testing.T) {
 		{"ws run is collapsed (spacechar)", _g("       testA  testB  "), gem.Zero, _g(" testA testB ")},
 		{"ws run is collapsed (mixed ws)", _g("\u205f\u202ftestA\u200a  \t\n testB\t"), gem.Zero, _g(" testA testB ")},
 		{"non-ws separator", _g("testA\n  testB <SEP>\u205f  testC"), _g("<SEP>"), _g("testA testB testC")},
-		{"ws separator",     _g("testA\n  testB <SEP>\n\n\u205f  testC"), _g("\n\n"), _g("testA testB <SEP> testC")},
+		{"ws separator", _g("testA\n  testB <SEP>\n\n\u205f  testC"), _g("\n\n"), _g("testA testB <SEP> testC")},
 	}
 
 	for _, tc := range testCases {
@@ -181,9 +181,9 @@ func Test_Manip_wrap(t *testing.T) {
 
 func Test_Manip_justifyLine(t *testing.T) {
 	testCases := []struct {
-		name string
-		input gem.String
-		width int
+		name   string
+		input  gem.String
+		width  int
 		expect gem.String
 	}{
 		{"empty line", _g(""), 10, _g("")},
@@ -194,11 +194,11 @@ func Test_Manip_justifyLine(t *testing.T) {
 		{"line longer than width", _g("hello"), 3, _g("hello")},
 		{"bad width", _g("hello"), -1, _g("hello")},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assertion.New(t)
-			
+
 			actual := justifyLine(tc.input, tc.width)
 			isEqual := tc.expect.Equal(actual)
 
@@ -209,11 +209,11 @@ func Test_Manip_justifyLine(t *testing.T) {
 
 func Test_Manip_combineColumnBlocks(t *testing.T) {
 	testCases := []struct {
-		name string
-		left block
-		right block
+		name     string
+		left     block
+		right    block
 		minSpace int
-		expect block
+		expect   block
 	}{
 		{
 			name: "empty lines",
@@ -317,11 +317,11 @@ func Test_Manip_combineColumnBlocks(t *testing.T) {
 			},
 		},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assertion.New(t)
-			
+
 			actual := combineColumnBlocks(tc.left, tc.right, tc.minSpace)
 
 			assert.Equal(tc.expect, actual)

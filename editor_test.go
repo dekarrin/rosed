@@ -2,43 +2,43 @@ package rosed
 
 import (
 	"testing"
-	
+
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_Edit(t *testing.T) {
-	testCases := []struct{
-		name string
-		input string
+	testCases := []struct {
+		name   string
+		input  string
 		expect Editor
 	}{
 		{"empty string", "", Editor{Text: ""}},
 		{"non-empty string", "test", Editor{Text: "test"}},
 		{"many breaks in string", "test \n testtest\n\ntest", Editor{Text: "test \n testtest\n\ntest"}},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
-			
+
 			actual := Edit(tc.input)
-			
+
 			assert.Equal(tc.expect, actual)
 		})
 	}
 }
 
 func Test_Editor_WithOptions(t *testing.T) {
-	testCases := []struct{
-		name string
-		ed Editor
-		opts Options
+	testCases := []struct {
+		name   string
+		ed     Editor
+		opts   Options
 		expect Editor
 	}{
 		{
 			name: "no prior options",
 			ed: Editor{
-				Text: "",
+				Text:    "",
 				Options: Options{},
 			},
 			opts: Options{
@@ -74,22 +74,22 @@ func Test_Editor_WithOptions(t *testing.T) {
 			},
 		},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
-			
+
 			actual := tc.ed.WithOptions(tc.opts)
-			
+
 			assert.Equal(tc.expect, actual)
 		})
 	}
 }
 
 func Test_Editor_LineCount(t *testing.T) {
-	testCases := []struct{
-		name string
-		ed Editor
+	testCases := []struct {
+		name   string
+		ed     Editor
 		expect int
 	}{
 		{
@@ -114,7 +114,7 @@ func Test_Editor_LineCount(t *testing.T) {
 			ed: Editor{
 				Text: "",
 				Options: Options{
-					LineSeparator: "<P>",
+					LineSeparator:            "<P>",
 					NoTrailingLineSeparators: true,
 				},
 			},
@@ -169,13 +169,13 @@ func Test_Editor_LineCount(t *testing.T) {
 			expect: 4,
 		},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
-			
+
 			actual := tc.ed.LineCount()
-			
+
 			assert.Equal(tc.expect, actual)
 		})
 	}

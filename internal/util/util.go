@@ -24,17 +24,17 @@ func RangeToIndexes(size, start, end int) (int, int) {
 			end = 0
 		}
 	}
-	
+
 	if end > size {
 		end = size
 	}
 	if start > size {
 		start = size
 	}
-	
+
 	if end < start {
 		end = start
 	}
-	
+
 	return start, end
 }

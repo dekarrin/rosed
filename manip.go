@@ -128,7 +128,7 @@ func collapseSpace(text gem.String, lineSep gem.String) gem.String {
 // Additionally, if the left column has more lines than the right column, note
 // that the last few lines will have the center spacing inserted still. So will
 // end where the right column would start if there was more of it.
-// 
+//
 func combineColumnBlocks(left, right block, minSpaceBetween int) block {
 	if left.Len() == 0 && right.Len() == 0 {
 		return block{}
@@ -170,7 +170,7 @@ func combineColumnBlocks(left, right block, minSpaceBetween int) block {
 
 		combined.Append(_g(fmt.Sprintf("%s%s%s", leftLine, midSpacer, rightLine)))
 	}
-	
+
 	return combined
 }
 

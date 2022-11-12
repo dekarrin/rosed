@@ -2,16 +2,16 @@ package rosed
 
 import (
 	"testing"
-	
+
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_Options_WithLineSeparator(t *testing.T) {
 	testCases := []struct {
-		name string
-		input Options
+		name       string
+		input      Options
 		newLineSep string
-		expected Options
+		expected   Options
 	}{
 		{
 			name: "from defaults",
@@ -22,7 +22,7 @@ func Test_Options_WithLineSeparator(t *testing.T) {
 				NoTrailingLineSeparators: false,
 				PreserveParagraphs:       false,
 			},
-			newLineSep: "1234", 
+			newLineSep: "1234",
 			expected: Options{
 				ParagraphSeparator:       DefaultParagraphSeparator,
 				LineSeparator:            "1234",
@@ -40,7 +40,7 @@ func Test_Options_WithLineSeparator(t *testing.T) {
 				NoTrailingLineSeparators: false,
 				PreserveParagraphs:       false,
 			},
-			newLineSep: "88888888", 
+			newLineSep: "88888888",
 			expected: Options{
 				ParagraphSeparator:       "",
 				LineSeparator:            "88888888",
@@ -64,10 +64,10 @@ func Test_Options_WithLineSeparator(t *testing.T) {
 
 func Test_Options_WithIndentStr(t *testing.T) {
 	testCases := []struct {
-		name string
-		input Options
+		name         string
+		input        Options
 		newIndentStr string
-		expected Options
+		expected     Options
 	}{
 		{
 			name: "from defaults",
@@ -78,7 +78,7 @@ func Test_Options_WithIndentStr(t *testing.T) {
 				NoTrailingLineSeparators: false,
 				PreserveParagraphs:       false,
 			},
-			newIndentStr: "1234", 
+			newIndentStr: "1234",
 			expected: Options{
 				ParagraphSeparator:       DefaultParagraphSeparator,
 				LineSeparator:            DefaultLineSeparator,
@@ -96,7 +96,7 @@ func Test_Options_WithIndentStr(t *testing.T) {
 				NoTrailingLineSeparators: false,
 				PreserveParagraphs:       false,
 			},
-			newIndentStr: "88888888", 
+			newIndentStr: "88888888",
 			expected: Options{
 				ParagraphSeparator:       "",
 				LineSeparator:            "",
@@ -120,10 +120,10 @@ func Test_Options_WithIndentStr(t *testing.T) {
 
 func Test_Options_WithParagraphSeparator(t *testing.T) {
 	testCases := []struct {
-		name string
-		input Options
+		name       string
+		input      Options
 		newParaSep string
-		expected Options
+		expected   Options
 	}{
 		{
 			name: "from defaults",
@@ -134,7 +134,7 @@ func Test_Options_WithParagraphSeparator(t *testing.T) {
 				NoTrailingLineSeparators: false,
 				PreserveParagraphs:       false,
 			},
-			newParaSep: "1234", 
+			newParaSep: "1234",
 			expected: Options{
 				ParagraphSeparator:       "1234",
 				LineSeparator:            DefaultLineSeparator,
@@ -152,7 +152,7 @@ func Test_Options_WithParagraphSeparator(t *testing.T) {
 				NoTrailingLineSeparators: false,
 				PreserveParagraphs:       false,
 			},
-			newParaSep: "88888888", 
+			newParaSep: "88888888",
 			expected: Options{
 				ParagraphSeparator:       "88888888",
 				LineSeparator:            "",
@@ -176,10 +176,10 @@ func Test_Options_WithParagraphSeparator(t *testing.T) {
 
 func Test_Options_WithNoTrailingLineSeparators(t *testing.T) {
 	testCases := []struct {
-		name string
-		input Options
+		name        string
+		input       Options
 		newTrailing bool
-		expected Options
+		expected    Options
 	}{
 		{
 			name: "from defaults",
@@ -190,7 +190,7 @@ func Test_Options_WithNoTrailingLineSeparators(t *testing.T) {
 				NoTrailingLineSeparators: false,
 				PreserveParagraphs:       false,
 			},
-			newTrailing: true, 
+			newTrailing: true,
 			expected: Options{
 				ParagraphSeparator:       DefaultParagraphSeparator,
 				LineSeparator:            DefaultLineSeparator,
@@ -208,7 +208,7 @@ func Test_Options_WithNoTrailingLineSeparators(t *testing.T) {
 				NoTrailingLineSeparators: false,
 				PreserveParagraphs:       false,
 			},
-			newTrailing: true, 
+			newTrailing: true,
 			expected: Options{
 				ParagraphSeparator:       "",
 				LineSeparator:            "",
@@ -232,10 +232,10 @@ func Test_Options_WithNoTrailingLineSeparators(t *testing.T) {
 
 func Test_Options_WithPreserveParagraphs(t *testing.T) {
 	testCases := []struct {
-		name string
-		input Options
+		name        string
+		input       Options
 		newPreserve bool
-		expected Options
+		expected    Options
 	}{
 		{
 			name: "from defaults",
@@ -246,7 +246,7 @@ func Test_Options_WithPreserveParagraphs(t *testing.T) {
 				NoTrailingLineSeparators: false,
 				PreserveParagraphs:       false,
 			},
-			newPreserve: true, 
+			newPreserve: true,
 			expected: Options{
 				ParagraphSeparator:       DefaultParagraphSeparator,
 				LineSeparator:            DefaultLineSeparator,
@@ -264,7 +264,7 @@ func Test_Options_WithPreserveParagraphs(t *testing.T) {
 				NoTrailingLineSeparators: false,
 				PreserveParagraphs:       false,
 			},
-			newPreserve: true, 
+			newPreserve: true,
 			expected: Options{
 				ParagraphSeparator:       "",
 				LineSeparator:            "",
