@@ -6,6 +6,41 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_Editor_IsSubEditor(t *testing.T) {
+	testCases := []struct{
+		name string
+		ed Editor
+		expect bool
+	}{
+		{
+			name: "not a subeditor",
+			ed: Editor{
+				ref: nil,
+			},
+			expect: false,
+		},
+		{
+			name: "is a subeditor",
+			ed: Editor{
+				ref: &parentRef{
+					parent: &Editor{},
+				},
+			},
+			expect: true,
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			
+			actual := tc.ed.IsSubEditor()
+			
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
 func Test_Editor_Commit(t *testing.T) {
 	testCases := []struct{
 		name string
