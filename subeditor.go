@@ -141,14 +141,19 @@ func (ed Editor) Chars(start, end int) Editor {
 	if start >= len(indexes) {
 		return ed.subEd(start, end)
 	}
-
-	// 0 cannot be subtracted from
-	if end != 0 {
-		end -= 1
-	}
-
+	
 	runeStart := indexes[start][0]
-	runeEnd := indexes[end][1]
+	
+	var runeEnd int
+	if end < len(indexes) {
+		runeEnd = indexes[end][0]
+	} else {
+		runeEnd = len(ed.Text)
+		// TODO: in this case the below search will go until end of string
+		// could make this a bit betta by marking this case and skipping the
+		// search for runeEnd
+	}
+	
 	// now that we have rune indexes we do string analysis to find the byte
 	// boundaries of the chars
 

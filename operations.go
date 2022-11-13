@@ -149,7 +149,6 @@ func (ed Editor) applyGParagraphsOpts(op gParagraphOperation, opts Options) Edit
 // make room.
 func (ed Editor) Insert(charPos int, text string) Editor {
 	before := ed.CharsTo(charPos).Text
-	fmt.Printf("%q.CharsTo(%d) = %q\n", ed.Text, charPos, before)
 	after := ed.CharsFrom(charPos).Text
 
 	ed.Text = before + text + after
