@@ -515,6 +515,16 @@ func Test_Editor_CharsTo(t *testing.T) {
 			},
 		},
 		{
+			name: "to zero of non-empty",
+			ed: Editor{
+				Text: "test",
+			},
+			end: 0,
+			expect: Editor{
+				Text: "",
+			},
+		},
+		{
 			name: "empty string",
 			ed: Editor{
 				Text: "",
