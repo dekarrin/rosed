@@ -166,3 +166,28 @@ func Test_WrapOpts(t *testing.T) {
 		})
 	}
 }
+
+func Test_CollapseSpaces(t *testing.T) {
+	testCases := []struct{
+		name string
+		input string
+		expect string
+	}{
+		{"empty line", "", ""},
+		{"no spaces", "bluh", "bluh"},
+		{"2 words", "word1 word2", "word1 word2"},
+		{"3 words", "word1 word2 word3", "word1 word2 word3"},
+		{"3 words with runs of spaces", "word1        word2  word3", "word1 word2 word3"},
+		{"run of non-uniform spaces", "word1 \t\t word2", "word1 word2"},
+		{"include lineSep", "   " + DefaultLineSeparator + " word1", " word1"},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			actual := Edit(tc.input).CollapseSpace().String()
+			assert.Equal(tc.expect, actual)
+		})
+	}
+	
+}
