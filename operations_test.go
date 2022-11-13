@@ -252,8 +252,8 @@ func Test_CollapseSpacesOpts(t *testing.T) {
 			actualDirect := Edit(tc.input).CollapseSpaceOpts(tc.options).String()
 			actualPreOpts := Edit(tc.input).WithOptions(tc.options).CollapseSpace().String()
 			
-			assert.Equal(tc.expect, actualDirect)
-			assert.Equal(tc.expect, actualPreOpts)
+			assert.Equal(tc.expect, actualDirect, "CollapseSpace(opts) check failed")
+			assert.Equal(tc.expect, actualPreOpts, "WithOptions(opts).CollapseSpace() check failed")
 		})
 	}
 }
@@ -476,8 +476,8 @@ func Test_ApplyOpts(t *testing.T) {
 			actualDirect := Edit(tc.input).ApplyOpts(tc.op, tc.options).String()
 			actualPreOpts := Edit(tc.input).WithOptions(tc.options).Apply(tc.op).String()
 			
-			assert.Equal(tc.expect, actualDirect, "ApplyOpts check failed")
-			assert.Equal(tc.expect, actualPreOpts, "WithOptions().Apply() check failed")
+			assert.Equal(tc.expect, actualDirect, "ApplyOpts(opts) check failed")
+			assert.Equal(tc.expect, actualPreOpts, "WithOptions(opts).Apply() check failed")
 		})
 	}
 }
