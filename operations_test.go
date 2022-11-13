@@ -7,6 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TODO: do not have test_wrap do any options checking, instead leave both WithOpts().Wrap() and WrapOpts() to
+// Test_WrapOpts
 func Test_Wrap(t *testing.T) {
 	testCases := []struct {
 		name     string
@@ -189,5 +191,69 @@ func Test_CollapseSpaces(t *testing.T) {
 			assert.Equal(tc.expect, actual)
 		})
 	}
-	
 }
+
+func Test_CollapseSpacesOpts(t *testing.T) {
+	testCases := []struct{
+		name string
+		input string
+		options Options
+		expect string
+	}{
+		{
+			name: "empty line, custom lineSep",
+			input: "",
+			options: Options{LineSeparator: "<P>"},
+			expect: "",
+		},
+		{
+			name: "no spaces, custom lineSep",
+			input: "bluh",
+			options: Options{LineSeparator: "<P>"},
+			expect: "bluh",
+		},
+		{
+			name: "2 words, custom lineSep",
+			input: "word1 word2",
+			options: Options{LineSeparator: "<P>"},
+			expect: "word1 word2",
+		},
+		{
+			name: "3 words, custom lineSep",
+			input: "word1 word2 word3",
+			options: Options{LineSeparator: "<P>"},
+			expect: "word1 word2 word3",
+		},
+		{
+			name: "3 words with runs of spaces, custom lineSep",
+			input: "word1        word2  word3",
+			options: Options{LineSeparator: "<P>"},
+			expect: "word1 word2 word3",
+		},
+		{
+			name: "run of non-uniform spaces",
+			input: "word1 \t\t word2",
+			options: Options{LineSeparator: "<P>"},
+			expect: "word1 word2",
+		},
+		{
+			name: "include lineSep",
+			input: "   " + DefaultLineSeparator + " word1",
+			options: Options{LineSeparator: "<P>"},
+			expect: " word1",
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			
+			actualDirect := Edit(tc.input).CollapseSpaceOpts(tc.options).String()
+			actualPreOpts := Edit(tc.input).WithOptions(tc.options).CollapseSpace().String()
+			
+			assert.Equal(tc.expect, actualDirect)
+			assert.Equal(tc.expect, actualPreOpts)
+		})
+	}
+}
+
