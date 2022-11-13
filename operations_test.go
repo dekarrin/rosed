@@ -257,3 +257,33 @@ func Test_CollapseSpacesOpts(t *testing.T) {
 	}
 }
 
+func Test_Insert(t *testing.T) {
+	testCases := []struct{
+		name string
+		input string
+		pos int
+		insert string
+		expect string
+	}{
+		{"empty into empty", "", 0, "", ""},
+		{"empty into non-empty", "start", 0, "", "start"},
+		{"non-empty into empty", "", 0, "TEST", "TEST"},
+		{"at start of non-empty", "start", 0, "TEST", "TESTstart"},
+		{"in middle of text", "abcdef", 2, "TEST", "abTESTcdef"},
+		{"at end of text", "end", 3, "TEST", "endTEST"},
+		{"far past end interpreted as end", "end", 300, "TEST", "endTEST"},
+		{"negative index", "start", -3, "TEST", "stTESTart"},
+		{"before decomposed grapheme", "franc\u0327ais", 1, "TEST", "fTESTranc\u0327ais"},
+		{"after decomposed grapheme", "franc\u0327ais", 6, "TEST", "franc\u0327aTESTis"},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			
+			actual := Edit(tc.input).Insert(tc.pos, tc.insert).String()
+			
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
