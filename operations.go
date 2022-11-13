@@ -60,6 +60,8 @@ type gParagraphOperation func(idx int, para, sepPrefix, sepSuffix gem.String) []
 // Apply applies the given LineOperation for each line in the text. Line
 // termination at the last line is transparently handled as per the options
 // currently set on the Editor.
+//
+// This will not be called at least once for an empty editor UNLESS NoTrailing is set.
 func (ed Editor) Apply(op LineOperation) Editor {
 	return ed.ApplyOpts(op, ed.Options)
 }

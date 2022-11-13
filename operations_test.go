@@ -1,6 +1,7 @@
 package rosed
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -283,6 +284,79 @@ func Test_Insert(t *testing.T) {
 			
 			actual := Edit(tc.input).Insert(tc.pos, tc.insert).String()
 			
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
+func Test_Apply(t *testing.T) {
+	testCases := []struct{
+		name string
+		input string
+		op LineOperation
+		expect string
+	}{
+		{
+			name: "apply nothing to empty editor",
+			input: "",
+			op: func(lineNo int, line string) []string {
+				return []string{"test"}
+			},
+			expect: "",
+		},
+		{
+			name: "replace one terminated empty line",
+			input: DefaultLineSeparator,
+			op: func(lineNo int, line string) []string {
+				return []string{"test"}
+			},
+			expect: "test" + DefaultLineSeparator,
+		},
+		{
+			name: "replace two terminated lines",
+			input: DefaultLineSeparator + DefaultLineSeparator,
+			op: func(lineNo int, line string) []string {
+				return []string{"test"}
+			},
+			expect: "test" + DefaultLineSeparator + "test" + DefaultLineSeparator,
+		},
+		{
+			name: "replace multiple lines using line number",
+			input: DefaultLineSeparator + DefaultLineSeparator + DefaultLineSeparator,
+			op: func(lineNo int, line string) []string {
+				newLine := fmt.Sprintf("test%d", lineNo)
+				return []string{newLine}
+			},
+			expect: "test0" + DefaultLineSeparator + "test1" + DefaultLineSeparator + "test2" + DefaultLineSeparator,
+		},
+		{
+			name: "insert extra line at target position",
+			input: "line0" + DefaultLineSeparator + "line2" + DefaultLineSeparator,
+			op: func(lineNo int, line string) []string {
+				if lineNo == 0 {
+					return []string{line, "line1"}
+				}
+				return []string{line}
+			},
+			expect: "line0" + DefaultLineSeparator + "line1" + DefaultLineSeparator + "line2" + DefaultLineSeparator,
+		},
+		{
+			name: "delete line at target position",
+			input: "line0" + DefaultLineSeparator + "extra" + DefaultLineSeparator + "line1" + DefaultLineSeparator,
+			op: func(lineNo int, line string) []string {
+				if lineNo == 1 {
+					return []string{}
+				}
+				return []string{line}
+			},
+			expect: "line0" + DefaultLineSeparator + "line1" + DefaultLineSeparator,
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			actual := Edit(tc.input).Apply(tc.op).String()
 			assert.Equal(tc.expect, actual)
 		})
 	}
