@@ -361,3 +361,123 @@ func Test_Apply(t *testing.T) {
 		})
 	}
 }
+
+func Test_ApplyOpts(t *testing.T) {
+	testCases := []struct{
+		name string
+		input string
+		op LineOperation
+		options Options
+		expect string
+	}{
+		{
+			name: "apply nothing to empty editor, custom lineSep",
+			input: "",
+			op: func(lineNo int, line string) []string {
+				return []string{"test"}
+			},
+			options: Options{LineSeparator: "<P>"},
+			expect: "",
+		},
+		{
+			name: "replace one terminated empty line, custom lineSep",
+			input: "<P>",
+			op: func(lineNo int, line string) []string {
+				return []string{"test"}
+			},
+			options: Options{LineSeparator: "<P>"},
+			expect: "test<P>",
+		},
+		{
+			name: "replace two terminated lines, custom lineSep",
+			input: "<P><P>",
+			op: func(lineNo int, line string) []string {
+				return []string{"test"}
+			},
+			options: Options{LineSeparator: "<P>"},
+			expect: "test<P>test<P>",
+		},
+		{
+			name: "replace multiple lines using line number, custom lineSep",
+			input: "<P><P><P>",
+			op: func(lineNo int, line string) []string {
+				newLine := fmt.Sprintf("test%d", lineNo)
+				return []string{newLine}
+			},
+			options: Options{LineSeparator: "<P>"},
+			expect: "test0<P>test1<P>test2<P>",
+		},
+		{
+			name: "insert extra line at target position, custom lineSep",
+			input: "line0<P>line2<P>",
+			op: func(lineNo int, line string) []string {
+				if lineNo == 0 {
+					return []string{line, "line1"}
+				}
+				return []string{line}
+			},
+			options: Options{LineSeparator: "<P>"},
+			expect: "line0<P>line1<P>line2<P>",
+		},
+		{
+			name: "delete line at target position, custom lineSep",
+			input: "line0<P>extra<P>line1<P>",
+			op: func(lineNo int, line string) []string {
+				if lineNo == 1 {
+					return []string{}
+				}
+				return []string{line}
+			},
+			options: Options{LineSeparator: "<P>"},
+			expect: "line0<P>line1<P>",
+		},
+		{
+			name: "apply once for empty editor, noTrailing=true",
+			input: "",
+			op: func(lineNo int, line string) []string {
+				return []string{"test"}
+			},
+			options: Options{NoTrailingLineSeparators: true},
+			expect: "test",
+		},
+		{
+			name: "apply n+1 for n lines, noTrailing=true",
+			input: DefaultLineSeparator + DefaultLineSeparator,
+			op: func(lineNo int, line string) []string {
+				return []string{"test"}
+			},
+			options: Options{NoTrailingLineSeparators: true},
+			expect: "test" + DefaultLineSeparator + "test" + DefaultLineSeparator + "test",
+		},
+		{
+			name: "apply once for empty editor, noTrailing=true, custom lineSep",
+			input: "",
+			op: func(lineNo int, line string) []string {
+				return []string{"test"}
+			},
+			options: Options{NoTrailingLineSeparators: true, LineSeparator: "<P>"},
+			expect: "test",
+		},
+		{
+			name: "apply n+1 for n lines, noTrailing=true, custom lineSep",
+			input: "<P><P>",
+			op: func(lineNo int, line string) []string {
+				return []string{"test"}
+			},
+			options: Options{NoTrailingLineSeparators: true, LineSeparator: "<P>"},
+			expect: "test<P>test<P>test",
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			
+			actualDirect := Edit(tc.input).ApplyOpts(tc.op, tc.options).String()
+			actualPreOpts := Edit(tc.input).WithOptions(tc.options).Apply(tc.op).String()
+			
+			assert.Equal(tc.expect, actualDirect, "ApplyOpts check failed")
+			assert.Equal(tc.expect, actualPreOpts, "WithOptions().Apply() check failed")
+		})
+	}
+}
