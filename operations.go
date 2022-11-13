@@ -61,7 +61,7 @@ type gParagraphOperation func(idx int, para, sepPrefix, sepSuffix gem.String) []
 // termination at the last line is transparently handled as per the options
 // currently set on the Editor.
 //
-// This will not be called at least once for an empty editor UNLESS NoTrailing is set.
+// This will NOT be called at least once for an empty editor UNLESS NoTrailing is set.
 func (ed Editor) Apply(op LineOperation) Editor {
 	return ed.ApplyOpts(op, ed.Options)
 }
@@ -69,10 +69,19 @@ func (ed Editor) Apply(op LineOperation) Editor {
 // ApplyOpts applies the given LineOperation for each line in the text. Line
 // termination at the last line is transparently handled as per the provided
 // options.
+//
+// each line does not have line sep in it in input or output.
 func (ed Editor) ApplyOpts(op LineOperation, opts Options) Editor {
 	opts = opts.WithDefaults()
 
 	lines := ed.linesSep(opts.LineSeparator)
+	
+	// if we do not have any trailing line seps, then we should always consider
+	// there to be at least one additional line
+	if opts.NoTrailingLineSeparators {
+		lines = append(lines, "")
+	}
+	
 	applied := make([]string, 0, len(lines))
 
 	for idx, line := range lines {
@@ -84,7 +93,7 @@ func (ed Editor) ApplyOpts(op LineOperation, opts Options) Editor {
 
 	// make sure to preserve the last line sep if it exists; it will have been
 	// clobbered in call to lines() if it was.
-	if strings.HasSuffix(ed.Text, opts.LineSeparator) {
+	if !opts.NoTrailingLineSeparators && strings.HasSuffix(ed.Text, opts.LineSeparator) {
 		applied = append(applied, "")
 	}
 
