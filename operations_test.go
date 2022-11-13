@@ -238,7 +238,7 @@ func Test_CollapseSpacesOpts(t *testing.T) {
 		},
 		{
 			name: "include lineSep",
-			input: "   " + DefaultLineSeparator + " word1",
+			input: "   <P> word1",
 			options: Options{LineSeparator: "<P>"},
 			expect: " word1",
 		},
