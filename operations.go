@@ -63,7 +63,8 @@ type gParagraphOperation func(idx int, para, sepPrefix, sepSuffix gem.String) []
 //
 // This will NOT be called at least once for an empty editor UNLESS NoTrailing is set.
 func (ed Editor) Apply(op LineOperation) Editor {
-	return ed.ApplyOpts(op, ed.Options)
+	ed = ed.ApplyOpts(op, ed.Options)
+	return ed
 }
 
 // ApplyOpts applies the given LineOperation for each line in the text. Line
@@ -73,14 +74,7 @@ func (ed Editor) Apply(op LineOperation) Editor {
 // each line does not have line sep in it in input or output.
 func (ed Editor) ApplyOpts(op LineOperation, opts Options) Editor {
 	opts = opts.WithDefaults()
-
-	lines := ed.linesSep(opts.LineSeparator)
-	
-	// if we do not have any trailing line seps, then we should always consider
-	// there to be at least one additional line
-	if opts.NoTrailingLineSeparators {
-		lines = append(lines, "")
-	}
+	lines := ed.WithOptions(opts).linesSep(opts.LineSeparator)
 	
 	applied := make([]string, 0, len(lines))
 

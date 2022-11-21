@@ -471,6 +471,7 @@ func Test_ApplyOpts(t *testing.T) {
 	
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			fmt.Printf("%v\n", tc.name)
 			assert := assert.New(t)
 			
 			actualDirect := Edit(tc.input).ApplyOpts(tc.op, tc.options).String()
