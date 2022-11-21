@@ -471,7 +471,6 @@ func Test_ApplyOpts(t *testing.T) {
 	
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			fmt.Printf("%v\n", tc.name)
 			assert := assert.New(t)
 			
 			actualDirect := Edit(tc.input).ApplyOpts(tc.op, tc.options).String()
@@ -482,3 +481,30 @@ func Test_ApplyOpts(t *testing.T) {
 		})
 	}
 }
+
+func Test_ApplyParagraphs(t *testing.T) {
+	testCases := []struct{
+		name string
+		input string
+		op ParagraphOperation
+		expect string
+	}{
+		{
+			name: "empty string",
+			input: "",
+			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
+				return []string{"test"}
+			},
+			expect: "",
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			actual := Edit(tc.input).ApplyParagraphs(tc.op).String()
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
