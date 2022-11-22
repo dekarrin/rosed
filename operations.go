@@ -322,6 +322,8 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 
 // Indent adds the currently configured indent string level times at the start
 // of each line in the Editor. If level is 0 or less, the text is unchanged.
+//
+// Need to make note for NoTrailing behavior.
 func (ed Editor) Indent(level int) Editor {
 	return ed.IndentOpts(level, ed.Options)
 }
@@ -339,7 +341,8 @@ func (ed Editor) IndentOpts(level int, opts Options) Editor {
 		return ed
 	}
 
-	indent := opts.WithDefaults().IndentStr
+	indent := strings.Repeat(opts.WithDefaults().IndentStr, level)
+	
 	doIndent := func(_ int, line string) []string {
 		newLine := indent + line
 
