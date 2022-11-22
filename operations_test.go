@@ -497,6 +497,53 @@ func Test_ApplyParagraphs(t *testing.T) {
 			},
 			expect: "",
 		},
+		{
+			name: "replace one terminated empty para",
+			input: DefaultParagraphSeparator,
+			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
+				return []string{"test"}
+			},
+			expect: "test" + DefaultParagraphSeparator,
+		},
+		{
+			name: "replace two terminated paras",
+			input: DefaultParagraphSeparator + DefaultParagraphSeparator,
+			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
+				return []string{"test"}
+			},
+			expect: "test" + DefaultParagraphSeparator + "test" + DefaultParagraphSeparator,
+		},
+		{
+			name: "replace multiple paras using para number",
+			input: DefaultParagraphSeparator + DefaultParagraphSeparator + DefaultParagraphSeparator,
+			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
+				newLine := fmt.Sprintf("test%d", idx)
+				return []string{newLine}
+			},
+			expect: "test0" + DefaultParagraphSeparator + "test1" + DefaultParagraphSeparator + "test2" + DefaultParagraphSeparator,
+		},
+		{
+			name: "insert extra para at target position",
+			input: "para0" + DefaultParagraphSeparator + "para2" + DefaultParagraphSeparator,
+			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
+				if idx == 0 {
+					return []string{para, "para1"}
+				}
+				return []string{para}
+			},
+			expect: "para0" + DefaultParagraphSeparator + "para1" + DefaultParagraphSeparator + "para2" + DefaultParagraphSeparator,
+		},
+		{
+			name: "delete para at target position",
+			input: "para0" + DefaultParagraphSeparator + "extra" + DefaultParagraphSeparator + "para1" + DefaultParagraphSeparator,
+			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
+				if idx == 1 {
+					return []string{}
+				}
+				return []string{para}
+			},
+			expect: "para0" + DefaultParagraphSeparator + "para1" + DefaultParagraphSeparator,
+		},
 	}
 	
 	for _, tc := range testCases {
