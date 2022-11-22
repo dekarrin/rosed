@@ -509,8 +509,8 @@ func Test_ApplyParagraphs(t *testing.T) {
 			name: "replace multiple paras using para number",
 			input: DefaultParagraphSeparator + DefaultParagraphSeparator,
 			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
-				newLine := fmt.Sprintf("test%d", idx)
-				return []string{newLine}
+				newPara := fmt.Sprintf("test%d", idx)
+				return []string{newPara}
 			},
 			expect: "test0" + DefaultParagraphSeparator + "test1" + DefaultParagraphSeparator + "test2",
 		},
@@ -547,3 +547,78 @@ func Test_ApplyParagraphs(t *testing.T) {
 	}
 }
 
+func Test_ApplyParagraphsOpts(t *testing.T) {
+	testCases := []struct{
+		name string
+		input string
+		op ParagraphOperation
+		options Options
+		expect string
+	}{
+		{
+			name: "apply once to empty editor, custom paraSep",
+			input: "",
+			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
+				return []string{"test"}
+			},
+			options: Options{ParagraphSeparator: "<P>"},
+			expect: "test",
+		},
+		{
+			name: "replace two empty paras, custom paraSep",
+			input: "<P>",
+			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
+				return []string{"test"}
+			},
+			options: Options{ParagraphSeparator: "<P>"},
+			expect: "test<P>test",
+		},
+		{
+			name: "replace multiple paras using para number, custom paraSep",
+			input: "<P><P>",
+			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
+				newPara := fmt.Sprintf("test%d", idx)
+				return []string{newPara}
+			},
+			options: Options{ParagraphSeparator: "<P>"},
+			expect: "test0<P>test1<P>test2",
+		},
+		{
+			name: "insert extra para at target position, custom paraSep",
+			input: "para0<P>para2",
+			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
+				if idx == 0 {
+					return []string{para, "para1"}
+				}
+				return []string{para}
+			},
+			options: Options{ParagraphSeparator: "<P>"},
+			expect: "para0<P>para1<P>para2",
+		},
+		{
+			name: "delete para at target position, custom paraSep",
+			input: "para0<P>extra<P>para1",
+			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
+				if idx == 1 {
+					return []string{}
+				}
+				return []string{para}
+			},
+			options: Options{ParagraphSeparator: "<P>"},
+			expect: "para0<P>para1",
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			
+			actualDirect := Edit(tc.input).ApplyParagraphsOpts(tc.op, tc.options).String()
+			actualPreOpts := Edit(tc.input).WithOptions(tc.options).ApplyParagraphs(tc.op).String()
+			
+			assert.Equal(tc.expect, actualDirect, "ApplyParagraphsOpts(opts) check failed")
+			assert.Equal(tc.expect, actualPreOpts, "WithOptions(opts).ApplyParagraphs() check failed")
+			
+		})
+	}
+}
