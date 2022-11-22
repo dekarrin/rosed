@@ -98,11 +98,15 @@ func (ed Editor) ApplyOpts(op LineOperation, opts Options) Editor {
 // ApplyParagraphs applies a ParagraphOperation to the text in the Editor.
 // TODO: better docs
 func (ed Editor) ApplyParagraphs(op ParagraphOperation) Editor {
-	return ed.ApplyParagraphsOpts(op, ed.Options)
+	ed = ed.ApplyParagraphsOpts(op, ed.Options)
+	return ed
 }
 
 // ApplyParagraphsOpts gets all the paragraphs without any paragraph separators,
 // performs some operation on them, and then puts the paragraphs back together.
+//
+// NOTE: unlike with ApplyLines, there will ALWAYS be at least one paragraph, even in the case
+// of the empty string. Paragraphs are considered to be split, not terminated.
 // TODO: Better docs
 func (ed Editor) ApplyParagraphsOpts(op ParagraphOperation, opts Options) Editor {
 	return ed.applyGParagraphsOpts(func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String {

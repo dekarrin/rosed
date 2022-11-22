@@ -490,59 +490,51 @@ func Test_ApplyParagraphs(t *testing.T) {
 		expect string
 	}{
 		{
-			name: "empty string",
+			name: "empty string = 1 empty para",
 			input: "",
 			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
 				return []string{"test"}
 			},
-			expect: "",
+			expect: "test",
 		},
 		{
-			name: "replace one terminated empty para",
+			name: "replace two empty paras",
 			input: DefaultParagraphSeparator,
 			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
 				return []string{"test"}
 			},
-			expect: "test" + DefaultParagraphSeparator,
-		},
-		{
-			name: "replace two terminated paras",
-			input: DefaultParagraphSeparator + DefaultParagraphSeparator,
-			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
-				return []string{"test"}
-			},
-			expect: "test" + DefaultParagraphSeparator + "test" + DefaultParagraphSeparator,
+			expect: "test" + DefaultParagraphSeparator + "test",
 		},
 		{
 			name: "replace multiple paras using para number",
-			input: DefaultParagraphSeparator + DefaultParagraphSeparator + DefaultParagraphSeparator,
+			input: DefaultParagraphSeparator + DefaultParagraphSeparator,
 			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
 				newLine := fmt.Sprintf("test%d", idx)
 				return []string{newLine}
 			},
-			expect: "test0" + DefaultParagraphSeparator + "test1" + DefaultParagraphSeparator + "test2" + DefaultParagraphSeparator,
+			expect: "test0" + DefaultParagraphSeparator + "test1" + DefaultParagraphSeparator + "test2",
 		},
 		{
 			name: "insert extra para at target position",
-			input: "para0" + DefaultParagraphSeparator + "para2" + DefaultParagraphSeparator,
+			input: "para0" + DefaultParagraphSeparator + "para2",
 			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
 				if idx == 0 {
 					return []string{para, "para1"}
 				}
 				return []string{para}
 			},
-			expect: "para0" + DefaultParagraphSeparator + "para1" + DefaultParagraphSeparator + "para2" + DefaultParagraphSeparator,
+			expect: "para0" + DefaultParagraphSeparator + "para1" + DefaultParagraphSeparator + "para2",
 		},
 		{
 			name: "delete para at target position",
-			input: "para0" + DefaultParagraphSeparator + "extra" + DefaultParagraphSeparator + "para1" + DefaultParagraphSeparator,
+			input: "para0" + DefaultParagraphSeparator + "extra" + DefaultParagraphSeparator + "para1",
 			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
 				if idx == 1 {
 					return []string{}
 				}
 				return []string{para}
 			},
-			expect: "para0" + DefaultParagraphSeparator + "para1" + DefaultParagraphSeparator,
+			expect: "para0" + DefaultParagraphSeparator + "para1",
 		},
 	}
 	
