@@ -622,3 +622,110 @@ func Test_ApplyParagraphsOpts(t *testing.T) {
 		})
 	}
 }
+
+func Test_Indent(t *testing.T) {
+	testCases := []struct{
+		name string
+		input string
+		level int
+		expect string
+	}{
+		{
+			name: "do nothing to empty editor",
+			input: "",
+			level: 20,
+			expect: "",
+		},
+		{
+			name: "empty line, 0 levels",
+			input: DefaultLineSeparator,
+			level: 0,
+			expect: DefaultLineSeparator,
+		},
+		{
+			name: "empty line, -1 levels",
+			input: DefaultLineSeparator,
+			level: -1,
+			expect: DefaultLineSeparator,
+		},
+		{
+			name: "empty line, 1 level",
+			input: DefaultLineSeparator,
+			level: 1,
+			expect: DefaultIndentString + DefaultLineSeparator,
+		},
+		{
+			name: "empty line, multiple levels",
+			input: DefaultLineSeparator,
+			level: 3,
+			expect: DefaultIndentString + DefaultIndentString + DefaultIndentString + DefaultLineSeparator,
+		},
+		{
+			name: "non-empty line, 0 levels",
+			input: "test" + DefaultLineSeparator,
+			level: 0,
+			expect: "test" + DefaultLineSeparator,
+		},
+		{
+			name: "non-empty string, -1 levels",
+			input: "test" + DefaultLineSeparator,
+			level: -1,
+			expect: "test" + DefaultLineSeparator,
+		},
+		{
+			name: "non-empty string, 1 level",
+			input: "test" + DefaultLineSeparator,
+			level: 1,
+			expect: DefaultIndentString + "test" + DefaultLineSeparator,
+		},
+		{
+			name: "non-empty string, multiple levels",
+			input: "test" + DefaultLineSeparator,
+			level: 3,
+			expect: DefaultIndentString + DefaultIndentString + DefaultIndentString + "test" + DefaultLineSeparator,
+		},
+		{
+			name: "multi-line string, 0 levels",
+			input: "test0" + DefaultLineSeparator + "test1" + DefaultLineSeparator + "test2" + DefaultLineSeparator,
+			level: 0,
+			expect: "test0" + DefaultLineSeparator +
+			        "test1" + DefaultLineSeparator +
+			        "test2" + DefaultLineSeparator,
+		},
+		{
+			name: "multi-line string, -1 levels",
+			input: "test0" + DefaultLineSeparator + "test1" + DefaultLineSeparator + "test2" + DefaultLineSeparator,
+			level: -1,
+			expect: "test0" + DefaultLineSeparator +
+			        "test1" + DefaultLineSeparator +
+			        "test2" + DefaultLineSeparator,
+		},
+		{
+			name: "multi-line string, 1 levels",
+			input: "test0" + DefaultLineSeparator + "test1" + DefaultLineSeparator + "test2" + DefaultLineSeparator,
+			level: 1,
+			expect: DefaultIndentString + "test0" + DefaultLineSeparator +
+			        DefaultIndentString + "test1" + DefaultLineSeparator +
+			        DefaultIndentString + "test2" + DefaultLineSeparator,
+		},
+		{
+			name: "multi-line string, multiple levels",
+			input: "test0" + DefaultLineSeparator + "test1" + DefaultLineSeparator + "test2" + DefaultLineSeparator,
+			level: 3,
+			expect: DefaultIndentString + DefaultIndentString + DefaultIndentString + "test0" + DefaultLineSeparator +
+			        DefaultIndentString + DefaultIndentString + DefaultIndentString + "test1" + DefaultLineSeparator +
+			        DefaultIndentString + DefaultIndentString + DefaultIndentString + "test2" + DefaultLineSeparator,
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			actual := Edit(tc.input).Indent(tc.level).String()
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
+// NOTE: IndentOpts needs to test ALL permutations of options: preserveparas, custom line sep, custom para sep, AND trailing line behave.
+
