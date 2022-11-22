@@ -727,5 +727,172 @@ func Test_Indent(t *testing.T) {
 	}
 }
 
-// NOTE: IndentOpts needs to test ALL permutations of options: preserveparas, custom line sep, custom para sep, AND trailing line behave.
+	
+// NOTE: IndentOpts needs to test ALL permutations of options: preserveparas, custom line sep, custom para sep, AND trailing line behave, as well as
+// indentStr ofc.
+func Test_IndentOpts(t *testing.T) {
+	testCases := []struct{
+		name string
+		input string
+		level int
+		options Options
+		expect string
+	}{
+		{
+			name: "empty line, noTrailing",
+			input: "",
+			level: 1,
+			options: Options{NoTrailingLineSeparators: true}
+			expect: DefaultIndentString,
+		},
+		{
+			name: "empty line, custom str",
+			input: DefaultLineSeparator,
+			level: 1,
+			options: Options{IndentStr: ">"}
+			expect: ">" + DefaultLineSeparator,
+		},
+		{
+			name: "empty line, custom str, noTrailing",
+			input: "",
+			level: 1,
+			options: Options{IndentStr: ">", NoTrailingLineSeparators: true}
+			expect: ">",
+		},
+		{
+			name: "multi-line, noTrailing",
+			input: "",
+			level: 1,
+			options: Options{IndentStr: ">", NoTrailingLineSeparators: true}
+			expect: ">",
+		},
+		{
+			name: "multi-line, custom paraSep",
+		},
+		{
+			name: "multi-line, preserveParas",
+		},
+		{
+			name: "multi-line, custom str",
+		},
+		{
+			name: "multi-line, custom lineSep",
+		},
+		{
+			name: "multi-line, noTrailing, custom str",
+		},
+		{
+			name: "multi-line, noTrailing, custom lineSep",
+		},
+		{
+			name: "multi-line, noTrailing, custom str, custom lineSep",
+		},
+		{
+			name: "multi-line, custom str, custom lineSep",
+		},
+		{
+			name: "multi-para",
+		},
+		{
+			name: "multi-para, custom str",
+		},
+		{
+			name: "multi-para, custom lineSep",
+		},
+		{
+			name: "multi-para, custom paraSep",
+		},
+		{
+			name: "multi-para, noTrailing",
+		},
+		{
+			name: "multi-para, preserveParas",
+		},
+		{
+			name: "multi-para, custom str, custom lineSep",
+		},
+		{
+			name: "multi-para, custom str, custom paraSep",
+		},
+		{
+			name: "multi-para, custom str, noTrailing",
+		},
+		{
+			name: "multi-para, custom str, preserveParas",
+		},
+		{
+			name: "multi-line, custom lineSep, custom paraSep",
+		},
+		{
+			name: "multi-line, custom lineSep, noTrailing",
+		},
+		{
+			name: "multi-line, custom lineSep, preserveParas",
+		},
+		{
+			name: "multi-line, custom paraSep, noTrailing",
+		},
+		{
+			name: "multi-line, custom paraSep, preserveParas",
+		},
+		{
+			name: "multi-line, noTrailing, preserveParas",
+		},
+		{
+			name: "multi-line, custom str, custom lineSep, custom paraSep",
+		},
+		{
+			name: "multi-line, custom str, custom lineSep, noTrailing",
+		},
+		{
+			name: "multi-line, custom str, custom lineSep, preserveParas",
+		},
+		{
+			name: "multi-line, custom str, custom paraSep, noTrailing",
+		},
+		{
+			name: "multi-line, custom str, custom paraSep, preserveParas",
+		},
+		{
+			name: "multi-line, custom str, noTrailing, preserveParas",
+		},
+		{
+			name: "multi-line, custom lineSep, custom paraSep, noTrailing",
+		},
+		{
+			name: "multi-line, custom lineSep, custom paraSep, preserveParas",
+		},
+		{
+			name: "multi-line, custom lineSep, noTrailing, preserveParas",
+		},
+		{
+			name: "multi-line, custom paraSep, noTrailing, preserveParas",
+		},
+		{
+			name: "multi-line, custom str, custom lineSep, custom paraSep, noTrailing",
+		},
+		{
+			name: "multi-line, custom str, custom lineSep, custom paraSep, preserveParas",
+		},
+		{
+			name: "multi-line, custom lineSep, custom paraSep, preserveParas, noTrailing",
+		},
+		{
+			name: "multi-line, custom str, custom lineSep, custom paraSep, preserveParas, noTrailing",
+		},
+		// didnt cover EVERY permutation but have several, should be good if we cover them.
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			
+			actualDirect := Edit(tc.input).IndentOpts(tc.level, tc.options).String()
+			actualPreOpts := Edit(tc.input).WithOptions(tc.options).Indent(tc.level).String()
+			
+			assert.Equal(tc.expect, actualDirect, "IndentOpts(opts) check failed")
+			assert.Equal(tc.expect, actualPreOpts, "WithOptions(opts).Indent() check failed")
+			
+		})
+	}
 
