@@ -351,8 +351,16 @@ func (ed Editor) IndentOpts(level int, opts Options) Editor {
 		// only have the one line, returne that
 		return []string{newLine}
 	}
-
-	return ed.ApplyOpts(doIndent, opts)
+	
+	if opts.WithDefaults().PreserveParagraphs {
+		doIndentPara := func(_ int, para, _, _ string) []string {
+			output := Edit(para).WithOptions(opts).ApplyOpts(doIndent, opts).String()
+			return []string{output}
+		}
+		return ed.ApplyParagraphsOpts(doIndentPara, opts)
+	} else {
+		return ed.ApplyOpts(doIndent, opts)
+	}
 }
 
 // CollapseSpace converts all runs of white space characters to a single
