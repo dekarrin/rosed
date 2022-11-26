@@ -742,145 +742,963 @@ func Test_IndentOpts(t *testing.T) {
 			name: "empty line, noTrailing",
 			input: "",
 			level: 1,
-			options: Options{NoTrailingLineSeparators: true}
+			options: Options{
+				NoTrailingLineSeparators: true,
+			},
 			expect: DefaultIndentString,
 		},
 		{
 			name: "empty line, custom str",
 			input: DefaultLineSeparator,
 			level: 1,
-			options: Options{IndentStr: ">"}
+			options: Options{
+				IndentStr: ">",
+			},
 			expect: ">" + DefaultLineSeparator,
 		},
 		{
 			name: "empty line, custom str, noTrailing",
 			input: "",
 			level: 1,
-			options: Options{IndentStr: ">", NoTrailingLineSeparators: true}
+			options: Options{
+				IndentStr: ">",
+				NoTrailingLineSeparators: true,
+			},
 			expect: ">",
 		},
 		{
-			name: "multi-line, noTrailing",
-			input: "",
+			name: "multi-line, custom str",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
 			level: 1,
-			options: Options{IndentStr: ">", NoTrailingLineSeparators: true}
+			options: Options{
+				IndentStr: ">",
+			},
+			
+		},
+		{
+			name: "multi-line, noTrailing",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				NoTrailingLineSeparators: true,
+			},
 			expect: ">",
 		},
 		{
 			name: "multi-line, custom paraSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				ParagraphSeparator: "<p><p>",
+			},
 		},
 		{
 			name: "multi-line, preserveParas",
-		},
-		{
-			name: "multi-line, custom str",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				PreserveParagraphs: true,
+			},
 		},
 		{
 			name: "multi-line, custom lineSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				LineSeparator: "<p>",
+			},
 		},
 		{
-			name: "multi-line, noTrailing, custom str",
+			name: "multi-line, custom str, noTrailing",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				NoTrailingLineSeparators: true,
+			},
 		},
 		{
-			name: "multi-line, noTrailing, custom lineSep",
+			name: "multi-line, custom str, custom paraSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				ParagraphSeparator: "<p><p>",
+			},
 		},
 		{
-			name: "multi-line, noTrailing, custom str, custom lineSep",
+			name: "multi-line, custom str, preserveParas",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				PreserveParagraphs: true,
+			},
 		},
 		{
 			name: "multi-line, custom str, custom lineSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				LineSeparator: "<p>",
+			},
 		},
 		{
-			name: "multi-para",
-		},
-		{
-			name: "multi-para, custom str",
-		},
-		{
-			name: "multi-para, custom lineSep",
-		},
-		{
-			name: "multi-para, custom paraSep",
-		},
-		{
-			name: "multi-para, noTrailing",
-		},
-		{
-			name: "multi-para, preserveParas",
-		},
-		{
-			name: "multi-para, custom str, custom lineSep",
-		},
-		{
-			name: "multi-para, custom str, custom paraSep",
-		},
-		{
-			name: "multi-para, custom str, noTrailing",
-		},
-		{
-			name: "multi-para, custom str, preserveParas",
-		},
-		{
-			name: "multi-line, custom lineSep, custom paraSep",
-		},
-		{
-			name: "multi-line, custom lineSep, noTrailing",
-		},
-		{
-			name: "multi-line, custom lineSep, preserveParas",
-		},
-		{
-			name: "multi-line, custom paraSep, noTrailing",
-		},
-		{
-			name: "multi-line, custom paraSep, preserveParas",
+			name: "multi-line, noTrailing, custom paraSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				NoTrailingLineSeparators: true,
+				ParagraphSeparator: "<p><p>",
+			}, 
 		},
 		{
 			name: "multi-line, noTrailing, preserveParas",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				NoTrailingLineSeparators: true,
+				PreserveParagraphs: true,
+			},
 		},
 		{
-			name: "multi-line, custom str, custom lineSep, custom paraSep",
+			name: "multi-line, noTrailing, custom lineSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				NoTrailingLineSeparators: true,
+				LineSeparator: "<p>",
+			},
 		},
 		{
-			name: "multi-line, custom str, custom lineSep, noTrailing",
+			name: "multi-line, custom paraSep, preserveParas",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				ParagraphSeparator: "<p><p>",
+				PreserveParagraphs: true,
+			},
 		},
 		{
-			name: "multi-line, custom str, custom lineSep, preserveParas",
+			name: "multi-line, custom paraSep (folded), custom lineSep (folded)",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				ParagraphSeparator: "<p><p>",
+				LineSeparator: "<p>",
+			},
 		},
 		{
-			name: "multi-line, custom str, custom paraSep, noTrailing",
+			name: "multi-line, custom paraSep (non-folded), custom lineSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				ParagraphSeparator: "<para>",
+				LineSeparator: "<p>",
+			},
 		},
 		{
-			name: "multi-line, custom str, custom paraSep, preserveParas",
+			name: "multi-line, custom paraSep, custom lineSep (non-folded)",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				ParagraphSeparator: "<p><p>",
+				LineSeparator: "<br/>",
+			},
+		},
+		{
+			name: "multi-line, preserveParas, custom lineSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				PreserveParagraphs: true,
+				LineSeparator: "<p>",
+			},
+		},
+		{
+			name: "multi-line, custom str, noTrailing, custom paraSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				NoTrailingLineSeparators: true,
+				ParagraphSeparator: "<p><p>",
+			},
 		},
 		{
 			name: "multi-line, custom str, noTrailing, preserveParas",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				NoTrailingLineSeparators: true,
+				PreserveParagraphs: true,
+			},
 		},
 		{
-			name: "multi-line, custom lineSep, custom paraSep, noTrailing",
+			name: "multi-line, custom str, noTrailing, custom lineSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				NoTrailingLineSeparators: true,
+				LineSeparator: "<p>",
+			},
 		},
 		{
-			name: "multi-line, custom lineSep, custom paraSep, preserveParas",
+			name: "multi-line, custom str, custom paraSep, preserveParas",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{IndentStr: ">", ParagraphSeparator: "<p><p>", PreserveParagraphs: true}, 
 		},
 		{
-			name: "multi-line, custom lineSep, noTrailing, preserveParas",
+			name: "multi-line, custom str, custom paraSep (folded), custom lineSep (folded)",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				ParagraphSeparator: "<p><p>",
+				LineSeparator: "<p>",
+			},
 		},
 		{
-			name: "multi-line, custom paraSep, noTrailing, preserveParas",
+			name: "multi-line, custom str, custom paraSep (non-folded), custom lineSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				ParagraphSeparator: "<para>",
+				LineSeparator: "<p>",
+			},
 		},
 		{
-			name: "multi-line, custom str, custom lineSep, custom paraSep, noTrailing",
+			name: "multi-line, custom str, custom paraSep, custom lineSep (non-folded)",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				ParagraphSeparator: "<p><p>",
+				LineSeparator: "<br/>",
+			},
 		},
 		{
-			name: "multi-line, custom str, custom lineSep, custom paraSep, preserveParas",
+			name: "multi-line, custom str, preserveParas, custom lineSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				PreserveParagraphs: true,
+				LineSeparator: "<p>",
+			},
 		},
 		{
-			name: "multi-line, custom lineSep, custom paraSep, preserveParas, noTrailing",
+			name: "multi-line, noTrailing, custom paraSep, preserveParas",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				NoTrailingLineSeparators: true,
+				ParagraphSeparator: "<p><p>",
+				PreserveParagraphs: true,
+			},
 		},
 		{
-			name: "multi-line, custom str, custom lineSep, custom paraSep, preserveParas, noTrailing",
+			name: "multi-line, noTrailing, custom paraSep (folded), custom lineSep (folded)",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				NoTrailingLineSeparators: true,
+				ParagraphSeparator: "<p><p>",
+				LineSeparator: "<p>",
+			},
 		},
-		// didnt cover EVERY permutation but have several, should be good if we cover them.
+		{
+			name: "multi-line, noTrailing, custom paraSep (non-folded), custom lineSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				NoTrailingLineSeparators: true,
+				ParagraphSeparator: "<para>",
+				LineSeparator: "<p>",
+			},
+		},
+		{
+			name: "multi-line, noTrailing, custom paraSep, custom lineSep (non-folded)",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				NoTrailingLineSeparators: true,
+				ParagraphSeparator: "<p><p>",
+				LineSeparator: "<br/>",
+			},
+		},
+		{
+			name: "multi-line, noTrailing, preserveParas, custom lineSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				NoTrailingLineSeparators: true,
+				PreserveParagraphs: true,
+				LineSeparator: "<p>",
+			},
+		},
+		{
+			name: "multi-line, custom paraSep (folded), preserveParas, custom lineSep (folded)",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				ParagraphSeparator: "<p><p>",
+				PreserveParagraphs: true,
+				LineSeparator: "<p>",
+			},
+		},
+		{
+			name: "multi-line, custom paraSep (non-folded), preserveParas, custom lineSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				ParagraphSeparator: "<para>",
+				PreserveParagraphs: true,
+				LineSeparator: "<p>",
+			},
+		},
+		{
+			name: "multi-line, custom paraSep, preserveParas, custom lineSep (non-folded)",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				ParagraphSeparator: "<p><p>",
+				PreserveParagraphs: true,
+				LineSeparator: "<br/>",
+			},
+		},
+		{
+			name: "multi-line, custom str, noTrailing, custom paraSep, preserveParas",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				NoTrailingLineSeparators: true,
+				ParagraphSeparator: "<p><p>",
+				PreserveParagraphs: true,
+			},
+		},
+		{
+			name: "multi-line, custom str, noTrailing, custom paraSep (folded), custom lineSep (folded)",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				NoTrailingLineSeparators: true,
+				ParagraphSeparator: "<p><p>",
+				LineSeparator: "<p>",
+			},
+		},
+		{
+			name: "multi-line, custom str, noTrailing, custom paraSep (non-folded), custom lineSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				NoTrailingLineSeparators: true,
+				ParagraphSeparator: "<para>",
+				LineSeparator: "<p>",
+			},
+		},
+		{
+			name: "multi-line, custom str, noTrailing, custom paraSep, custom lineSep (non-folded)",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				NoTrailingLineSeparators: true,
+				ParagraphSeparator: "<p><p>",
+				LineSeparator: "<br/>",
+			},
+		},
+		{
+			name: "multi-line, custom str, noTrailing, preserveParas, custom lineSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				NoTrailingLineSeparators: true,
+				PreserveParagraphs: true,
+				LineSeparator: "<p>",
+			},
+		},
+		{
+			name: "multi-line, custom str, custom paraSep (folded), preserveParas, custom lineSep (folded)",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				ParagraphSeparator: "<p><p>",
+				PreserveParagraphs: true,
+				LineSeparator: "<p>",
+			},
+		},
+		{
+			name: "multi-line, custom str, custom paraSep (non-folded), preserveParas, custom lineSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				ParagraphSeparator: "<para>",
+				PreserveParagraphs: true,
+				LineSeparator: "<p>",
+			},
+		},
+		{
+			name: "multi-line, custom str, custom paraSep, preserveParas, custom lineSep (non-folded)",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				ParagraphSeparator: "<p><p>",
+				PreserveParagraphs: true,
+				LineSeparator: "<br/>",
+			},
+		},
+		{
+			name: "multi-line, noTrailing, custom paraSep (folded), preserveParas, custom lineSep (folded)",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				NoTrailingLineSeparators: true,
+				ParagraphSeparator: "<p><p>",
+				PreserveParagraphs: true,
+				LineSeparator: "<p>",
+			},
+		},
+		{
+			name: "multi-line, noTrailing, custom paraSep (non-folded), preserveParas, custom lineSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				NoTrailingLineSeparators: true,
+				ParagraphSeparator: "<para>",
+				PreserveParagraphs: true,
+				LineSeparator: "<p>",
+			},
+		},
+		{
+			name: "multi-line, noTrailing, custom paraSep, preserveParas, custom lineSep (non-folded)",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				NoTrailingLineSeparators: true,
+				ParagraphSeparator: "<p><p>",
+				PreserveParagraphs: true,
+				LineSeparator: "<br/>",
+			},
+		},
+		{
+			name: "multi-line, custom str, noTrailing, custom paraSep (folded), preserveParas, custom lineSep (folded)",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				NoTrailingLineSeparators: true,
+				ParagraphSeparator: "<p><p>",
+				PreserveParagraphs: true,
+				LineSeparator: "<p>",
+			},
+		},
+		{
+			name: "multi-line, custom str, noTrailing, custom paraSep (non-folded), preserveParas, custom lineSep",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				NoTrailingLineSeparators: true,
+				ParagraphSeparator: "<para>",
+				PreserveParagraphs: true,
+				LineSeparator: "<p>",
+			},
+		},
+		{
+			name: "multi-line, custom str, noTrailing, custom paraSep, preserveParas, custom lineSep (non-folded)",
+			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
+				"folded with custom parasep break<p>\n" +
+				"and a normal para end\n\n" +
+				"with some more breaks\n" +
+				"and another<p>" +
+				"custom para end folded with custom parasep<p><p>" +
+				"a third possible para\n\n" +
+				"finally a completely<p>" +
+				"unique para end<para>\n" +
+				"and some text<br/>" +
+				"to break things up",
+			level: 1,
+			options: Options{
+				IndentStr: ">",
+				NoTrailingLineSeparators: true,
+				ParagraphSeparator: "<p><p>",
+				PreserveParagraphs: true,
+				LineSeparator: "<br/>",
+			},
+		},
 	}
 	
 	for _, tc := range testCases {
@@ -895,4 +1713,5 @@ func Test_IndentOpts(t *testing.T) {
 			
 		})
 	}
+}
 
