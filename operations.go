@@ -324,6 +324,8 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 // of each line in the Editor. If level is 0 or less, the text is unchanged.
 //
 // Need to make note for NoTrailing behavior.
+//
+// note that custom parasep does nothing if not combined w preserve.
 func (ed Editor) Indent(level int) Editor {
 	return ed.IndentOpts(level, ed.Options)
 }

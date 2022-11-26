@@ -773,73 +773,56 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
 				"and some text<br/>" +
-				"to break things up",
+				"to break things up\n",
 			level: 1,
 			options: Options{
 				IndentStr: ">",
 			},
+			expect: ">here is a custom multi-line with unique break,<br/>normal break\n" +
+				">folded with custom parasep break<p>\n" +
+				">and a normal para end\n>\n" +
+				">with some more breaks\n" +
+				">and another<p>" +
+				"custom line end folded with custom parasep<p><p>" +
+				"a third possible para\n>\n" +
+				">finally a completely<p>" +
+				"unique para end<para>\n" +
+				">and some text<br/>" +
+				"to break things up\n",
 			
 		},
 		{
 			name: "multi-line, noTrailing",
-			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
-				"folded with custom parasep break<p>\n" +
-				"and a normal para end\n\n" +
-				"with some more breaks\n" +
-				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
-				"a third possible para\n\n" +
-				"finally a completely<p>" +
-				"unique para end<para>\n" +
-				"and some text<br/>" +
-				"to break things up",
+			input: "line0\nline1\n",
 			level: 1,
 			options: Options{
 				NoTrailingLineSeparators: true,
 			},
-			expect: ">",
+			expect: "\tline0\n\tline1\n\t",
 		},
 		{
 			name: "multi-line, custom paraSep",
-			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
-				"folded with custom parasep break<p>\n" +
-				"and a normal para end\n\n" +
-				"with some more breaks\n" +
-				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
-				"a third possible para\n\n" +
-				"finally a completely<p>" +
-				"unique para end<para>\n" +
-				"and some text<br/>" +
-				"to break things up",
+			input: "p0,line0\np0,line1\np0,line2<p><p>p1,line0\np1,line1",
 			level: 1,
 			options: Options{
 				ParagraphSeparator: "<p><p>",
 			},
+			expect: "\tp0,line0\n\tp0,line1\n\tp0,line2<p><p>p1,line0\n\tp1,line1",
 		},
 		{
 			name: "multi-line, preserveParas",
-			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
-				"folded with custom parasep break<p>\n" +
-				"and a normal para end\n\n" +
-				"with some more breaks\n" +
-				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
-				"a third possible para\n\n" +
-				"finally a completely<p>" +
-				"unique para end<para>\n" +
-				"and some text<br/>" +
-				"to break things up",
+			input: "p0,line0\np0,line1\n\np1,line0\np1,line1",
 			level: 1,
 			options: Options{
 				PreserveParagraphs: true,
 			},
-		},
+			expect: "\tp0,line0\n\tp0,line1\n\n\tp1,line0\n\tp1,line1",
+		},/*
 		{
 			name: "multi-line, custom lineSep",
 			input: "here is a custom multi-line with unique break,<br/>normal break\n" +
@@ -847,7 +830,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -865,7 +848,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -884,7 +867,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -903,7 +886,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -922,7 +905,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -941,7 +924,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -960,7 +943,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -979,7 +962,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -998,7 +981,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1017,7 +1000,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1036,7 +1019,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1055,7 +1038,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1074,7 +1057,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1093,7 +1076,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1113,7 +1096,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1133,7 +1116,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1153,7 +1136,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1169,7 +1152,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1189,7 +1172,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1209,7 +1192,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1229,7 +1212,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1249,7 +1232,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1269,7 +1252,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1289,7 +1272,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1309,7 +1292,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1329,7 +1312,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1349,7 +1332,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1369,7 +1352,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1389,7 +1372,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1409,7 +1392,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1430,7 +1413,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1451,7 +1434,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1472,7 +1455,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1493,7 +1476,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1514,7 +1497,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1535,7 +1518,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1556,7 +1539,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1577,7 +1560,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1598,7 +1581,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1619,7 +1602,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1640,7 +1623,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1662,7 +1645,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1684,7 +1667,7 @@ func Test_IndentOpts(t *testing.T) {
 				"and a normal para end\n\n" +
 				"with some more breaks\n" +
 				"and another<p>" +
-				"custom para end folded with custom parasep<p><p>" +
+				"custom line end folded with custom parasep<p><p>" +
 				"a third possible para\n\n" +
 				"finally a completely<p>" +
 				"unique para end<para>\n" +
@@ -1698,7 +1681,7 @@ func Test_IndentOpts(t *testing.T) {
 				PreserveParagraphs: true,
 				LineSeparator: "<br/>",
 			},
-		},
+		},*/
 	}
 	
 	for _, tc := range testCases {
