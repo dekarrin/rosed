@@ -943,3 +943,21 @@ func Test_IndentOpts(t *testing.T) {
 	}
 }
 
+func Test_Justify(t *testing.T) {
+	testCases := []struct{
+		name string
+		input string
+		width int
+		expect string
+	}{
+		
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			actual := Edit(tc.input).Justify(tc.level).String()
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
