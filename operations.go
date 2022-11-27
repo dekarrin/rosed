@@ -336,6 +336,12 @@ func (ed Editor) Indent(level int) Editor {
 // The provided Options object is used to override the options currently set on
 // the Editor for the indent. LineSeparator, IndentStr, and
 // NoTrailingLineSeparators are read from the provided Options obejct.
+//
+// add note on a folded line term with no line terminators that ends up ambiguous
+// w a complete run of para sep, para sep will be prioritized so if parasep is
+// "\n\n" and lineSep is "\n" and noTrailing is on, the sequence \n\n\n will be
+// interpreted as 'PARA BREAK' followed by 'LINE BREAK'. probably not intended but
+// will need to fix this in a later version.
 func (ed Editor) IndentOpts(level int, opts Options) Editor {
 	if level < 1 {
 		// caller wants fewer than 1 indent. Okay, that is zero; return
