@@ -449,7 +449,11 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 			text := bl.Join()
 
 			// remove separator (if any)
-			para = text.Sub(sepStart.Len(), -sepEnd.Len())
+			if sepEnd.Len() > 0 {
+				para = text.Sub(sepStart.Len(), -sepEnd.Len())
+			} else {
+				para = text.Sub(sepStart.Len(), text.Len())
+			}
 			return []gem.String{para}
 		}, opts)
 	}

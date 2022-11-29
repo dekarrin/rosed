@@ -1052,7 +1052,7 @@ func Test_JustifyOpts(t *testing.T) {
 				"pleasing        manner" +
 				DefaultParagraphSeparator +
 				"a   second   paragraph" + DefaultLineSeparator +
-				"which  should also  be" + DefaultLineSeparator +
+				"which  should  also be" + DefaultLineSeparator +
 				"respected",
 		},
 		{
@@ -1074,7 +1074,7 @@ func Test_JustifyOpts(t *testing.T) {
 				"pleasing        manner" +
 				"<P> <P>" +
 				"a   second   paragraph" + DefaultLineSeparator +
-				"which  should also  be" + DefaultLineSeparator +
+				"which  should  also be" + DefaultLineSeparator +
 				"respected",
 		},
 	}
