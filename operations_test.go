@@ -1012,3 +1012,84 @@ func Test_Justify(t *testing.T) {
 		})
 	}
 }
+
+func Test_JustifyOpts(t *testing.T) {
+	testCases := []struct{
+		name string
+		input string
+		width int
+		options Options
+		expect string
+	}{
+		{
+			name: "multi-line, noTrailing",
+			input:  "a set of three lines" + DefaultLineSeparator +
+				"to justify in a" + DefaultLineSeparator +
+				"pleasing manner" + DefaultLineSeparator,
+			width: 22,
+			options: Options{
+				NoTrailingLineSeparators: true,
+			},
+			expect: "a  set of three  lines" + DefaultLineSeparator +
+				"to    justify   in   a" + DefaultLineSeparator +
+				"pleasing        manner" + DefaultLineSeparator,
+		},
+		{
+			name: "multi-paragraph, preserved, default parasep",
+			input:  "a set of three lines" + DefaultLineSeparator +
+				"to justify in a" + DefaultLineSeparator +
+				"pleasing manner" +
+				DefaultParagraphSeparator +
+				"a second paragraph" + DefaultLineSeparator +
+				"which should also be" + DefaultLineSeparator +
+				"respected",
+			width: 22,
+			options: Options{
+				PreserveParagraphs: true,
+			},
+			expect: "a  set of three  lines" + DefaultLineSeparator +
+				"to    justify   in   a" + DefaultLineSeparator +
+				"pleasing        manner" +
+				DefaultParagraphSeparator +
+				"a   second   paragraph" + DefaultLineSeparator +
+				"which  should also  be" + DefaultLineSeparator +
+				"respected",
+		},
+		{
+			name: "multi-paragraph, preserved, custom parasep",
+			input:  "a set of three lines" + DefaultLineSeparator +
+				"to justify in a" + DefaultLineSeparator +
+				"pleasing manner" +
+				"<P> <P>" +
+				"a second paragraph" + DefaultLineSeparator +
+				"which should also be" + DefaultLineSeparator +
+				"respected",
+			width: 22,
+			options: Options{
+				ParagraphSeparator: "<P> <P>",
+				PreserveParagraphs: true,
+			},
+			expect: "a  set of three  lines" + DefaultLineSeparator +
+				"to    justify   in   a" + DefaultLineSeparator +
+				"pleasing        manner" +
+				"<P> <P>" +
+				"a   second   paragraph" + DefaultLineSeparator +
+				"which  should also  be" + DefaultLineSeparator +
+				"respected",
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			
+			actualDirect := Edit(tc.input).JustifyOpts(tc.width, tc.options).String()
+			actualPreOpts := Edit(tc.input).WithOptions(tc.options).Justify(tc.width).String()
+			
+			assert.Equal(tc.expect, actualDirect, "JustifyOpts(opts) check failed")
+			assert.Equal(tc.expect, actualPreOpts, "WithOptions(opts).Justify() check failed")
+			
+		})
+	}
+}
+
