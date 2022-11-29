@@ -950,13 +950,64 @@ func Test_Justify(t *testing.T) {
 		width int
 		expect string
 	}{
-		
+		{
+			name: "empty string",
+			input: "",
+			width: 10,
+			expect: "",
+		},
+		{
+			name: "no spaces",
+			input: "bluh",
+			width: 10,
+			expect: "bluh",
+		},
+		{
+			name: "2 words",
+			input: "word1 word2",
+			width: 20,
+			expect: "word1          word2",
+		},
+		{
+			name: "3 words",
+			input: "word1 word2 word3",
+			width: 20,
+			expect: "word1   word2  word3",
+		},
+		{
+			name: "3 words with runs of spaces",
+			input: "word1        word2  word3",
+			width: 20,
+			expect: "word1   word2  word3",
+		},
+		{
+			name: "line longer than width",
+			input: "hello",
+			width: 3,
+			expect: "hello",
+		},
+		{
+			name: "bad width",
+			input: "bluh",
+			width: -1,
+			expect: "bluh",
+		},
+		{
+			name: "multi-line",
+			input:  "a set of three lines" + DefaultLineSeparator +
+				"to justify in a" + DefaultLineSeparator +
+				"pleasing manner",
+			width: 22,
+			expect: "a  set of three  lines" + DefaultLineSeparator +
+				"to    justify   in   a" + DefaultLineSeparator +
+				"pleasing        manner",
+		},
 	}
 	
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
-			actual := Edit(tc.input).Justify(tc.level).String()
+			actual := Edit(tc.input).Justify(tc.width).String()
 			assert.Equal(tc.expect, actual)
 		})
 	}
