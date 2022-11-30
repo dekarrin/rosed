@@ -1155,10 +1155,10 @@ func Test_InsertTwoColumns(t *testing.T) {
 			expect: "Column number   This is a test" + DefaultLineSeparator +
 				"one is right    string for the" + DefaultLineSeparator +
 				"here! And it    right side"     + DefaultLineSeparator +
-				"has a lot of"                   + DefaultLineSeparator +
-				"content that"                   + DefaultLineSeparator +
-				"will be"                        + DefaultLineSeparator +
-				"included"                       + DefaultLineSeparator,
+				"has a lot of    "               + DefaultLineSeparator +
+				"content that    "               + DefaultLineSeparator +
+				"will be         "               + DefaultLineSeparator +
+				"included        "               + DefaultLineSeparator,
 		},
 		{
 			name: "equal size columns",
@@ -1174,6 +1174,57 @@ func Test_InsertTwoColumns(t *testing.T) {
 			expect: "Column number   This is a test" + DefaultLineSeparator +
 				"one is right    string for the" + DefaultLineSeparator +
 				"here!           right side"     + DefaultLineSeparator,
+		},
+		{
+			name: "insert in middle",
+			args: args{
+				pos: 2,
+				left: "Column number one is right here!",
+				right: "This is a test string for the right side",
+				minBetween: 2,
+				width: 30,
+				leftPercent: 0.5,
+			},
+			input: "hello",
+			expect: "heColumn number   This is a test" + DefaultLineSeparator +
+				"one is right    string for the" + DefaultLineSeparator +
+				"here!           right side"     + DefaultLineSeparator +
+				"llo",
+		},
+		{
+			name: "quarter left col",
+			args: args{
+				pos: 0,
+				left: "Column number one is right here!",
+				right: "This is a test string for the right side",
+				minBetween: 2,
+				width: 32,
+				leftPercent: 0.25,
+			},
+			input: "",
+			expect: "Column   This is a test string" + DefaultLineSeparator +
+				"number   for the right side"    + DefaultLineSeparator +
+				"one is   "                      + DefaultLineSeparator +
+				"right    "                      + DefaultLineSeparator +
+				"here!    "                      + DefaultLineSeparator,
+		},
+		{
+			name: "quarter right col",
+			args: args{
+				pos: 0,
+				left: "Column number one is right here!",
+				right: "This is a test string for the right side",
+				minBetween: 2,
+				width: 32,
+				leftPercent: 0.75,
+			},
+			input: "",
+			expect: "Column number one is    This is" + DefaultLineSeparator +
+				"right here!             a test"  + DefaultLineSeparator +
+				"                        string"  + DefaultLineSeparator +
+				"                        for the" + DefaultLineSeparator +
+				"                        right"   + DefaultLineSeparator +
+				"                        side"    + DefaultLineSeparator,
 		},
 	}
 	

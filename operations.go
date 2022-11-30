@@ -269,6 +269,7 @@ func (ed Editor) InsertTwoColumns(pos int, leftText string, rightText string, mi
 // The minimum width that a column can be is always 2 characters wide.
 //
 // ADD NOTE: will add a trailing line separator if noTrailing is false.
+// ADD NOTE: left side will be wider to meet right column side.
 func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string, minSpaceBetween int, widthTarget int, leftColPercent float64, opts Options) Editor {
 	if leftText == "" && rightText == "" {
 		return ed
@@ -314,8 +315,20 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 	opts = opts.WithDefaults()
 	leftColBlock := wrap(_g(leftText), leftColWidth, _g(opts.LineSeparator))
 	rightColBlock := wrap(_g(rightText), rightColWidth, _g(opts.LineSeparator))
+	
+	// need to get longest left-hand line and make the space between make up for the
+	// difference
+	maxLeftColLineLen := 0
+	for i := 0; i < len(leftColBlock.Lines); i++ {
+		lineLen := leftColBlock.Line(i).Len()
+		if lineLen > maxLeftColLineLen {
+			maxLeftColLineLen = lineLen
+		}
+	}
+	// if left col isnt the size it should be, add space so it is
+	spaceBetween := minSpaceBetween + (leftColWidth - maxLeftColLineLen)
 
-	combinedBlock := combineColumnBlocks(leftColBlock, rightColBlock, minSpaceBetween)
+	combinedBlock := combineColumnBlocks(leftColBlock, rightColBlock, spaceBetween)
 	combinedBlock.LineSeparator = _g(opts.LineSeparator)
 	combinedBlock.TrailingSeparator = !opts.NoTrailingLineSeparators
 
