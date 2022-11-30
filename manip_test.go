@@ -234,7 +234,7 @@ func Test_Manip_combineColumnBlocks(t *testing.T) {
 				Lines: []gem.String{
 					_g("This is a test"),
 					_g("string for the"),
-					_g("right side")},
+					_g("left side")},
 			},
 			right: block{
 				Lines: []gem.String{
@@ -252,7 +252,7 @@ func Test_Manip_combineColumnBlocks(t *testing.T) {
 				Lines: []gem.String{
 					_g("This is a test  Column number"),
 					_g("string for the  two is right"),
-					_g("right side      here! And it"),
+					_g("left side       here! And it"),
 					_g("                has a lot of"),
 					_g("                content that"),
 					_g("                will be"),

@@ -267,6 +267,8 @@ func (ed Editor) InsertTwoColumns(pos int, leftText string, rightText string, mi
 // right column will take up the rest. If leftColPercent is less than 0.0, it
 // will be assumed to be 0.0. If greater than 1.0, it will be assumed to be 1.0.
 // The minimum width that a column can be is always 2 characters wide.
+//
+// ADD NOTE: will add a trailing line separator if noTrailing is false.
 func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string, minSpaceBetween int, widthTarget int, leftColPercent float64, opts Options) Editor {
 	if leftText == "" && rightText == "" {
 		return ed

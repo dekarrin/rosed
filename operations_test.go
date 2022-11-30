@@ -1093,3 +1093,107 @@ func Test_JustifyOpts(t *testing.T) {
 	}
 }
 
+func Test_InsertTwoColumns(t *testing.T) {
+	type args struct {
+		pos int
+		left string
+		right string
+		minBetween int
+		width int
+		leftPercent float64
+	}
+
+	testCases := []struct {
+		name string
+		args args
+		input string
+		expect string
+	}{
+		{
+			name: "empty lines",
+			args: args{
+				pos: 0,
+				left: "",
+				right: "",
+				minBetween: 0,
+				width: 0,
+				leftPercent: 0.0,
+			},
+			input: "",
+			expect: "",
+		},
+		{
+			name: "right col bigger",
+			args: args{
+				pos: 0,
+				left: "This is a test string for the left side",
+				right: "Column number two is right here! And it has a lot of content that will be wrapped",
+				minBetween: 2,
+				width: 30,
+				leftPercent: 0.5,
+			},
+			input: "",
+			expect: "This is a test  Column number" + DefaultLineSeparator +
+				"string for the  two is right"  + DefaultLineSeparator +
+				"left side       here! And it"  + DefaultLineSeparator +
+				"                has a lot of"  + DefaultLineSeparator +
+				"                content that"  + DefaultLineSeparator +
+				"                will be"       + DefaultLineSeparator +
+				"                wrapped"       + DefaultLineSeparator,
+		},
+		{
+			name: "left col bigger",
+			args: args{
+				pos: 0,
+				left: "Column number one is right here! And it has a lot of content that will be included",
+				right: "This is a test string for the right side",
+				minBetween: 2,
+				width: 30,
+				leftPercent: 0.5,
+			},
+			input: "",
+			expect: "Column number   This is a test" + DefaultLineSeparator +
+				"one is right    string for the" + DefaultLineSeparator +
+				"here! And it    right side"     + DefaultLineSeparator +
+				"has a lot of"                   + DefaultLineSeparator +
+				"content that"                   + DefaultLineSeparator +
+				"will be"                        + DefaultLineSeparator +
+				"included"                       + DefaultLineSeparator,
+		},
+		{
+			name: "equal size columns",
+			args: args{
+				pos: 0,
+				left: "Column number one is right here!",
+				right: "This is a test string for the right side",
+				minBetween: 2,
+				width: 30,
+				leftPercent: 0.5,
+			},
+			input: "",
+			expect: "Column number   This is a test" + DefaultLineSeparator +
+				"one is right    string for the" + DefaultLineSeparator +
+				"here!           right side"     + DefaultLineSeparator,
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			
+			ed := Edit(tc.input)
+			ed = ed.InsertTwoColumns(
+				tc.args.pos,
+				tc.args.left,
+				tc.args.right,
+				tc.args.minBetween,
+				tc.args.width,
+				tc.args.leftPercent,
+			)
+			actual := ed.String()
+			
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
