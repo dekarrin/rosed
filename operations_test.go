@@ -1248,3 +1248,86 @@ func Test_InsertTwoColumns(t *testing.T) {
 	}
 }
 
+func Test_InsertTwoColumnsOpts(t *testing.T) {
+	type args struct {
+		pos int
+		left string
+		right string
+		minBetween int
+		width int
+		leftPercent float64
+	}
+
+	testCases := []struct {
+		name string
+		args args
+		options Options
+		input string
+		expect string
+	}{
+		{
+			name: "noTrailing = true",
+			args: args{
+				pos: 0,
+				left: "Column number one is right here!",
+				right: "This is a test string for the right side",
+				minBetween: 2,
+				width: 30,
+				leftPercent: 0.5,
+			},
+			options: Options{
+				NoTrailingLineSeparators: true,
+			},
+			input: "",
+			expect: "Column number   This is a test" + DefaultLineSeparator +
+				"one is right    string for the" + DefaultLineSeparator +
+				"here!           right side",
+		},
+		{
+			name: "custom line separator",
+			args: args{
+				pos: 0,
+				left: "Column number one is right here!",
+				right: "This is a test string for the right side",
+				minBetween: 2,
+				width: 30,
+				leftPercent: 0.5,
+			},
+			options: Options{
+				LineSeparator: "<br/>",
+			},
+			input: "",
+			expect: "Column number   This is a test<br/>" +
+				"one is right    string for the<br/>" +
+				"here!           right side<br/>",
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			
+			actualDirect := Edit(tc.input).InsertTwoColumnsOpts(
+				tc.args.pos,
+				tc.args.left,
+				tc.args.right,
+				tc.args.minBetween,
+				tc.args.width,
+				tc.args.leftPercent,
+				tc.options,
+			).String()
+			
+			actualPreOpts := Edit(tc.input).WithOptions(tc.options).InsertTwoColumns(
+				tc.args.pos,
+				tc.args.left,
+				tc.args.right,
+				tc.args.minBetween,
+				tc.args.width,
+				tc.args.leftPercent,
+			).String()
+			
+			assert.Equal(tc.expect, actualDirect, "InsertTwoColumnsOpts(opts) check failed")
+			assert.Equal(tc.expect, actualPreOpts, "WithOptions(opts).InsertTwoColumns() check failed")
+		})
+	}
+}
