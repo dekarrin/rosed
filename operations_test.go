@@ -1331,3 +1331,33 @@ func Test_InsertTwoColumnsOpts(t *testing.T) {
 		})
 	}
 }
+
+func Test_InsertDefinitionsTable(t *testing.T) {
+	testCases := []struct {
+		name string
+		input string
+		pos int
+		defs [][2]string
+		width int
+		expect string
+	}{
+		{
+			name: "empty lines",
+			input: "",
+			pos: 0,
+			defs: [][2]string{},
+			width: 10,
+			expect: "",
+		},
+	}
+	
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			actual := Edit(tc.input).InsertDefinitionsTable(tc.pos, tc.defs, tc.width).String()
+			assert.Equal(tc.expect, actual)
+		})
+	}
+	
+}
