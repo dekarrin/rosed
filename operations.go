@@ -200,7 +200,10 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 	leftWidth := longestTermLen + termLeftTabWidth
 	rightWidth := width - leftWidth - minBetween
 
-	fullTable := block{LineSeparator: _g(opts.LineSeparator)}
+	fullTable := block{
+		LineSeparator: _g(opts.LineSeparator),
+		TrailingSeparator: !opts.NoTrailingLineSeparators,
+	}
 
 	for _, item := range definitions {
 		term := item[0]
@@ -223,15 +226,25 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 		})
 		combined := combineColumnBlocks(leftCol, rightCol, minBetween)
 
-		fullTable.AppendBlock(combined)
-		fullTable.Append(gem.Zero)
+		if fullTable.Len() > 0 && combined.Len() > 0 {
+			// grab the first line and append it to last line first.
+			lastLineIdx := fullTable.Len()-1
+			lastLine := fullTable.Line(lastLineIdx)
+			lastLine = lastLine.Add(gem.New(opts.ParagraphSeparator)).Add(combined.Line(0))
+			fullTable.Set(lastLineIdx, lastLine)
+			combined.Remove(0)
+		}
+		
+		if combined.Len() > 0 {
+			fullTable.AppendBlock(combined)
+		}
 	}
-
-	if fullTable.Len() > 0 && opts.NoTrailingLineSeparators {
-		fullTable.Lines = fullTable.Lines[:len(fullTable.Lines)-1] // remove trailing newline
+	
+	if fullTable.Len() > 0 {
+		return ed.Insert(pos, fullTable.Join().String())
+	} else {
+		return ed
 	}
-
-	return ed.Insert(pos, fullTable.Join().String())
 }
 
 // InsertTwoColumns takes two seperate text sequences and puts them into two

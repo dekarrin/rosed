@@ -1396,8 +1396,7 @@ func Test_InsertDefinitionsTable(t *testing.T) {
 				{"Rose", "Has a passion for RATHER OBSCURE LITERATURE."},
 			},
 			width: 80,
-			expect: "  John  - Has a passion for REALLY TERRIBLE MOVIES." + DefaultLineSeparator +
-				DefaultLineSeparator +
+			expect: "  John  - Has a passion for REALLY TERRIBLE MOVIES." + DefaultParagraphSeparator +
 				"  Rose  - Has a passion for RATHER OBSCURE LITERATURE." + DefaultLineSeparator,
 		},
 		{
@@ -1421,8 +1420,7 @@ func Test_InsertDefinitionsTable(t *testing.T) {
 			width: 80,
 			expect: "  John  - Has a passion for REALLY TERRIBLE MOVIES. Likes to program computers" + DefaultLineSeparator +
 				"          but is NOT VERY GOOD AT IT. Has a fondness for PARANORMAL LORE, and is" + DefaultLineSeparator +
-				"          an aspiring AMATEUR MAGICIAN. Also likes to play GAMES sometimes." + DefaultLineSeparator +
-				DefaultLineSeparator +
+				"          an aspiring AMATEUR MAGICIAN. Also likes to play GAMES sometimes." + DefaultParagraphSeparator +
 				"  Rose  - Has a passion for RATHER OBSCURE LITERATURE. Enjoys creative writing" + DefaultLineSeparator +
 				"          and is SOMEWHAT SECRETIVE ABOUT IT. Has a fondness for the BEASTIALLY" + DefaultLineSeparator +
 				"          STRANGE AND FICTICIOUS, and sometimes dabbles in PSYCHOANALYSIS. Also" + DefaultLineSeparator +
@@ -1451,4 +1449,124 @@ func Test_InsertDefinitionsTable(t *testing.T) {
 		})
 	}
 	
+}
+
+func Test_InsertDefinitionsTableOpts(t *testing.T) {
+	testCases := []struct {
+		name string
+		input string
+		pos int
+		defs [][2]string
+		width int
+		options Options
+		expect string
+	}{
+		{
+			name: "for empty lines, noTrailing = true does not affect output",
+			input: "",
+			pos: 0,
+			defs: [][2]string{},
+			width: 80,
+			options: Options{NoTrailingLineSeparators: true},
+			expect: "",
+		},
+		{
+			name: "for non-empty lines, noTrailing = true means no newline at end",
+			input: "",
+			pos: 0,
+			defs: [][2]string{
+				{"def1", "this is the first definition"},
+			},
+			width: 80,
+			options: Options{NoTrailingLineSeparators: true},
+			expect: "  def1  - this is the first definition",
+		},
+		{
+			name: "custom line separator",
+			input: "",
+			pos: 0,
+			defs: [][2]string{
+				{"pumpkin", "Thing that does not exist. If it did, no it didn't. " +
+					    "In fact, you are quite certain there never was, " +
+					    "never has been, nor will there ever be a pumpkin, " +
+					    "either here or anywhere else. Pumpkin? What pumpkin?",
+				},
+			},
+			width: 80,
+			options: Options{LineSeparator: "<br/>"},
+			expect: "  pumpkin  - Thing that does not exist. If it did, no it didn't. In fact, you<br/>" +
+				"             are quite certain there never was, never has been, nor will there<br/>" +
+				"             ever be a pumpkin, either here or anywhere else. Pumpkin? What<br/>" +
+				"             pumpkin?<br/>",
+		},
+		{
+			name: "custom paragraph separator",
+			input: "",
+			pos: 0,
+			defs: [][2]string{
+				{"Dave", "Has a penchant for spinning out UNBELIEVABLY ILL JAMS with " +
+					 "his TURNTABLES AND MIXING GEAR. Likes to rave about BANDS " +
+					 "NO ONE'S EVER HEARD OF BUT HIM. Collects WEIRD DEAD THINGS " +
+					 "PRESERVED IN VARIOUS WAYS. Is an AMATEUR PHOTOGRAPHER and " +
+					 "operates own MAKESHIFT DARKROOM. Maintains a number of IRONICALLY " +
+					 "HUMOROUS BLOGS, WEBSITES, AND SOCIAL NETWORKING PROFILES. And " +
+					 "if the inspiration strikes, won't hesitate to drop some PHAT " +
+					 "RHYMES on a mofo and REPRESENT.",
+				},
+				{"Jade", "Has so many INTERESTS, she has trouble keeping track of them " +
+					 "all, even with an assortment of COLORFUL REMINDERS on her " +
+					 "fingers to help sort out everything on her mind. Nevertheless, " +
+					 "when she spends time in her GARDEN ATRIUM, the only thing on " +
+					 "her mind is her deep passion for HORTICULTURE.",
+				},
+			},
+			width: 80,
+			options: Options{ParagraphSeparator: "<P>"},
+			expect: "  Dave  - Has a penchant for spinning out UNBELIEVABLY ILL JAMS with his" + DefaultLineSeparator +
+				"          TURNTABLES AND MIXING GEAR. Likes to rave about BANDS NO ONE'S EVER" + DefaultLineSeparator +
+				"          HEARD OF BUT HIM. Collects WEIRD DEAD THINGS PRESERVED IN VARIOUS" + DefaultLineSeparator +
+				"          WAYS. Is an AMATEUR PHOTOGRAPHER and operates own MAKESHIFT DARKROOM." + DefaultLineSeparator +
+				"          Maintains a number of IRONICALLY HUMOROUS BLOGS, WEBSITES, AND SOCIAL" + DefaultLineSeparator +
+				"          NETWORKING PROFILES. And if the inspiration strikes, won't hesitate to" + DefaultLineSeparator +
+				"          drop some PHAT RHYMES on a mofo and REPRESENT." +
+				"<P>" +
+				"  Jade  - Has so many INTERESTS, she has trouble keeping track of them all, even" + DefaultLineSeparator +
+				"          with an assortment of COLORFUL REMINDERS on her fingers to help sort" + DefaultLineSeparator +
+				"          out everything on her mind. Nevertheless, when she spends time in her" + DefaultLineSeparator +
+				"          GARDEN ATRIUM, the only thing on her mind is her deep passion for" + DefaultLineSeparator +
+				"          HORTICULTURE." + DefaultLineSeparator,
+		},
+		{
+			name: "custom line and paragraph separator",
+			input: "",
+			pos: 0,
+			defs: [][2]string{
+				{"def1", "The first definition which is long enough to span at least two lines and has the content for it."},
+				{"def2", "A second definition to complement the first. This one takes multiple sentences to reach the end."},
+				{"def3", "Third definition is the final one. It's a bit more terse than the other two. Slightly."},
+			},
+			width: 80,
+			options: Options{ParagraphSeparator: "<P>", LineSeparator: "<br/>\n"},
+			expect: "  def1  - The first definition which is long enough to span at least two lines<br/>\n" +
+				"          and has the content for it." +
+				"<P>" +
+				"  def2  - A second definition to complement the first. This one takes multiple<br/>\n" +
+				"          sentences to reach the end." +
+				"<P>" +
+				"  def3  - Third definition is the final one. It's a bit more terse than the<br/>\n" +
+				"          other two. Slightly.<br/>\n",
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			
+			actualDirect := Edit(tc.input).InsertDefinitionsTableOpts(tc.pos, tc.defs, tc.width, tc.options).String()			
+			actualPreOpts := Edit(tc.input).WithOptions(tc.options).InsertDefinitionsTable(tc.pos, tc.defs, tc.width).String()
+			
+			assert.Equal(tc.expect, actualDirect, "InsertDefinitionsTableOpts(opts) check failed")
+			assert.Equal(tc.expect, actualPreOpts, "WithOptions(opts).InsertDefinitionsTable() check failed")
+		})
+	}
 }
