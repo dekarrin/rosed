@@ -178,6 +178,7 @@ func (ed Editor) InsertDefinitionsTable(pos int, definitions [][2]string, width 
 // words on the left and the other for definitions on the right.
 //
 // pos is the character position to insert the table at.
+// NOTE: always will add a newline if notrailing is false, UNLESS output would be empty anyways (no defs).
 func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, width int, opts Options) Editor {
 	opts = opts.WithDefaults()
 
@@ -226,7 +227,7 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 		fullTable.Append(gem.Zero)
 	}
 
-	if fullTable.Len() > 0 {
+	if fullTable.Len() > 0 && opts.NoTrailingLineSeparators {
 		fullTable.Lines = fullTable.Lines[:len(fullTable.Lines)-1] // remove trailing newline
 	}
 

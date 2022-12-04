@@ -1346,8 +1346,99 @@ func Test_InsertDefinitionsTable(t *testing.T) {
 			input: "",
 			pos: 0,
 			defs: [][2]string{},
-			width: 10,
+			width: 80,
 			expect: "",
+		},
+		{
+			name: "one def, too short to wrap",
+			input: "",
+			pos: 0,
+			defs: [][2]string{
+				{"def1", "this is the first definition"},
+			},
+			width: 80,
+			expect: "  def1  - this is the first definition" + DefaultLineSeparator,
+		},
+		{
+			name: "one def, long enough to wrap once",
+			input: "",
+			pos: 0,
+			defs: [][2]string{
+				{"def1", "this is the first definition with a rather long outro which will cause it to become wrapped"},
+			},
+			width: 80,
+			expect: "  def1  - this is the first definition with a rather long outro which will cause" + DefaultLineSeparator +
+				"          it to become wrapped" + DefaultLineSeparator,
+		},
+		{
+			name: "one def, long enough to wrap multiple times",
+			input: "",
+			pos: 0,
+			defs: [][2]string{
+				{"pumpkin", "Thing that does not exist. If it did, no it didn't. " +
+					    "In fact, you are quite certain there never was, " +
+					    "never has been, nor will there ever be a pumpkin, " +
+					    "either here or anywhere else. Pumpkin? What pumpkin?",
+				},
+			},
+			width: 80,
+			expect: "  pumpkin  - Thing that does not exist. If it did, no it didn't. In fact, you" + DefaultLineSeparator +
+				"             are quite certain there never was, never has been, nor will there" + DefaultLineSeparator +
+				"             ever be a pumpkin, either here or anywhere else. Pumpkin? What" + DefaultLineSeparator +
+				"             pumpkin?" + DefaultLineSeparator,
+		},
+		{
+			name: "two defs, no wrap",
+			input: "",
+			pos: 0,
+			defs: [][2]string{
+				{"John", "Has a passion for REALLY TERRIBLE MOVIES."},
+				{"Rose", "Has a passion for RATHER OBSCURE LITERATURE."},
+			},
+			width: 80,
+			expect: "  John  - Has a passion for REALLY TERRIBLE MOVIES." + DefaultLineSeparator +
+				DefaultLineSeparator +
+				"  Rose  - Has a passion for RATHER OBSCURE LITERATURE." + DefaultLineSeparator,
+		},
+		{
+			name: "two defs, multi wrap",
+			input: "",
+			pos: 0,
+			defs: [][2]string{
+				{"John", "Has a passion for REALLY TERRIBLE MOVIES. " +
+					 "Likes to program computers but is NOT VERY GOOD AT IT. " +
+				 	 "Has a fondness for PARANORMAL LORE, and is an aspiring " +
+					 "AMATEUR MAGICIAN. Also likes to play GAMES sometimes.",
+				},
+				{"Rose", "Has a passion for RATHER OBSCURE LITERATURE. " +
+					 "Enjoys creative writing and is SOMEWHAT SECRETIVE ABOUT IT. " +
+					 "Has a fondness for the BEASTIALLY STRANGE AND FICTICIOUS, " +
+					 "and sometimes dabbles in PSYCHOANALYSIS. Also likes to KNIT, " +
+					 "and on occasion, if just the right one strikes your fancy, " +
+					 "you like to play VIDEO GAMES with your friends.",
+				},
+			},
+			width: 80,
+			expect: "  John  - Has a passion for REALLY TERRIBLE MOVIES. Likes to program computers" + DefaultLineSeparator +
+				"          but is NOT VERY GOOD AT IT. Has a fondness for PARANORMAL LORE, and is" + DefaultLineSeparator +
+				"          an aspiring AMATEUR MAGICIAN. Also likes to play GAMES sometimes." + DefaultLineSeparator +
+				DefaultLineSeparator +
+				"  Rose  - Has a passion for RATHER OBSCURE LITERATURE. Enjoys creative writing" + DefaultLineSeparator +
+				"          and is SOMEWHAT SECRETIVE ABOUT IT. Has a fondness for the BEASTIALLY" + DefaultLineSeparator +
+				"          STRANGE AND FICTICIOUS, and sometimes dabbles in PSYCHOANALYSIS. Also" + DefaultLineSeparator +
+				"          likes to KNIT, and on occasion, if just the right one strikes your" + DefaultLineSeparator +
+				"          fancy, you like to play VIDEO GAMES with your friends." + DefaultLineSeparator,
+		},
+		{
+			name: "in middle of content",
+			input: "PRE-EXISTING CONTENT",
+			pos: 13,
+			defs: [][2]string{
+				{"def1", "this is the first definition"},
+			},
+			width: 80,
+			expect: "PRE-EXISTING   def1  - this is the first definition" + DefaultLineSeparator +
+				"CONTENT",
 		},
 	}
 	
