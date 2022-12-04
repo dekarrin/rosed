@@ -6,6 +6,8 @@ import (
 
 	"github.com/dekarrin/assertion"
 	"github.com/dekarrin/rosed/internal/gem"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_NewBlock(t *testing.T) {
@@ -605,6 +607,136 @@ func Test_Block_Line(t *testing.T) {
 				actual := tc.input.Line(tc.pos)
 				assert.Equal(tc.expect, actual)
 			}
+		})
+	}
+}
+
+func Test_Block_Remove(t *testing.T) {
+	testCases := []struct {
+		name string
+		pos int
+		input block
+		expect block
+	}{
+		{
+			name: "remove from empty has no effect",
+			pos: 0,
+			input: block{},
+			expect: block{},
+		},
+		{
+			name: "too-high pos has no effect",
+			pos: 7,
+			input: block{Lines: []gem.String{
+				_g("vriska"),
+				_g("terezi"),
+				_g("kanaya"),
+				_g("wind"),
+				_g("mari"),
+				_g("deka"),
+				_g("equius"),
+			}},
+			expect: block{Lines: []gem.String{
+				_g("vriska"),
+				_g("terezi"),
+				_g("kanaya"),
+				_g("wind"),
+				_g("mari"),
+				_g("deka"),
+				_g("equius"),
+			}},
+		},
+		{
+			name: "negative pos has no effect",
+			pos: -1,
+			input: block{Lines: []gem.String{
+				_g("vriska"),
+				_g("terezi"),
+				_g("kanaya"),
+				_g("wind"),
+				_g("mari"),
+				_g("deka"),
+				_g("equius"),
+			}},
+			expect: block{Lines: []gem.String{
+				_g("vriska"),
+				_g("terezi"),
+				_g("kanaya"),
+				_g("wind"),
+				_g("mari"),
+				_g("deka"),
+				_g("equius"),
+			}},
+		},
+		{
+			name: "remove the only line that exists",
+			pos: 0,
+			input: block{Lines: []gem.String{
+				_g("line"),
+			}},
+			expect: block{Lines: []gem.String{}},
+		},
+		{
+			name: "remove from start",
+			pos: 0,
+			input: block{Lines: []gem.String{
+				_g("line1"),
+				_g("line2"),
+				_g("line3"),
+				_g("line4"),
+				_g("line5"),
+			}},
+			expect: block{Lines: []gem.String{
+				_g("line2"),
+				_g("line3"),
+				_g("line4"),
+				_g("line5"),
+			}},
+		},
+		{
+			name: "remove from end",
+			pos: 4,
+			input: block{Lines: []gem.String{
+				_g("line1"),
+				_g("line2"),
+				_g("line3"),
+				_g("line4"),
+				_g("line5"),
+			}},
+			expect: block{Lines: []gem.String{
+				_g("line1"),
+				_g("line2"),
+				_g("line3"),
+				_g("line4"),
+			}},
+		},
+		{
+			name: "remove from middle",
+			pos: 2,
+			input: block{Lines: []gem.String{
+				_g("line1"),
+				_g("line2"),
+				_g("line3"),
+				_g("line4"),
+				_g("line5"),
+			}},
+			expect: block{Lines: []gem.String{
+				_g("line1"),
+				_g("line2"),
+				_g("line4"),
+				_g("line5"),
+			}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			
+			tc.input.Remove(tc.pos)
+			actual := tc.input
+			
+			assert.Equal(tc.expect, actual)
 		})
 	}
 }

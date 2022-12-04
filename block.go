@@ -146,6 +146,14 @@ func (tb *block) Set(linePos int, content gem.String) {
 	tb.Lines[linePos] = content
 }
 
+// Remove removes a line. If pos does not exist, no action is
+// taken.
+func (tb *block) Remove(pos int) {
+	if pos >= 0 && len(tb.Lines) > pos {
+		tb.Lines = append(tb.Lines[:pos], tb.Lines[pos+1:]...)
+	}
+}
+
 // Apply performs the given transformation on each line and applies the results
 // to its list of lines. Lines may be both added and removed this way.
 //
