@@ -1,8 +1,7 @@
 package gem
 
 import (
-	"github.com/dekarrin/assertion"
-	tassert "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -19,7 +18,7 @@ func Test_Strings(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := tassert.New(t)
+			assert := assert.New(t)
 
 			actual := Strings(tc.input)
 
@@ -41,7 +40,7 @@ func Test_Slice(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := tassert.New(t)
+			assert := assert.New(t)
 
 			actual := Slice(tc.input)
 
@@ -68,7 +67,7 @@ func Test_Split(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := tassert.New(t)
+			assert := assert.New(t)
 
 			actual := Split(tc.input)
 
@@ -91,7 +90,7 @@ func Test_New(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 			actual := New(tc.input)
 			assert.Equal(tc.expect, actual)
 		})
@@ -132,7 +131,7 @@ func Test_String_Equal(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 			actual := tc.input.Equal(tc.compare)
 			assert.Equal(tc.expect, actual)
 		})
@@ -176,7 +175,7 @@ func Test_String_Equal_Ptr(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 			var actual bool
 			if tc.input == nil {
 				actual = tc.compare == nil
@@ -204,7 +203,7 @@ func Test_String_Len(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 
 			actual := tc.input.Len()
 
@@ -228,11 +227,11 @@ func Test_String_Add(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 
 			actual := tc.input1.Add(tc.input2)
 
-			assert.Equal(tc.expect, actual)
+			assert.True(tc.expect.Equal(actual))
 		})
 	}
 }
@@ -261,7 +260,7 @@ func Test_String_CharAt(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 
 			if tc.expectPanic {
 				assert.Panics(func() {
@@ -269,7 +268,7 @@ func Test_String_CharAt(t *testing.T) {
 				})
 			} else {
 				actual := tc.str.CharAt(tc.input)
-				assert.EqualSlices(tc.expect, actual)
+				assert.Equal(tc.expect, actual)
 			}
 		})
 	}
@@ -303,7 +302,7 @@ func Test_String_SetCharAt(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 
 			if tc.expectPanic {
 				assert.Panics(func() {
@@ -332,11 +331,11 @@ func Test_String_Runes(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 
 			actual := tc.str.Runes()
 
-			assert.EqualSlices(tc.expect, actual)
+			assert.Equal(tc.expect, actual)
 		})
 	}
 }
@@ -374,7 +373,7 @@ func Test_String_Less(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 
 			actual := tc.leftStr.Less(tc.rightStr)
 
@@ -397,7 +396,7 @@ func Test_String_IsEmpty(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 
 			actual := tc.str.IsEmpty()
 
@@ -438,7 +437,7 @@ func Test_String_Sub(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 
 			actual := tc.str.Sub(tc.start, tc.end)
 			isEqual := actual.Equal(tc.expect)
