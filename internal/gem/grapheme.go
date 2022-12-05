@@ -34,6 +34,195 @@ var (
 	Zero String = String{r: []rune{}, gc: []int{}}
 )
 
+// Add adds two strings together and returns the result. The original String is
+// not modified.
+func (str String) Add(s2 String) String {
+	r2 := str.clone()
+	r2.gc = nil
+	r2.r = append(r2.r, s2.Runes()...)
+	return r2
+}
+
+// CharAt returns the runes that make up the user-perceived character (grapheme
+// cluster) of the given index. Modifying the returned slice will not modify the
+// String.
+func (str String) CharAt(idx int) []rune {
+	gc := str.gc
+	if gc == nil {
+		gc = Split(str.r)
+		str.gc = gc
+	}
+
+	var startIdx = 0
+	if idx > 0 {
+		startIdx = gc[idx-1]
+	}
+	length := gc[idx] - startIdx
+	cluster := make([]rune, length)
+	for i := 0; i < length; i++ {
+		cluster[i] = str.r[startIdx+i]
+	}
+	return cluster
+}
+
+// Equal returns whether one String is equal to another object. If the object is
+// another String struct, their resulting strings are compared. If the object is
+// a raw string object, it is compared to the output of calling String() on the
+// gem.String. Otherwise, false is returned.
+func (str String) Equal(other interface{}) bool {
+	if other == nil {
+		return false
+	}
+	otherStr, otherIsRawStr := other.(string)
+	if otherIsRawStr {
+		return str.String() == otherStr
+	}
+
+	s2, otherIsString := other.(String)
+	if !otherIsString {
+		return false
+	}
+
+	if len(s2.r) != len(str.r) {
+		return false
+	}
+	for i := range str.r {
+		if s2.r[i] != str.r[i] {
+			return false
+		}
+	}
+	return true
+}
+
+// Format formats the String for printing.
+func (str *String) Format(f fmt.State, verb rune) {
+	if verb == 'q' {
+		if str == nil {
+			f.Write([]byte("<nil>"))
+		}
+		f.Write([]byte(fmt.Sprintf("%q", str.String())))
+	} else {
+		f.Write([]byte(fmt.Sprintf("%s", str.String())))
+	}
+}
+
+// GraphemeIndexes returns a slice of rune start and end indexes within the
+// string of the rune(s) that make up each grapheme. Note that these cannot
+// be used by callers for other calls into the String (e.g. Sub() takes
+// grapheme indexes, not rune indexes) and this function is purely to query
+// a gem String.
+//
+// The end indexes will be exclusive; e.g. a gem.String with contents "test"
+// would produce [][]int{{0, 1}, {1, 2}, {2, 3}, {3, 4}}.
+func (str String) GraphemeIndexes() [][]int {
+	gc := str.gc
+	if gc == nil {
+		gc = Split(str.r)
+		str.gc = gc
+	}
+
+	indexes := make([][]int, len(gc))
+	prevEnd := 0
+	for i := range gc {
+		grapheme := make([]int, 2)
+		grapheme[0] = prevEnd
+		grapheme[1] = gc[i]
+		indexes[i] = grapheme
+
+		prevEnd = gc[i]
+	}
+
+	return indexes
+}
+
+// IsEmpty return whether the String is the empty string "".
+func (str String) IsEmpty() bool {
+	return len(str.r) == 0
+}
+
+// Len returns the number of grapheme clusters (user-perceivable characters)
+// that are in the String.
+//
+// This function may trigger UAX29 analysis on the String if it hasn't yet
+// occured.
+func (str String) Len() int {
+	gc := str.gc
+	if gc == nil {
+		if len(str.r) == 0 {
+			return 0
+		}
+		gc = Split(str.r)
+		str.gc = gc
+	}
+	return len(gc)
+}
+
+// Less returns whether one String is lexigraphically less than another.
+func (str String) Less(s String) bool {
+	sR := s.Runes()
+	minLen := len(sR)
+	if minLen > len(str.r) {
+		minLen = len(str.r)
+	}
+
+	for i := 0; i < minLen; i++ {
+		if str.r[i] < sR[i] {
+			return true
+		}
+
+		if str.r[i] > sR[i] {
+			return false
+		}
+	}
+
+	// if we get here, they are exactly the same up to minLen
+	if minLen == len(sR) && minLen == len(str.r) {
+		// exactly the same, not less
+		return false
+	}
+
+	// if it is shorter, then it is less
+	return minLen == len(str.r)
+}
+
+// Runes returns the string's raw Runes. Modifying the returned slice has no
+// effect on the String.
+func (str String) Runes() []rune {
+	r := make([]rune, len(str.r))
+	for i := range str.r {
+		r[i] = str.r[i]
+	}
+	return r
+}
+
+// SetCharAt sets the character at the given index to the given value and
+// returns the resulting String. The original String is not modified.
+func (str String) SetCharAt(idx int, r []rune) String {
+	if len(r) == 0 {
+		panic("SetCharAt received empty or nil replacement runes slice r")
+	}
+
+	copy := str.clone()
+
+	if copy.gc == nil {
+		copy.gc = Split(copy.r)
+	}
+
+	var startIdx int
+	if idx > 0 {
+		startIdx = copy.gc[idx-1]
+	}
+	curEndIdx := copy.gc[idx]
+	copy.r = append(copy.r[:startIdx], append(r, copy.r[curEndIdx:]...)...)
+	copy.gc = nil
+	return copy
+}
+
+// String gets the contents as the built-in string type.
+func (str String) String() string {
+	return string(str.r)
+}
+
 // Sub returns the substring given between the two indexes. The returned String
 // will be a copy with its contents set to the characters at indexes in the
 // range [start, end).
@@ -72,37 +261,12 @@ func (str String) Sub(start, end int) String {
 	return copy
 }
 
-// IsEmpty return whether the String is the empty string "".
-func (str String) IsEmpty() bool {
-	return len(str.r) == 0
-}
-
-// Less returns whether one String is lexigraphically less than another.
-func (str String) Less(s String) bool {
-	sR := s.Runes()
-	minLen := len(sR)
-	if minLen > len(str.r) {
-		minLen = len(str.r)
-	}
-
-	for i := 0; i < minLen; i++ {
-		if str.r[i] < sR[i] {
-			return true
-		}
-
-		if str.r[i] > sR[i] {
-			return false
-		}
-	}
-
-	// if we get here, they are exactly the same up to minLen
-	if minLen == len(sR) && minLen == len(str.r) {
-		// exactly the same, not less
-		return false
-	}
-
-	// if it is shorter, then it is less
-	return minLen == len(str.r)
+// New takes the given string and converts it into a graphemes.String object for
+// use with grapheme-aware functions. UAX-29 analysis is performed on a lazy
+// basis; the contents of s are not scanned for grapheme clusters until an
+// operation requires it.
+func New(s string) String {
+	return String{r: []rune(s)}
 }
 
 // Slice turns the from slice into a slice of String objects.
@@ -114,6 +278,25 @@ func Slice(from []string) []String {
 	return str
 }
 
+// Split splits the given runes into a series of grapheme clusters. The
+// returned slice contains slices of indexes that give the exclusive ending
+// index of runes that make up each grapheme at that position; e.g. the returned
+// slice for "test" would be []int{1, 2, 3, 4} but one for two rune glyphs such
+// as (и́) would be []int{2} (just the one) despite it containing two runes.
+//
+// The inclusive start index of each cluster is the last index. For the first
+// item, it is 0
+func Split(r []rune) []int {
+	done := make([]int, 0)
+	for i := range r {
+		if shouldBreakAfter(r[i], r, i) {
+			done = append(done, i+1)
+		}
+	}
+
+	return done
+}
+
 // Strings turns the from slice into a slice of plain string objects.
 func Strings(from []String) []string {
 	str := make([]string, len(from))
@@ -121,162 +304,6 @@ func Strings(from []String) []string {
 		str[i] = from[i].String()
 	}
 	return str
-}
-
-// Equal returns whether one String is equal to another object. If the object is
-// another String struct, their resulting strings are compared. If the object is
-// a raw string object, it is compared to the output of calling String() on the
-// gem.String. Otherwise, false is returned.
-func (str String) Equal(other interface{}) bool {
-	if other == nil {
-		return false
-	}
-	otherStr, otherIsRawStr := other.(string)
-	if otherIsRawStr {
-		return str.String() == otherStr
-	}
-
-	s2, otherIsString := other.(String)
-	if !otherIsString {
-		return false
-	}
-
-	if len(s2.r) != len(str.r) {
-		return false
-	}
-	for i := range str.r {
-		if s2.r[i] != str.r[i] {
-			return false
-		}
-	}
-	return true
-}
-
-// Runes returns the string's raw Runes. Modifying the returned slice has no
-// effect on the String.
-func (str String) Runes() []rune {
-	r := make([]rune, len(str.r))
-	for i := range str.r {
-		r[i] = str.r[i]
-	}
-	return r
-}
-
-// GraphemeIndexes returns a slice of rune start and end indexes within the
-// string of the rune(s) that make up each grapheme. Note that these cannot
-// be used by callers for other calls into the String (e.g. Sub() takes
-// grapheme indexes, not rune indexes) and this function is purely to query
-// a gem String.
-//
-// The end indexes will be exclusive; e.g. a gem.String with contents "test"
-// would produce [][]int{{0, 1}, {1, 2}, {2, 3}, {3, 4}}.
-func (str String) GraphemeIndexes() [][]int {
-	gc := str.gc
-	if gc == nil {
-		gc = Split(str.r)
-		str.gc = gc
-	}
-
-	indexes := make([][]int, len(gc))
-	prevEnd := 0
-	for i := range gc {
-		grapheme := make([]int, 2)
-		grapheme[0] = prevEnd
-		grapheme[1] = gc[i]
-		indexes[i] = grapheme
-
-		prevEnd = gc[i]
-	}
-
-	return indexes
-}
-
-// SetCharAt sets the character at the given index to the given value and
-// returns the resulting String. The original String is not modified.
-func (str String) SetCharAt(idx int, r []rune) String {
-	if len(r) == 0 {
-		panic("SetCharAt received empty or nil replacement runes slice r")
-	}
-
-	copy := str.clone()
-
-	if copy.gc == nil {
-		copy.gc = Split(copy.r)
-	}
-
-	var startIdx int
-	if idx > 0 {
-		startIdx = copy.gc[idx-1]
-	}
-	curEndIdx := copy.gc[idx]
-	copy.r = append(copy.r[:startIdx], append(r, copy.r[curEndIdx:]...)...)
-	copy.gc = nil
-	return copy
-}
-
-// Format formats the String for printing.
-func (str *String) Format(f fmt.State, verb rune) {
-	if verb == 'q' {
-		if str == nil {
-			f.Write([]byte("<nil>"))
-		}
-		f.Write([]byte(fmt.Sprintf("%q", str.String())))
-	} else {
-		f.Write([]byte(fmt.Sprintf("%s", str.String())))
-	}
-}
-
-// String gets the contents as the built-in string type.
-func (str String) String() string {
-	return string(str.r)
-}
-
-// CharAt returns the runes that make up the user-perceived character (grapheme
-// cluster) of the given index. Modifying the returned slice will not modify the
-// String.
-func (str String) CharAt(idx int) []rune {
-	gc := str.gc
-	if gc == nil {
-		gc = Split(str.r)
-		str.gc = gc
-	}
-
-	var startIdx = 0
-	if idx > 0 {
-		startIdx = gc[idx-1]
-	}
-	length := gc[idx] - startIdx
-	cluster := make([]rune, length)
-	for i := 0; i < length; i++ {
-		cluster[i] = str.r[startIdx+i]
-	}
-	return cluster
-}
-
-// Add adds two strings together and returns the result. The original String is
-// not modified.
-func (str String) Add(s2 String) String {
-	r2 := str.clone()
-	r2.gc = nil
-	r2.r = append(r2.r, s2.Runes()...)
-	return r2
-}
-
-// Len returns the number of grapheme clusters (user-perceivable characters)
-// that are in the String.
-//
-// This function may trigger UAX29 analysis on the String if it hasn't yet
-// occured.
-func (str String) Len() int {
-	gc := str.gc
-	if gc == nil {
-		if len(str.r) == 0 {
-			return 0
-		}
-		gc = Split(str.r)
-		str.gc = gc
-	}
-	return len(gc)
 }
 
 // makes an exact duplicate by copying underlying slices.
@@ -303,33 +330,6 @@ func (str String) clone() String {
 		}
 	}
 	return clone
-}
-
-// New takes the given string and converts it into a graphemes.String object for
-// use with grapheme-aware functions. UAX-29 analysis is performed on a lazy
-// basis; the contents of s are not scanned for grapheme clusters until an
-// operation requires it.
-func New(s string) String {
-	return String{r: []rune(s)}
-}
-
-// Split splits the given runes into a series of grapheme clusters. The
-// returned slice contains slices of indexes that give the exclusive ending
-// index of runes that make up each grapheme at that position; e.g. the returned
-// slice for "test" would be []int{1, 2, 3, 4} but one for two rune glyphs such
-// as (и́) would be []int{2} (just the one) despite it containing two runes.
-//
-// The inclusive start index of each cluster is the last index. For the first
-// item, it is 0
-func Split(r []rune) []int {
-	done := make([]int, 0)
-	for i := range r {
-		if shouldBreakAfter(r[i], r, i) {
-			done = append(done, i+1)
-		}
-	}
-
-	return done
 }
 
 func shouldBreakAfter(r rune, chars []rune, i int) bool {
