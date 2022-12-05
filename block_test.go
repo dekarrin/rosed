@@ -613,20 +613,20 @@ func Test_Block_Line(t *testing.T) {
 
 func Test_Block_Remove(t *testing.T) {
 	testCases := []struct {
-		name string
-		pos int
-		input block
+		name   string
+		pos    int
+		input  block
 		expect block
 	}{
 		{
-			name: "remove from empty has no effect",
-			pos: 0,
-			input: block{},
+			name:   "remove from empty has no effect",
+			pos:    0,
+			input:  block{},
 			expect: block{},
 		},
 		{
 			name: "too-high pos has no effect",
-			pos: 7,
+			pos:  7,
 			input: block{Lines: []gem.String{
 				_g("vriska"),
 				_g("terezi"),
@@ -648,7 +648,7 @@ func Test_Block_Remove(t *testing.T) {
 		},
 		{
 			name: "negative pos has no effect",
-			pos: -1,
+			pos:  -1,
 			input: block{Lines: []gem.String{
 				_g("vriska"),
 				_g("terezi"),
@@ -670,7 +670,7 @@ func Test_Block_Remove(t *testing.T) {
 		},
 		{
 			name: "remove the only line that exists",
-			pos: 0,
+			pos:  0,
 			input: block{Lines: []gem.String{
 				_g("line"),
 			}},
@@ -678,7 +678,7 @@ func Test_Block_Remove(t *testing.T) {
 		},
 		{
 			name: "remove from start",
-			pos: 0,
+			pos:  0,
 			input: block{Lines: []gem.String{
 				_g("line1"),
 				_g("line2"),
@@ -695,7 +695,7 @@ func Test_Block_Remove(t *testing.T) {
 		},
 		{
 			name: "remove from end",
-			pos: 4,
+			pos:  4,
 			input: block{Lines: []gem.String{
 				_g("line1"),
 				_g("line2"),
@@ -712,7 +712,7 @@ func Test_Block_Remove(t *testing.T) {
 		},
 		{
 			name: "remove from middle",
-			pos: 2,
+			pos:  2,
 			input: block{Lines: []gem.String{
 				_g("line1"),
 				_g("line2"),
@@ -732,10 +732,10 @@ func Test_Block_Remove(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
-			
+
 			tc.input.Remove(tc.pos)
 			actual := tc.input
-			
+
 			assert.Equal(tc.expect, actual)
 		})
 	}

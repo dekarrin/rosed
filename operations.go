@@ -75,7 +75,7 @@ func (ed Editor) Apply(op LineOperation) Editor {
 func (ed Editor) ApplyOpts(op LineOperation, opts Options) Editor {
 	opts = opts.WithDefaults()
 	lines := ed.WithOptions(opts).linesSep(opts.LineSeparator)
-	
+
 	applied := make([]string, 0, len(lines))
 
 	for idx, line := range lines {
@@ -201,7 +201,7 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 	rightWidth := width - leftWidth - minBetween
 
 	fullTable := block{
-		LineSeparator: _g(opts.LineSeparator),
+		LineSeparator:     _g(opts.LineSeparator),
 		TrailingSeparator: !opts.NoTrailingLineSeparators,
 	}
 
@@ -228,18 +228,18 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 
 		if fullTable.Len() > 0 && combined.Len() > 0 {
 			// grab the first line and append it to last line first.
-			lastLineIdx := fullTable.Len()-1
+			lastLineIdx := fullTable.Len() - 1
 			lastLine := fullTable.Line(lastLineIdx)
 			lastLine = lastLine.Add(gem.New(opts.ParagraphSeparator)).Add(combined.Line(0))
 			fullTable.Set(lastLineIdx, lastLine)
 			combined.Remove(0)
 		}
-		
+
 		if combined.Len() > 0 {
 			fullTable.AppendBlock(combined)
 		}
 	}
-	
+
 	if fullTable.Len() > 0 {
 		return ed.Insert(pos, fullTable.Join().String())
 	} else {
@@ -329,7 +329,7 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 	opts = opts.WithDefaults()
 	leftColBlock := wrap(_g(leftText), leftColWidth, _g(opts.LineSeparator))
 	rightColBlock := wrap(_g(rightText), rightColWidth, _g(opts.LineSeparator))
-	
+
 	// need to get longest left-hand line and make the space between make up for the
 	// difference
 	maxLeftColLineLen := 0
@@ -379,14 +379,14 @@ func (ed Editor) IndentOpts(level int, opts Options) Editor {
 	}
 
 	indent := strings.Repeat(opts.WithDefaults().IndentStr, level)
-	
+
 	doIndent := func(_ int, line string) []string {
 		newLine := indent + line
 
 		// only have the one line, returne that
 		return []string{newLine}
 	}
-	
+
 	if opts.WithDefaults().PreserveParagraphs {
 		doIndentPara := func(_ int, para, _, _ string) []string {
 			output := Edit(para).WithOptions(opts).ApplyOpts(doIndent, opts).String()
