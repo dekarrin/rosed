@@ -26,79 +26,6 @@ type parentRef struct {
 	end int
 }
 
-// IsSubEditor returns whether the Editor was created to edit a sub-set of the
-// text in some parent editor. Calls to Lines() and similar functions will
-// result in such an Editor.
-//
-// If IsSubEditor returns true, then the Editor's Text could possibly be an
-// incomplete subset of the original text. To get the full text from a
-// sub-editor, either use CommitAll to convert it back into a full editor or
-// call String() to get the full string.
-func (ed Editor) IsSubEditor() bool {
-	return ed.ref != nil
-}
-
-// CommitAll takes the substring that a sub-editor is operating on and merges it
-// with its parent recursively to get a new complete string.
-//
-// Returns an Editor which is a copy of the current one but with its Text set to
-// the merged complete string.
-//
-// If the Editor is already a full-text Editor, the merge operation is simply to
-// copy the current Text since there is no prefix or suffix, so calling
-// CommitAll simply returns a copy of the Editor.
-//
-// Operations on the returned Editor will be on the complete string rather than
-// on a subset of it.
-func (ed Editor) CommitAll() Editor {
-	// recursively do commit until we get to a full-text Editor.
-	for ed.IsSubEditor() {
-		ed = ed.Commit()
-	}
-	return ed
-}
-
-// Commit takes the substring that a sub-editor is operating on and merges it
-// with its parent.
-//
-// Returns an Editor which is a copy of the current one but with its Text set to
-// the merged string.
-//
-// If the Editor is already full-text Editor, the merge operation is simply to
-// copy the current Text since there is no prefix or suffix, so calling Commit
-// returns a duplicate of the Editor.
-//
-// Operations on the returned Editor will be on the parent's string (if any)
-// rather than on the subset of it.
-func (ed Editor) Commit() Editor {
-	if !ed.IsSubEditor() {
-		return ed
-	}
-
-	parent, subStart, subEnd := ed.ref.parent, ed.ref.start, ed.ref.end
-
-	prefix := parent.Text[:subStart]
-	suffix := parent.Text[subEnd:]
-
-	full := prefix + ed.Text + suffix
-
-	// copy via value assignment
-	ed = *parent
-	ed.Text = full
-	return ed
-}
-
-// String returns the finished, fully edited string. If the Editor is a
-// sub-editor, calling String() will return the section that it edited along
-// with the unedited prefix and suffix.
-func (ed Editor) String() string {
-	if ed.IsSubEditor() {
-		ed = ed.CommitAll()
-	}
-
-	return ed.Text
-}
-
 // Chars produces an Editor to operate on a subset of the text currently being
 // operated on. The returned Editor operates on text from the nth character up
 // to (but not including) the ith character, where n is start and end is i.
@@ -223,6 +150,68 @@ func (ed Editor) CharsTo(end int) Editor {
 	return ed.Chars(0, end)
 }
 
+// Commit takes the substring that a sub-editor is operating on and merges it
+// with its parent.
+//
+// Returns an Editor which is a copy of the current one but with its Text set to
+// the merged string.
+//
+// If the Editor is already full-text Editor, the merge operation is simply to
+// copy the current Text since there is no prefix or suffix, so calling Commit
+// returns a duplicate of the Editor.
+//
+// Operations on the returned Editor will be on the parent's string (if any)
+// rather than on the subset of it.
+func (ed Editor) Commit() Editor {
+	if !ed.IsSubEditor() {
+		return ed
+	}
+
+	parent, subStart, subEnd := ed.ref.parent, ed.ref.start, ed.ref.end
+
+	prefix := parent.Text[:subStart]
+	suffix := parent.Text[subEnd:]
+
+	full := prefix + ed.Text + suffix
+
+	// copy via value assignment
+	ed = *parent
+	ed.Text = full
+	return ed
+}
+
+// CommitAll takes the substring that a sub-editor is operating on and merges it
+// with its parent recursively to get a new complete string.
+//
+// Returns an Editor which is a copy of the current one but with its Text set to
+// the merged complete string.
+//
+// If the Editor is already a full-text Editor, the merge operation is simply to
+// copy the current Text since there is no prefix or suffix, so calling
+// CommitAll simply returns a copy of the Editor.
+//
+// Operations on the returned Editor will be on the complete string rather than
+// on a subset of it.
+func (ed Editor) CommitAll() Editor {
+	// recursively do commit until we get to a full-text Editor.
+	for ed.IsSubEditor() {
+		ed = ed.Commit()
+	}
+	return ed
+}
+
+// IsSubEditor returns whether the Editor was created to edit a sub-set of the
+// text in some parent editor. Calls to Lines() and similar functions will
+// result in such an Editor.
+//
+// If IsSubEditor returns true, then the Editor's Text could possibly be an
+// incomplete subset of the original text. To get the full text from a
+// sub-editor, either use CommitAll to convert it back into a full editor or
+// call String() to get the full string.
+func (ed Editor) IsSubEditor() bool {
+	return ed.ref != nil
+}
+
 // Lines produces an Editor to operate on a subset of the lines in the Text. The
 // lines are 0-indexed and the start and end are the same as in slice notation.
 //
@@ -333,6 +322,17 @@ func (ed Editor) LinesFrom(start int) Editor {
 // CommitAll().
 func (ed Editor) LinesTo(end int) Editor {
 	return ed.Lines(0, end)
+}
+
+// String returns the finished, fully edited string. If the Editor is a
+// sub-editor, calling String() will return the section that it edited along
+// with the unedited prefix and suffix.
+func (ed Editor) String() string {
+	if ed.IsSubEditor() {
+		ed = ed.CommitAll()
+	}
+
+	return ed.Text
 }
 
 func (ed Editor) subEd(start, end int) Editor {

@@ -10,49 +10,6 @@ import (
 
 // contains functions for manipulation of text. Used by Editor.
 
-// does a wrap without considering any additional lengths. Automatically
-// normalizes all runs of space characters to a single space.
-//
-// The returned value is a Block of all resulting lines. Trailing mode will not
-// be set on the Block.
-func wrap(text gem.String, width int, lineSep gem.String) block {
-	if width < 2 {
-		width = 2
-	}
-
-	lines := block{LineSeparator: lineSep}
-
-	// normalize string to convert all whitespace to single space char.
-	text = collapseSpace(text, lineSep)
-	if text.String() == "" {
-		lines.Append(gem.Zero)
-		return lines
-	}
-
-	toConsume := text
-	var curWord, curLine gem.String
-	for i := 0; i < toConsume.Len(); i++ {
-		ch := toConsume.CharAt(i)
-		if ch[0] == ' ' {
-			curLine = appendWordToLine(&lines, curWord, curLine, width)
-			curWord = gem.Zero
-		} else {
-			curWord = curWord.Add(gem.New(string(ch)))
-		}
-	}
-
-	if !curWord.IsEmpty() {
-		curLine = appendWordToLine(&lines, curWord, curLine, width)
-		curWord = gem.Zero
-	}
-
-	if !curLine.IsEmpty() {
-		lines.Append(curLine)
-	}
-
-	return lines
-}
-
 // lines will be modified to add the appended line if curLine is full.
 func appendWordToLine(lines *block, curWord gem.String, curLine gem.String, width int) (newCurLine gem.String) {
 	// any width less than 2 is not possible and will result in an infinite loop,
@@ -222,4 +179,47 @@ func justifyLine(text gem.String, width int) gem.String {
 
 	finishedWord := strings.Join(gem.Strings(fullList), "")
 	return _g(finishedWord)
+}
+
+// does a wrap without considering any additional lengths. Automatically
+// normalizes all runs of space characters to a single space.
+//
+// The returned value is a Block of all resulting lines. Trailing mode will not
+// be set on the Block.
+func wrap(text gem.String, width int, lineSep gem.String) block {
+	if width < 2 {
+		width = 2
+	}
+
+	lines := block{LineSeparator: lineSep}
+
+	// normalize string to convert all whitespace to single space char.
+	text = collapseSpace(text, lineSep)
+	if text.String() == "" {
+		lines.Append(gem.Zero)
+		return lines
+	}
+
+	toConsume := text
+	var curWord, curLine gem.String
+	for i := 0; i < toConsume.Len(); i++ {
+		ch := toConsume.CharAt(i)
+		if ch[0] == ' ' {
+			curLine = appendWordToLine(&lines, curWord, curLine, width)
+			curWord = gem.Zero
+		} else {
+			curWord = curWord.Add(gem.New(string(ch)))
+		}
+	}
+
+	if !curWord.IsEmpty() {
+		curLine = appendWordToLine(&lines, curWord, curLine, width)
+		curWord = gem.Zero
+	}
+
+	if !curLine.IsEmpty() {
+		lines.Append(curLine)
+	}
+
+	return lines
 }
