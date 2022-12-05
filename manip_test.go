@@ -3,8 +3,9 @@ package rosed
 import (
 	"testing"
 
-	"github.com/dekarrin/assertion"
 	"github.com/dekarrin/rosed/internal/gem"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_Manip_collapseSpace(t *testing.T) {
@@ -34,9 +35,9 @@ func Test_Manip_collapseSpace(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 			actual := collapseSpace(tc.input, tc.sep)
-			assert.Equal(tc.expect, actual)
+			assert.True(tc.expect.Equal(actual))
 		})
 	}
 }
@@ -172,7 +173,7 @@ func Test_Manip_wrap(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 			actual := wrap(tc.input, tc.width, tc.sep)
 			assert.Equal(tc.expected, actual)
 		})
@@ -197,12 +198,11 @@ func Test_Manip_justifyLine(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 
 			actual := justifyLine(tc.input, tc.width)
-			isEqual := tc.expect.Equal(actual)
 
-			assert.Equal(isEqual, true)
+			assert.True(tc.expect.Equal(actual))
 		})
 	}
 }
@@ -320,7 +320,7 @@ func Test_Manip_combineColumnBlocks(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 
 			actual := combineColumnBlocks(tc.left, tc.right, tc.minSpace)
 

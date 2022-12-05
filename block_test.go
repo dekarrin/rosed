@@ -4,7 +4,6 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/dekarrin/assertion"
 	"github.com/dekarrin/rosed/internal/gem"
 
 	"github.com/stretchr/testify/assert"
@@ -123,14 +122,13 @@ func Test_NewBlock(t *testing.T) {
 		},
 	}
 
-	assert := assertion.New(t)
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert.Reset(t)
+			assert := assert.New(t)
 
 			actual := newBlock(tc.text, tc.sep)
 
-			assert.Var("block").Equal(tc.expected, actual)
+			assert.True(tc.expected.Equal(actual))
 		})
 	}
 }
@@ -252,12 +250,11 @@ func Test_Block_Equal(t *testing.T) {
 		},
 	}
 
-	assert := assertion.New(t)
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert.Reset(t)
-			assert.Var("b1.Equal(b2)").Equal(tc.expected, tc.b1.Equal(tc.b2))
-			assert.Var("b2.Equal(b1)").Equal(tc.expected, tc.b2.Equal(tc.b1))
+			assert := assert.New(t)
+			assert.Equal(tc.expected, tc.b1.Equal(tc.b2), "b1.Equal(b2) check failed")
+			assert.Equal(tc.expected, tc.b2.Equal(tc.b1), "b2.Equal(b1) check failed")
 		})
 	}
 }
@@ -277,14 +274,13 @@ func Test_Block_Len(t *testing.T) {
 		{"3 filled lines", block{Lines: []gem.String{_g("a"), _g("b"), _g("c")}}, 3},
 	}
 
-	assert := assertion.New(t)
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert.Reset(t)
+			assert := assert.New(t)
 
 			actual := tc.input.Len()
 
-			assert.Var("Len()").Equal(tc.expected, actual)
+			assert.Equal(tc.expected, actual)
 		})
 	}
 }
@@ -332,15 +328,14 @@ func Test_sort_Block(t *testing.T) {
 		},
 	}
 
-	assert := assertion.New(t)
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert.Reset(t)
+			assert := assert.New(t)
 
 			actual := tc.input
 			sort.Sort(actual)
 
-			assert.Var("sorted block").Equal(tc.expected, actual)
+			assert.Equal(tc.expected, actual)
 		})
 	}
 }
@@ -392,7 +387,7 @@ func Test_Block_Append(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 
 			actual := tc.input
 			actual.Append(tc.append)
@@ -479,12 +474,12 @@ func Test_Block_AppendBlock(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 
 			actual := tc.input
 			actual.AppendBlock(tc.append)
 
-			assert.Equal(tc.expect, actual)
+			assert.True(tc.expect.Equal(actual))
 		})
 	}
 }
@@ -511,12 +506,12 @@ func Test_Block_AppendEmpty(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 
 			actual := tc.input
 			actual.AppendEmpty(tc.count)
 
-			assert.Equal(tc.expect, actual)
+			assert.True(tc.expect.Equal(actual))
 		})
 	}
 }
@@ -556,7 +551,7 @@ func Test_Block_Set(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 
 			actual := tc.input
 			if tc.panics {
@@ -599,7 +594,7 @@ func Test_Block_Line(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 
 			if tc.panics {
 				assert.Panics(func() { tc.input.Line(tc.pos) })
@@ -801,7 +796,7 @@ func Test_Block_CharCount(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 
 			if tc.panics {
 				assert.Panics(func() { tc.input.CharCount(tc.pos) })
@@ -944,9 +939,9 @@ func Test_Block_Join(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assert := assertion.New(t)
+			assert := assert.New(t)
 			actual := tc.input.Join()
-			assert.Equal(tc.expect, actual)
+			assert.True(tc.expect.Equal(actual))
 		})
 	}
 }
