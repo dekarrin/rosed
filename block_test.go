@@ -3,7 +3,7 @@ package rosed
 import (
 	"sort"
 	"testing"
-	
+
 	"github.com/dekarrin/rosed/internal/gem"
 
 	"github.com/stretchr/testify/assert"
@@ -121,7 +121,7 @@ func Test_NewBlock(t *testing.T) {
 			},
 		},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
@@ -249,7 +249,7 @@ func Test_Block_Equal(t *testing.T) {
 			expected: false,
 		},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
@@ -273,7 +273,7 @@ func Test_Block_Len(t *testing.T) {
 		{"3 empty lines", block{Lines: []gem.String{gem.Zero, gem.Zero, gem.Zero}}, 3},
 		{"3 filled lines", block{Lines: []gem.String{_g("a"), _g("b"), _g("c")}}, 3},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
@@ -327,7 +327,7 @@ func Test_sort_Block(t *testing.T) {
 			expected: block{Lines: nil, LineSeparator: _g("\t"), TrailingSeparator: true},
 		},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)

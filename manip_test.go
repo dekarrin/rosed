@@ -2,7 +2,7 @@ package rosed
 
 import (
 	"testing"
-	
+
 	"github.com/dekarrin/rosed/internal/gem"
 
 	"github.com/stretchr/testify/assert"
