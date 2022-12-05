@@ -33,6 +33,11 @@ func Edit(text string) Editor {
 	}
 }
 
+// LineCount returns the number of lines in the Text as per the line separator.
+func (ed Editor) LineCount() int {
+	return len(ed.lines())
+}
+
 // WithOptions returns an Editor identical to the current one but with its
 // Options replaced by the given Options.
 //
@@ -49,11 +54,6 @@ func Edit(text string) Editor {
 func (ed Editor) WithOptions(opts Options) Editor {
 	ed.Options = opts
 	return ed
-}
-
-// LineCount returns the number of lines in the Text as per the line separator.
-func (ed Editor) LineCount() int {
-	return len(ed.lines())
 }
 
 func (ed Editor) lines() []string {

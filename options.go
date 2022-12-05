@@ -5,20 +5,37 @@ import (
 )
 
 const (
-	// DefaultParagraphSeparator is the sequence that separates paragraphs.
-	DefaultParagraphSeparator = "\n\n"
+	// DefaultIndentString is the string used for a single horizontal indent
+	// by default.
+	DefaultIndentString = "\t"
 
 	// DefaultLineSeparator is the default line separator sequence.
 	DefaultLineSeparator = "\n"
 
-	// DefaultIndentString is the string used for a single horizontal indent
-	// by default.
-	DefaultIndentString = "\t"
+	// DefaultParagraphSeparator is the sequence that separates paragraphs.
+	DefaultParagraphSeparator = "\n\n"
 )
 
 // Options are the options to an Editor. The Zero-value is an Options with all
 // items set to defaults.
 type Options struct {
+	// IndentStr is the string that is used for a single horizontal indent. If
+	// this is set to "", the Editor will use the default string of "\t".
+	IndentStr string
+
+	// LineSeparator is the string that the Editor considers to signify the
+	// end of a line. If this is set to "", the Editor will use the default
+	// string of DefaultLineSeparator.
+	LineSeparator string
+
+	// NoTrailingLineSeparators is whether the Editor considers lines to not end
+	// with the separator, and thus would assume that a properly formatted line
+	// does not include a line separator at the end even if it is the last line.
+	//
+	// If this is set to false (the default), line separator chars are assumed
+	// to signify the end of the line.
+	NoTrailingLineSeparators bool
+
 	// ParagraphSeparator is the sequence that is considered to separate
 	// paragraphs in the text. Paragraphs are considered to have separators
 	// than terminators; i.e. this sequence does not occur at the start of the
@@ -28,23 +45,6 @@ type Options struct {
 	//
 	// If this is set to "", the Editor will use the DefaultParagraphSeparator.
 	ParagraphSeparator string
-
-	// LineSeparator is the string that the Editor considers to signify the
-	// end of a line. If this is set to "", the Editor will use the default
-	// string of DefaultLineSeparator.
-	LineSeparator string
-
-	// IndentStr is the string that is used for a single horizontal indent. If
-	// this is set to "", the Editor will use the default string of "\t".
-	IndentStr string
-
-	// NoTrailingLineSeparators is whether the Editor considers lines to not end
-	// with the separator, and thus would assume that a properly formatted line
-	// does not include a line separator at the end even if it is the last line.
-	//
-	// If this is set to false (the default), line separator chars are assumed
-	// to signify the end of the line.
-	NoTrailingLineSeparators bool
 
 	// PreserveParagraphs says whether wrap operations that adjust separator
 	// characters (such as wrap) should preserve paragraphs and their
@@ -61,11 +61,19 @@ func (opts Options) String() string {
 	return fmt.Sprintf(fmtStr, opts.ParagraphSeparator, opts.LineSeparator, opts.IndentStr, opts.NoTrailingLineSeparators, opts.PreserveParagraphs)
 }
 
-// WithLineSeparator returns a new Options identical to this one but with the
-// LineSeparator set to sep. If sep is the empty string, the line separator is
-// interpreted as DefaultLineSeparator.
-func (opts Options) WithLineSeparator(sep string) Options {
-	opts.LineSeparator = sep
+// WithDefaults returns a copy of the options with all blank members filled with
+// their defaults. Internally, this function is used on user-provided Options
+// objects in order to get ready-to-use copies.
+func (opts Options) WithDefaults() Options {
+	if opts.LineSeparator == "" {
+		opts.LineSeparator = DefaultLineSeparator
+	}
+	if opts.IndentStr == "" {
+		opts.IndentStr = DefaultIndentString
+	}
+	if opts.ParagraphSeparator == "" {
+		opts.ParagraphSeparator = DefaultParagraphSeparator
+	}
 	return opts
 }
 
@@ -74,6 +82,14 @@ func (opts Options) WithLineSeparator(sep string) Options {
 // interpreted as the default indent string ("\t").
 func (opts Options) WithIndentStr(str string) Options {
 	opts.IndentStr = str
+	return opts
+}
+
+// WithLineSeparator returns a new Options identical to this one but with the
+// LineSeparator set to sep. If sep is the empty string, the line separator is
+// interpreted as DefaultLineSeparator.
+func (opts Options) WithLineSeparator(sep string) Options {
+	opts.LineSeparator = sep
 	return opts
 }
 
@@ -96,21 +112,5 @@ func (opts Options) WithParagraphSeparator(sep string) Options {
 // with PreserveParagraphs set to preserve.
 func (opts Options) WithPreserveParagraphs(preserve bool) Options {
 	opts.PreserveParagraphs = preserve
-	return opts
-}
-
-// WithDefaults returns a copy of the options with all blank members filled with
-// their defaults. Internally, this function is used on user-provided Options
-// objects in order to get ready-to-use copies.
-func (opts Options) WithDefaults() Options {
-	if opts.LineSeparator == "" {
-		opts.LineSeparator = DefaultLineSeparator
-	}
-	if opts.IndentStr == "" {
-		opts.IndentStr = DefaultIndentString
-	}
-	if opts.ParagraphSeparator == "" {
-		opts.ParagraphSeparator = DefaultParagraphSeparator
-	}
 	return opts
 }

@@ -114,42 +114,69 @@ func (ed Editor) ApplyParagraphsOpts(op ParagraphOperation, opts Options) Editor
 	}, opts)
 }
 
-func (ed Editor) applyGParagraphsOpts(op gParagraphOperation, opts Options) Editor {
+// CollapseSpace converts all runs of white space characters to a single
+// space. A sequence of LineSeparator is considered whitespace regardless of the
+// classification of the characters within it for the purposes of this function.
+func (ed Editor) CollapseSpace() Editor {
+	return ed.CollapseSpaceOpts(ed.Options)
+}
+
+// CollapseSpaceOpts converts all runs of white space characters to a single
+// space. A sequence of LineSeparator is considered whitespace regardless of the
+// classification of the characters within it for the purposes of this function.
+func (ed Editor) CollapseSpaceOpts(opts Options) Editor {
 	opts = opts.WithDefaults()
-
-	// split the paragraph separator about its line separators so we can see any
-	// extra chars that will be chopped off while in a preserve-mode wrap that
-	// messes with line separators
-	var paraSepPrevSuffix, paraSepNextPrefix gem.String
-	parts := strings.Split(opts.ParagraphSeparator, opts.LineSeparator)
-
-	paraSepPrevSuffix = _g(parts[0])
-	if len(parts) > 1 {
-		paraSepNextPrefix = _g(parts[len(parts)-1])
-	}
-
-	paragraphs := strings.Split(ed.Text, opts.ParagraphSeparator)
-	transformed := make([]string, 0, len(paragraphs))
-	for idx, para := range paragraphs {
-		// the first one will not have the prev
-		var paraPre, paraSuf gem.String
-		if idx != 0 {
-			paraPre = paraSepNextPrefix
-		}
-		if idx != len(paragraphs)-1 {
-			paraSuf = paraSepPrevSuffix
-		}
-
-		nextParas := op(idx, _g(para), paraPre, paraSuf)
-
-		if len(nextParas) > 0 {
-			transformed = append(transformed, gem.Strings(nextParas)...)
-		}
-	}
-
-	ed.Text = strings.Join(transformed, opts.ParagraphSeparator)
-
+	ed.Text = collapseSpace(_g(ed.Text), _g(opts.LineSeparator)).String()
 	return ed
+}
+
+// Indent adds the currently configured indent string level times at the start
+// of each line in the Editor. If level is 0 or less, the text is unchanged.
+//
+// Need to make note for NoTrailing behavior.
+//
+// note that custom parasep does nothing if not combined w preserve.
+func (ed Editor) Indent(level int) Editor {
+	return ed.IndentOpts(level, ed.Options)
+}
+
+// IndentOpts adds an indent string level times at the start of each line in the
+// Editor. If level is 0 or less, the text is unchanged.
+//
+// The provided Options object is used to override the options currently set on
+// the Editor for the indent. LineSeparator, IndentStr, and
+// NoTrailingLineSeparators are read from the provided Options obejct.
+//
+// add note on a folded line term with no line terminators that ends up ambiguous
+// w a complete run of para sep, para sep will be prioritized so if parasep is
+// "\n\n" and lineSep is "\n" and noTrailing is on, the sequence \n\n\n will be
+// interpreted as 'PARA BREAK' followed by 'LINE BREAK'. probably not intended but
+// will need to fix this in a later version.
+func (ed Editor) IndentOpts(level int, opts Options) Editor {
+	if level < 1 {
+		// caller wants fewer than 1 indent. Okay, that is zero; return
+		// unchanged
+		return ed
+	}
+
+	indent := strings.Repeat(opts.WithDefaults().IndentStr, level)
+
+	doIndent := func(_ int, line string) []string {
+		newLine := indent + line
+
+		// only have the one line, returne that
+		return []string{newLine}
+	}
+
+	if opts.WithDefaults().PreserveParagraphs {
+		doIndentPara := func(_ int, para, _, _ string) []string {
+			output := Edit(para).WithOptions(opts).ApplyOpts(doIndent, opts).String()
+			return []string{output}
+		}
+		return ed.ApplyParagraphsOpts(doIndentPara, opts)
+	} else {
+		return ed.ApplyOpts(doIndent, opts)
+	}
 }
 
 // Insert adds a string to the text at the following position. The position is
@@ -349,69 +376,42 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 	return ed.Insert(pos, combinedBlock.Join().String())
 }
 
-// Indent adds the currently configured indent string level times at the start
-// of each line in the Editor. If level is 0 or less, the text is unchanged.
+// Justify takes the contents in the Editor and justifies all lines to the given
+// width.
 //
-// Need to make note for NoTrailing behavior.
-//
-// note that custom parasep does nothing if not combined w preserve.
-func (ed Editor) Indent(level int) Editor {
-	return ed.IndentOpts(level, ed.Options)
+// The options currently set on the Editor are used for this operation.
+func (ed Editor) Justify(width int) Editor {
+	return ed.JustifyOpts(width, ed.Options)
 }
 
-// IndentOpts adds an indent string level times at the start of each line in the
-// Editor. If level is 0 or less, the text is unchanged.
-//
-// The provided Options object is used to override the options currently set on
-// the Editor for the indent. LineSeparator, IndentStr, and
-// NoTrailingLineSeparators are read from the provided Options obejct.
-//
-// add note on a folded line term with no line terminators that ends up ambiguous
-// w a complete run of para sep, para sep will be prioritized so if parasep is
-// "\n\n" and lineSep is "\n" and noTrailing is on, the sequence \n\n\n will be
-// interpreted as 'PARA BREAK' followed by 'LINE BREAK'. probably not intended but
-// will need to fix this in a later version.
-func (ed Editor) IndentOpts(level int, opts Options) Editor {
-	if level < 1 {
-		// caller wants fewer than 1 indent. Okay, that is zero; return
-		// unchanged
-		return ed
-	}
-
-	indent := strings.Repeat(opts.WithDefaults().IndentStr, level)
-
-	doIndent := func(_ int, line string) []string {
-		newLine := indent + line
-
-		// only have the one line, returne that
-		return []string{newLine}
-	}
-
-	if opts.WithDefaults().PreserveParagraphs {
-		doIndentPara := func(_ int, para, _, _ string) []string {
-			output := Edit(para).WithOptions(opts).ApplyOpts(doIndent, opts).String()
-			return []string{output}
-		}
-		return ed.ApplyParagraphsOpts(doIndentPara, opts)
-	} else {
-		return ed.ApplyOpts(doIndent, opts)
-	}
-}
-
-// CollapseSpace converts all runs of white space characters to a single
-// space. A sequence of LineSeparator is considered whitespace regardless of the
-// classification of the characters within it for the purposes of this function.
-func (ed Editor) CollapseSpace() Editor {
-	return ed.CollapseSpaceOpts(ed.Options)
-}
-
-// CollapseSpaceOpts converts all runs of white space characters to a single
-// space. A sequence of LineSeparator is considered whitespace regardless of the
-// classification of the characters within it for the purposes of this function.
-func (ed Editor) CollapseSpaceOpts(opts Options) Editor {
+// JustifyOpts takes the contents in the Editor and justifies all lines to the
+// given width.
+func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 	opts = opts.WithDefaults()
-	ed.Text = collapseSpace(_g(ed.Text), _g(opts.LineSeparator)).String()
-	return ed
+
+	if opts.PreserveParagraphs {
+		return ed.applyGParagraphsOpts(func(idx int, para, pre, suf gem.String) []gem.String {
+			sepStart := _g(strings.Repeat("A", pre.Len()))
+			sepEnd := _g(strings.Repeat("A", pre.Len()))
+			bl := newBlock(sepStart.Add(para).Add(sepEnd), _g(opts.LineSeparator))
+			bl.Apply(func(idx int, line string) []string {
+				return []string{justifyLine(_g(line), width).String()}
+			})
+			text := bl.Join()
+
+			// remove separator (if any)
+			if sepEnd.Len() > 0 {
+				para = text.Sub(sepStart.Len(), -sepEnd.Len())
+			} else {
+				para = text.Sub(sepStart.Len(), text.Len())
+			}
+			return []gem.String{para}
+		}, opts)
+	}
+
+	return ed.ApplyOpts(func(idx int, line string) []string {
+		return []string{justifyLine(_g(line), width).String()}
+	}, opts)
 }
 
 // Wrap performs a wrap of all text to the given width. If width is less than 2,
@@ -454,40 +454,40 @@ func (ed Editor) WrapOpts(width int, opts Options) Editor {
 	return ed
 }
 
-// Justify takes the contents in the Editor and justifies all lines to the given
-// width.
-//
-// The options currently set on the Editor are used for this operation.
-func (ed Editor) Justify(width int) Editor {
-	return ed.JustifyOpts(width, ed.Options)
-}
-
-// JustifyOpts takes the contents in the Editor and justifies all lines to the
-// given width.
-func (ed Editor) JustifyOpts(width int, opts Options) Editor {
+func (ed Editor) applyGParagraphsOpts(op gParagraphOperation, opts Options) Editor {
 	opts = opts.WithDefaults()
 
-	if opts.PreserveParagraphs {
-		return ed.applyGParagraphsOpts(func(idx int, para, pre, suf gem.String) []gem.String {
-			sepStart := _g(strings.Repeat("A", pre.Len()))
-			sepEnd := _g(strings.Repeat("A", pre.Len()))
-			bl := newBlock(sepStart.Add(para).Add(sepEnd), _g(opts.LineSeparator))
-			bl.Apply(func(idx int, line string) []string {
-				return []string{justifyLine(_g(line), width).String()}
-			})
-			text := bl.Join()
+	// split the paragraph separator about its line separators so we can see any
+	// extra chars that will be chopped off while in a preserve-mode wrap that
+	// messes with line separators
+	var paraSepPrevSuffix, paraSepNextPrefix gem.String
+	parts := strings.Split(opts.ParagraphSeparator, opts.LineSeparator)
 
-			// remove separator (if any)
-			if sepEnd.Len() > 0 {
-				para = text.Sub(sepStart.Len(), -sepEnd.Len())
-			} else {
-				para = text.Sub(sepStart.Len(), text.Len())
-			}
-			return []gem.String{para}
-		}, opts)
+	paraSepPrevSuffix = _g(parts[0])
+	if len(parts) > 1 {
+		paraSepNextPrefix = _g(parts[len(parts)-1])
 	}
 
-	return ed.ApplyOpts(func(idx int, line string) []string {
-		return []string{justifyLine(_g(line), width).String()}
-	}, opts)
+	paragraphs := strings.Split(ed.Text, opts.ParagraphSeparator)
+	transformed := make([]string, 0, len(paragraphs))
+	for idx, para := range paragraphs {
+		// the first one will not have the prev
+		var paraPre, paraSuf gem.String
+		if idx != 0 {
+			paraPre = paraSepNextPrefix
+		}
+		if idx != len(paragraphs)-1 {
+			paraSuf = paraSepPrevSuffix
+		}
+
+		nextParas := op(idx, _g(para), paraPre, paraSuf)
+
+		if len(nextParas) > 0 {
+			transformed = append(transformed, gem.Strings(nextParas)...)
+		}
+	}
+
+	ed.Text = strings.Join(transformed, opts.ParagraphSeparator)
+
+	return ed
 }
