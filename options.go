@@ -29,12 +29,12 @@ const (
 type Options struct {
 	// IndentStr is the string that is used for a single horizontal indent. If
 	// this is set to "", it will be interpreted as though it were set to
-	// [DefaultIndentString].
+	// DefaultIndentString.
 	IndentStr string
 
 	// LineSeparator is the string that the Editor considers to signify the
 	// end of a line. If this is set to "", it will be interpreted as though it
-	// were set to [DefaultLineSeparator].
+	// were set to DefaultLineSeparator.
 	LineSeparator string
 
 	// NoTrailingLineSeparators is whether the Editor considers lines to not end
@@ -57,7 +57,7 @@ type Options struct {
 	// Editor is intended to transparantly handle this case.
 	//
 	// If this is set to "", it will be interpreted as though it were set to
-	// [DefaultParagraphSeparator].
+	// DefaultParagraphSeparator.
 	ParagraphSeparator string
 
 	// PreserveParagraphs says whether operations that adjust separator
