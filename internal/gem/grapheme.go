@@ -24,6 +24,8 @@ import (
 // The zero value is an empty String.
 //
 // String.Equal can be used to test against raw strings.
+//
+// String implements the fmt.Formatter interface.
 type String struct {
 	r  []rune
 	gc []int
@@ -94,7 +96,8 @@ func (str String) Equal(other interface{}) bool {
 	return true
 }
 
-// Format formats the String for printing.
+// Format formats the String for printing. This is part of the implementation
+// of fmt.Formatter.
 func (str *String) Format(f fmt.State, verb rune) {
 	if verb == 'q' {
 		if str == nil {
