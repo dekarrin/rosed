@@ -47,23 +47,11 @@ type parentRef struct {
 //
 // If `end` is less than `start`, it is assumed to be equal to `start`.
 //
-// # Grapheme-Aware Function
-//
-// The `start` and `end` index the human-readable graphemes in Text, not the
-// bytes or runes that make it up; see the note on `grapheme-based indexing` for
-// more info on this.
-//
-// # Sub-editor Function
-//
-// This function produces a sub-editor, whose Text field will contain only the
-// sub-section of text specified. Editing the parent's Text field after the
-// sub-editor has been created will have no effect on the sub-editor or any
-// Editor produced from it, but note that it may have an affect on the result of
-// calling Commit() on the sub-editor.
-//
-// The sub-editor as well as any sub-editors produced from it can be merged back
-// into the original Editor by calling Commit(). Alternatively, all such
-// sub-editors can be merged recursively by calling CommitAll().
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+// 
+// This is a Sub-Editor function. See the note on [Editor] for more info.
 func (ed Editor) Chars(start, end int) Editor {
 	// ask gem string for the grapheme-based char positions
 	indexes := gem.New(ed.Text).GraphemeIndexes()
@@ -131,23 +119,11 @@ func (ed Editor) Chars(start, end int) Editor {
 // is assumed to be the end of the string. If it specifies an index that is
 // before the start of a string, it is assumed to be 0.
 //
-// # Grapheme-Aware Function
-//
-// The `start` indexes the human-readable graphemes in Text, not the bytes or
-// runes that make it up; see the note on `grapheme-based indexing` for more
-// info on this.
-//
-// # Sub-editor Function
-//
-// This function produces a sub-editor, whose Text field will contain only the
-// sub-section of text specified. Editing the parent's Text field after the
-// sub-editor has been created will have no effect on the sub-editor or any
-// Editor produced from it, but note that it may have an affect on the result of
-// calling Commit() on the sub-editor.
-//
-// The sub-editor as well as any sub-editors produced from it can be merged back
-// into the original Editor by calling Commit(). Alternatively, all such
-// sub-editors can be merged recursively by calling CommitAll().
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+// 
+// This is a Sub-Editor function. See the note on [Editor] for more info.
 func (ed Editor) CharsFrom(start int) Editor {
 	return ed.Chars(start, len(ed.Text))
 }
@@ -171,23 +147,11 @@ func (ed Editor) CharsFrom(start int) Editor {
 // assumed to be the end of the string. If it specifies an index that is before
 // the start of a string, it is assumed to be 0.
 //
-// # Grapheme-Aware Function
-//
-// The `end` indexes the human-readable graphemes in Text, not the bytes or
-// runes that make it up; see the note on `grapheme-based indexing` for more
-// info on this.
-//
-// # Sub-editor Function
-//
-// This function produces a sub-editor, whose Text field will contain only the
-// sub-section of text specified. Editing the parent's Text field after the
-// sub-editor has been created will have no effect on the sub-editor or any
-// Editor produced from it, but note that it may have an affect on the result of
-// calling Commit() on the sub-editor.
-//
-// The sub-editor as well as any sub-editors produced from it can be merged back
-// into the original Editor by calling Commit(). Alternatively, all such
-// sub-editors can be merged recursively by calling CommitAll().
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+// 
+// This is a Sub-Editor function. See the note on [Editor] for more info.
 func (ed Editor) CharsTo(end int) Editor {
 	return ed.Chars(0, end)
 }
@@ -277,19 +241,7 @@ func (ed Editor) IsSubEditor() bool {
 //
 // If `end` is less than `start`, it is assumed to be equal to `start`.
 //
-// # Sub-editor Function
-//
-// This function produces a sub-editor, whose Text field will contain only the
-// sub-section of text specified. Editing the parent's Text field after the
-// sub-editor has been created will have no effect on the sub-editor or any
-// Editor produced from it, but note that it may have an affect on the result of
-// calling Commit() on the sub-editor.
-//
-// The sub-editor as well as any sub-editors produced from it can be merged back
-// into the original Editor by calling Commit(). Alternatively, all such
-// sub-editors can be merged recursively by calling CommitAll().
-//
-// # Options
+// This is a Sub-Editor function. See the note on [Editor] for more info.
 //
 // This function is affected by the following options of the Editor it is called
 // on:
@@ -375,19 +327,7 @@ func (ed Editor) Lines(start, end int) Editor {
 // line). If it specifies an index that is before the start of a string, it is
 // assumed to be 0.
 //
-// # Sub-editor Function
-//
-// This function produces a sub-editor, whose Text field will contain only the
-// sub-section of text specified. Editing the parent's Text field after the
-// sub-editor has been created will have no effect on the sub-editor or any
-// Editor produced from it, but note that it may have an affect on the result of
-// calling Commit() on the sub-editor.
-//
-// The sub-editor as well as any sub-editors produced from it can be merged back
-// into the original Editor by calling Commit(). Alternatively, all such
-// sub-editors can be merged recursively by calling CommitAll().
-//
-// # Options
+// This is a Sub-Editor function. See the note on [Editor] for more info.
 //
 // This function is affected by the following options of the Editor it is called
 // on:
@@ -421,19 +361,7 @@ func (ed Editor) LinesFrom(start int) Editor {
 // line). If it specifies an index that is before the start of a string, it is
 // assumed to be 0.
 //
-// # Sub-editor Function
-//
-// This function produces a sub-editor, whose Text field will contain only the
-// sub-section of text specified. Editing the parent's Text field after the
-// sub-editor has been created will have no effect on the sub-editor or any
-// Editor produced from it, but note that it may have an affect on the result of
-// calling Commit() on the sub-editor.
-//
-// The sub-editor as well as any sub-editors produced from it can be merged back
-// into the original Editor by calling Commit(). Alternatively, all such
-// sub-editors can be merged recursively by calling CommitAll().
-//
-// # Options
+// This is a Sub-Editor function. See the note on [Editor] for more info.
 //
 // This function is affected by the following options of the Editor it is called
 // on:

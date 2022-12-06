@@ -18,6 +18,18 @@ import "strings"
 // returns a new Editor with its Text property set to the result of the operation.
 // It is valid to manually set properties of an Editor and this will not break the
 // assumptions made by operations called on it.
+//
+// # Sub-Editor Functions
+//
+// Some Editor functions produce a sub-editor, whose Text field will contain
+// only the sub-section of text specified. Editing the parent's Text field after
+// the sub-editor has been created will have no effect on the sub-editor or any
+// Editor produced from it, but note that it may have an affect on the result of
+// calling Commit() on the sub-editor.
+//
+// The sub-editor as well as any sub-editors produced from it can be merged back
+// into the original Editor by calling Commit(). Alternatively, all such
+// sub-editors can be merged recursively by calling CommitAll().
 type Editor struct {
 	// Text is the string that will be operated on.
 	Text string

@@ -12,7 +12,7 @@
 //
 //	ed := Edit("my text")
 //
-// Editing Partial Sections:
+// # Editing Partial Sections
 //
 // To edit only a portion of the text in an Editor, a sub-editor can be created
 // using Chars(), Lines(), or similar functions. The Editor retured from these
