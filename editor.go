@@ -5,12 +5,19 @@ import "strings"
 // This file contains basic structural elements of Editor as well as functions
 // on it that are neither text operations nor sub-editor splitting operations.
 
-// Editor works with text. The zero value is an editor ready to operate on the
-// empty string; Edit can also be called which gives an Editor ready to operate
-// on the passed-in string.
+// Editor contains text that is being operated on and provides several operations
+// that can be applied. It is the primary way to edit text using the rosed package.
 //
-// All Editors are immutable; calling an operation returns a new Editor with a
-// Text set to the result of the operation.
+// The zero value is an editor ready to operate on the empty string; alternatively,
+// Edit() can be called to produce an Editor ready to operate on the passed-in
+// string. There is no functional difference between a zero-value Editor having its
+// Text property set manually to a string and calling Edit() with a string; they will
+// produce identical Editors.
+//
+// All operations on an Editor treat the Editor as immutable; calling an operation
+// returns a new Editor with its Text property set to the result of the operation.
+// It is valid to manually set properties of an Editor and this will not break the
+// assumptions made by operations called on it.
 type Editor struct {
 	// Text is the string that will be operated on.
 	Text string
@@ -33,16 +40,23 @@ func Edit(text string) Editor {
 	}
 }
 
-// LineCount returns the number of lines in the Text as per the line separator.
+// LineCount returns the number of lines in the Text. Lines are split by the currently
+// set LineSeparator in the Editor's Options property; if one has not yet been set,
+// DefaultLineSeparator is used.
+//
+// Note that this will return the number of actual lines. If the Editor has
+// NoTrailingLineSeparators set to true in its options, it will consider the empty string
+// to in fact be a non-terminated line as opposed to 0 lines.
 func (ed Editor) LineCount() int {
 	return len(ed.lines())
 }
 
 // WithOptions returns an Editor identical to the current one but with its
-// Options replaced by the given Options.
+// Options replaced by the given Options. This does not affect the Editor
+// it was called on.
 //
-// This function is no different than just setting ed.Options but provides a way
-// to do so in a fluent convention.
+// This function has the same effect as manually setting Editor.Options but
+// provides a way to do so in a fluent convention.
 //
 // To get a set of Options that are identical to the current but with a single
 // item changed, get the Editor's current options and call one of its WithX
@@ -50,7 +64,7 @@ func (ed Editor) LineCount() int {
 //
 // Example:
 //
-// ed.WithOptions(ed.Options.WithIndentStr(" ")))
+// ed = ed.WithOptions(ed.Options.WithIndentStr(" ")))
 func (ed Editor) WithOptions(opts Options) Editor {
 	ed.Options = opts
 	return ed
