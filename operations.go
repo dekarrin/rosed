@@ -583,45 +583,85 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 // to fit.
 //
 // `pos` gives the position to insert the columns at within the Editor.
-// `leftText`
 //
-// TODO: get more docs, left off here
+// `leftText` is the text to put into the left column.
 //
-// This function will attempt to align the columns such that the returned text
-// is widthTarget large at its widest point. If the left and right columns
-// cannot be wrapped such that widthTarget is achieved (for instance due to
-// widthTarget being smaller than the line with longest combined length of the
-// two columns plus minSpaceBetween), the lowest possible integer greater than
-// widthTarget will be used.
+// `rightText` is the text to put into the right column.
 //
-// The columns will be wrapped such that the the left column will take up
-// leftColPercent of the available layout area (width - space between), and the
-// right column will take up the rest. If leftColPercent is less than 0.0, it
-// will be assumed to be 0.0. If greater than 1.0, it will be assumed to be 1.0.
+// `minSpaceBetween` is the amount of space between the two columns. It will
+// only be this small if the left side after wrapping reaches its full length.
+//
+// `width` is how much horizontal space the two columns will take up. Note that
+// if the right column after wrapping never reaches its full length, it is
+// possible that no line will be this many characters across.
+//
+// `leftColPercent` is a float from 0.0 to 1.0 that gives how much of the
+// available width (width - minSpaceBetween) the left column should take up. The
+// right column will infer its width from that as well. If leftColPercent is
+// less than 0.0, it will be assumed to be 0.0. If greater than 1.0, it will be
+// assumed to be 1.0.
+//
 // The minimum width that a column can be is always 2 characters wide.
-func (ed Editor) InsertTwoColumns(pos int, leftText string, rightText string, minSpaceBetween int, widthTarget int, leftColPercent float64) Editor {
-	return ed.InsertTwoColumnsOpts(pos, leftText, rightText, minSpaceBetween, widthTarget, leftColPercent, ed.Options)
+//
+// If the left column ends up taking more vertical space than the right column,
+// the left column will have spaces added on subsequent lines to meet with where
+// the right column would have started if it had had more lines.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is used to separate each line of the output.
+//   - `NoTrailingLineSeparators` sets whether to include a trailing
+//     LineSeparator at the end of the generated columns. If set to true, it
+//     will be omited, otherwise the columns will end with a LineSeparator.
+func (ed Editor) InsertTwoColumns(pos int, leftText string, rightText string, minSpaceBetween int, width int, leftColPercent float64) Editor {
+	return ed.InsertTwoColumnsOpts(pos, leftText, rightText, minSpaceBetween, width, leftColPercent, ed.Options)
 }
 
-// InsertTwoColumnsOpts takes two seperate text sequences and puts them into two
-// columns. Each column will be properly wrapped to fit.
+// InsertTwoColumnsOpts builds two columns of side-by-side text from two
+// sequences of text using the provided options. The leftText and the rightText
+// do not need any special preparation to be used as the body of each column, as
+// they will be automatically wrapped to fit.
 //
-// This function will attempt to align the columns such that the returned text
-// is widthTarget large at its widest point. If the left and right columns
-// cannot be wrapped such that widthTarget is achieved (for instance due to
-// widthTarget being smaller than the line with longest combined length of the
-// two columns plus minSpaceBetween), the lowest possible integer greater than
-// widthTarget will be used.
+// `pos` gives the position to insert the columns at within the Editor.
 //
-// The columns will be wrapped such that the the left column will take up
-// leftColPercent of the available layout area (width - space between), and the
-// right column will take up the rest. If leftColPercent is less than 0.0, it
-// will be assumed to be 0.0. If greater than 1.0, it will be assumed to be 1.0.
+// `leftText` is the text to put into the left column.
+//
+// `rightText` is the text to put into the right column.
+//
+// `minSpaceBetween` is the amount of space between the two columns. It will
+// only be this small if the left side after wrapping reaches its full length.
+//
+// `width` is how much horizontal space the two columns will take up. Note that
+// if the right column after wrapping never reaches its full length, it is
+// possible that no line will be this many characters across.
+//
+// `leftColPercent` is a float from 0.0 to 1.0 that gives how much of the
+// available width (width - minSpaceBetween) the left column should take up. The
+// right column will infer its width from that as well. If leftColPercent is
+// less than 0.0, it will be assumed to be 0.0. If greater than 1.0, it will be
+// assumed to be 1.0.
+//
 // The minimum width that a column can be is always 2 characters wide.
 //
-// ADD NOTE: will add a trailing line separator if noTrailing is false.
-// ADD NOTE: left side will be wider to meet right column side.
-func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string, minSpaceBetween int, widthTarget int, leftColPercent float64, opts Options) Editor {
+// If the left column ends up taking more vertical space than the right column,
+// the left column will have spaces added on subsequent lines to meet with where
+// the right column would have started if it had had more lines.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is used to separate each line of the output.
+//   - `NoTrailingLineSeparators` sets whether to include a trailing
+//     LineSeparator at the end of the generated columns. If set to true, it
+//     will be omited, otherwise the columns will end with a LineSeparator.
+func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string, minSpaceBetween int, width int, leftColPercent float64, opts Options) Editor {
 	if leftText == "" && rightText == "" {
 		return ed
 	}
@@ -638,11 +678,10 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 	// dash. In addition, there must be enough space for the minSpaceBetween, so
 	// maxWidthTarget must be at least the sum of these lengths otherwise we
 	// cannot respect it.
-	width := widthTarget
 	minLeftColWidth := 2
 	minRightColWidth := 2
 	minWidth := minSpaceBetween + minLeftColWidth + minRightColWidth
-	if widthTarget < minWidth {
+	if width < minWidth {
 		width = minWidth
 	}
 
