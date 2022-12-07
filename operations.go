@@ -763,17 +763,54 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 	}, opts)
 }
 
-// Wrap performs a wrap of all text to the given width. If width is less than 2,
-// it is assumed to be 2 because no meaningful wrap algorithm can be applied to
-// anything smaller.
+// Wrap wraps the Editor Text to the given width. The text will have whitespace
+// collapsed prior to being wrapped.
+//
+// If width is less than 2, it is assumed to be 2 because no meaningful wrap
+// algorithm can be applied to anything smaller.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is placed at the end of each line. If any sequence of
+//     LineSeparator exists in the Text prior to calling this function, it will
+//     first be collapsed into a single space character as part of whitespace
+//     collapsing.
+//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//     only have effect if PreserveParagraphs is set to true.
+//   - `PreserveParagraphs` gives whether to respect paragraphs instead of
+//     simply considering them text to be wrapped. If set to true, the Text is
+//     first split into paragraphs by ParagraphSeparator, then the wrap is
+//     applied to each paragraph.
 func (ed Editor) Wrap(width int) Editor {
 	return ed.WrapOpts(width, ed.Options)
 }
 
-// WrapOpts performs a wrap of all text to the given width. The provided options
-// are used instead of the Editor's built-in options. If width is less than 2,
-// it is assumed to be 2 because no meaningful wrap algorithm can be applied to
-// anything smaller.
+// WrapOpts wraps the Editor Text to the given width using the supplied options.
+// The text will have whitespace collapsed prior to being wrapped.
+//
+// If width is less than 2, it is assumed to be 2 because no meaningful wrap
+// algorithm can be applied to anything smaller.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is placed at the end of each line. If any sequence of
+//     LineSeparator exists in the Text prior to calling this function, it will
+//     first be collapsed into a single space character as part of whitespace
+//     collapsing.
+//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//     only have effect if PreserveParagraphs is set to true.
+//   - `PreserveParagraphs` gives whether to respect paragraphs instead of
+//     simply considering them text to be wrapped. If set to true, the Text is
+//     first split into paragraphs by ParagraphSeparator, then the wrap is
+//     applied to each paragraph.
 func (ed Editor) WrapOpts(width int, opts Options) Editor {
 	opts = opts.WithDefaults()
 
