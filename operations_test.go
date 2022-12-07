@@ -170,7 +170,7 @@ func Test_WrapOpts(t *testing.T) {
 	}
 }
 
-func Test_CollapseSpaces(t *testing.T) {
+func Test_CollapseSpace(t *testing.T) {
 	testCases := []struct {
 		name   string
 		input  string
@@ -194,7 +194,7 @@ func Test_CollapseSpaces(t *testing.T) {
 	}
 }
 
-func Test_CollapseSpacesOpts(t *testing.T) {
+func Test_CollapseSpaceOpts(t *testing.T) {
 	testCases := []struct {
 		name    string
 		input   string
