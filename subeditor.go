@@ -26,36 +26,32 @@ type parentRef struct {
 	end int
 }
 
-// Chars produces an Editor to operate on a subset of the text currently being
-// operated on. The returned Editor operates on text from the nth character up
-// to (but not including) the ith character, where n is start and end is i.
+// Chars produces an Editor to operate on a subset of its Text. The returned
+// Editor operates on text from the nth character up to (but not including)
+// the ith character, where n is `start` and i is `end`.
 //
-// The start and end are relative to the UTF8 character code points, not to
-// the bytes in the Text; e.g. a start of 1 will specify the second character
-// regardless of how many bytes the first character takes up.
+// For instance, to get the 'ell' of "Hello!":
 //
-// The start and end may be negative, in which case it will be relative to the
-// end of the string; -1 would be the last character, -2 would be the index
-// of the second-to-last character, etc.
+//	ed := Edit("Hello!")
+//	ed = ed.Chars(1, 4)
 //
-// If either start or end result in an index that are past the end of the string,
-// they are assumed to be the end of the string. If either result in a location
+//	fmt.Printf("%v\n", ed.Text)  // will be "ell".
+//
+// The `start` or `end` may be negative, in which case it will be relative to
+// the end of the string; -1 would be the index of the last character, -2 would
+// be the index of the second-to-last character, etc.
+//
+// If `start` or `end` specifies an index that is past the end of the string,
+// that index is assumed to be the end of the string. If either specify an index
 // that is before the start of a string, it is assumed to be 0.
 //
-// If end is less than start, it is assumed to be equal to start.
+// If `end` is less than `start`, it is assumed to be equal to `start`.
 //
-// This function produces a sub-editor, whose Text field will contain only the
-// sub-section of text specified. Editing the parent's Text field after the
-// sub-editor has been created will have no effect on the sub-editor or any
-// Editor produced from it. TODO: TECHNICALLY true but a user might be surprised
-// to find that a modified parent editor with an outstanding sub-editor
-// where the parent then makes changes in any way before the sub-editor calls
-// CommitAll() could result in impossible references.
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
 //
-// The sub-editor as well as any Editors produced from
-// it can be merged back into the original Editor by calling Commit().
-// Alternatively, all such sub-editors can be merged recursively by calling
-// CommitAll().
+// This is a Sub-Editor function. See the note on [Editor] for more info.
 func (ed Editor) Chars(start, end int) Editor {
 	// ask gem string for the grapheme-based char positions
 	indexes := gem.New(ed.Text).GraphemeIndexes()
@@ -104,48 +100,58 @@ func (ed Editor) Chars(start, end int) Editor {
 	return ed.subEd(byteStart, byteEnd)
 }
 
-// CharsFrom produces an Editor to operate on a subset of the text currently
-// being operated on. The returned Editor operates on text from the nth
-// character up through the end of the string, where n is start.
+// CharsFrom produces an Editor to operate on a subset of its Text. The returned
+// Editor operates on text from the nth character up to the end of the string,
+// where n is `start`.
 //
-// The start is relative to the UTF8 character code points, not to the bytes in
-// the Text; e.g. a start of 1 will specify the second character regardless of
-// how many bytes the first character takes up.
+// For instance, to get the 'llo!' of "Hello!":
 //
-// If start is negative, it is assumed to be 0. If start is greater than the
-// number of characters, it is assumed to be the number of characters.
+//	ed := Edit("Hello!")
+//	ed = ed.CharsFrom(2)
 //
-// This function produces a sub-editor, whose Text field will contain only the
-// sub-section of text specified. Editing the parent's Text field after the
-// sub-editor has been created will have no effect on the sub-editor or any
-// Editor produced from it. The sub-editor as well as any Editors produced from
-// it can be merged back into the original Editor by calling Commit().
-// Alternatively, all such sub-editors can be merged recursively by calling
-// CommitAll().
+//	fmt.Printf("%v\n", ed.Text)  // will be "llo!".
+//
+// `start` may be negative, in which case it will be relative to the end of the
+// string; -1 would be the index of the last character, -2 would be the index of
+// the second-to-last character, etc.
+//
+// If `start` specifies an index that is past the end of the string, that index
+// is assumed to be the end of the string. If it specifies an index that is
+// before the start of a string, it is assumed to be 0.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This is a Sub-Editor function. See the note on [Editor] for more info.
 func (ed Editor) CharsFrom(start int) Editor {
 	return ed.Chars(start, len(ed.Text))
 }
 
-// CharsTo produces an Editor to operate on a subset of the text currently being
-// operated on. The returned Editor operates on text from the beginning up to
-// (but not including) the nth character, where n is end.
+// CharsTo produces an Editor to operate on a subset of its Text. The returned
+// Editor operates on text from the first character up to but not including the
+// nth character, where n is `end`.
 //
-// The end is relative to the UTF8 character code points, not to the bytes in
-// the Text; e.g. an end of 1 will specify the second character regardless of
-// how many bytes the first character takes up.
+// For instance, to get the 'He' of "Hello!":
 //
-// The end may be negative, in which case it will be relative to the end of the
-// string; -1 would be all except the last codepoint, -2 would be all except the
-// last two codepoints, etc. If end is greater than the number of characters,
-// it is assumed to be the number of characters.
+//	ed := Edit("Hello!")
+//	ed = ed.CharsTo(2)
 //
-// This function produces a sub-editor, whose Text field will contain only the
-// sub-section of text specified. Editing the parent's Text field after the
-// sub-editor has been created will have no effect on the sub-editor or any
-// Editor produced from it. The sub-editor as well as any Editors produced from
-// it can be merged back into the original Editor by calling Commit().
-// Alternatively, all such sub-editors can be merged recursively by calling
-// CommitAll().
+//	fmt.Printf("%v\n", ed.Text)  // will be "He".
+//
+// `end` may be negative, in which case it will be relative to the end of the
+// string; -1 would be the index of the last character, -2 would be the index of
+// the second-to-last character, etc.
+//
+// If `end` specifies an index that is past the end of the string, that index is
+// assumed to be the end of the string. If it specifies an index that is before
+// the start of a string, it is assumed to be 0.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This is a Sub-Editor function. See the note on [Editor] for more info.
 func (ed Editor) CharsTo(end int) Editor {
 	return ed.Chars(0, end)
 }
@@ -201,37 +207,50 @@ func (ed Editor) CommitAll() Editor {
 }
 
 // IsSubEditor returns whether the Editor was created to edit a sub-set of the
-// text in some parent editor. Calls to Lines() and similar functions will
-// result in such an Editor.
+// text in some parent editor. Calls to Lines(), LinesFrom(), LinesTo(),
+// Chars(), CharsFrom(), and CharsTo() will result in such an Editor.
 //
 // If IsSubEditor returns true, then the Editor's Text could possibly be an
 // incomplete subset of the original text. To get the full text from a
-// sub-editor, either use CommitAll to convert it back into a full editor or
-// call String() to get the full string.
+// sub-editor, use CommitAll to get the root parent editor with all pending
+// changes from sub-editors, including this one, applied.
 func (ed Editor) IsSubEditor() bool {
 	return ed.ref != nil
 }
 
 // Lines produces an Editor to operate on a subset of the lines in the Text. The
-// lines are 0-indexed and the start and end are the same as in slice notation.
+// lines are 0-indexed and the `start` and `end` are the same as in slice
+// notation. The returned Editor operates on lines from the nth line up to (but
+// not including) the ith line, where n is `start` and i is `end`.
 //
-// The end may be negative, in which case it will be relative to the end of the
-// string; -1 would be all except the last line, -2 would be all except the last
-// two lines, etc. If end is greater than the number of lines, it is assumed to
-// be the number of lines.
+// For instance, to get the middle two lines of a four-line string:
 //
-// If start is negative, it is assumed to be 0. If start is greater than the
-// number of lines, it is assumed to be the number of lines.
+//	ed := Edit("Line #1\nLine #2\nLine #3\nLine #4")
+//	ed = ed.Lines(1, 3)
 //
-// If end is less than start, it is assumed to be equal to start.
+//	fmt.Printf("%v\n", ed.Text)  // will be "Line #2\nLine #3\n".
 //
-// This function produces a sub-editor, whose Text field will contain only the
-// sub-section of text specified. Editing the parent's Text field after the
-// sub-editor has been created will have no effect on the sub-editor or any
-// Editor produced from it. The sub-editor as well as any Editors produced from
-// it can be merged back into the original Editor by calling Commit().
-// Alternatively, all such sub-editors can be merged recursively by calling
-// CommitAll().
+// The `start` or `end` may be negative, in which case it will be relative to
+// the end of the text; -1 would be the index of the last line, -2 would be the
+// index of the second-to-last line, etc.
+//
+// If `start` or `end` specifies an index that is past the end of the text, that
+// index is assumed to be the end of the text (i.e. 1 greater than the index of
+// the final line). If either specify an index that is before the start of a
+// string, it is assumed to be 0.
+//
+// If `end` is less than `start`, it is assumed to be equal to `start`.
+//
+// This is a Sub-Editor function. See the note on [Editor] for more info.
+//
+// This function is affected by the following options of the Editor it is called
+// on:
+//
+//   - `LineSeparator` specifies what string should be used to delimit lines.
+//   - `NoTrailingLineSeparators` specifies whether it should consider a final
+//     instance of `LineSeparator` to be ending the prior line, or giving the
+//     start of a new line. If NoTrailingLineSeparators is true, a trailing
+//     LineSeparator is considered to start a new (empty) line.
 func (ed Editor) Lines(start, end int) Editor {
 	if ed.Text == "" {
 		return ed.subEd(0, 0)
@@ -288,45 +307,77 @@ func (ed Editor) Lines(start, end int) Editor {
 	return ed.subEd(byteStart, byteEnd)
 }
 
-// LinesFrom is the same as Lines but with end automatically set to the last
-// line.
+// LinesFrom produces an Editor to operate on a subset of the lines in the Text.
+// The returned Editor operates on lines from the nth line up to the end of the
+// text, where n is `start`.
 //
-// If start is negative, it is assumed to be 0. If start is greater than the
-// number of lines, it is assumed to be the number of lines.
+// For instance, to get the last two lines of a four-line string:
 //
-// This function produces a sub-editor, whose Text field will contain only the
-// sub-section of text specified. Editing the parent's Text field after the
-// sub-editor has been created will have no effect on the sub-editor or any
-// Editor produced from it. The sub-editor as well as any Editors produced from
-// it can be merged back into the original Editor by calling Commit().
-// Alternatively, all such sub-editors can be merged recursively by calling
-// CommitAll().
+//	ed := Edit("Line #1\nLine #2\nLine #3\nLine #4")
+//	ed = ed.LinesFrom(2)
+//
+//	fmt.Printf("%v\n", ed.Text)  // will be "Line #3\nLine #4".
+//
+// The `start` may be negative, in which case it will be relative to the end of
+// the text; -1 would be the index of the last line, -2 would be the index of
+// the second-to-last line, etc.
+//
+// If `start` specifies an index that is past the end of the text, that index is
+// assumed to be the end of the text (i.e. 1 greater than the index of the final
+// line). If it specifies an index that is before the start of a string, it is
+// assumed to be 0.
+//
+// This is a Sub-Editor function. See the note on [Editor] for more info.
+//
+// This function is affected by the following options of the Editor it is called
+// on:
+//
+//   - `LineSeparator` specifies what string should be used to delimit lines.
+//   - `NoTrailingLineSeparators` specifies whether it should consider a final
+//     instance of `LineSeparator` to be ending the prior line, or giving the
+//     start of a new line. If NoTrailingLineSeparators is true, a trailing
+//     LineSeparator is considered to start a new (empty) line.
 func (ed Editor) LinesFrom(start int) Editor {
 	return ed.Lines(start, ed.LineCount())
 }
 
-// LinesTo is the same as Lines but with start automatically set to the first
-// line.
+// LinesTo produces an Editor to operate on a subset of the lines in the Text.
+// The returned Editor operates on lines from the first line up to but not
+// including the nth line, where n is `end`.
 //
-// The end may be negative, in which case it will be relative to the end of the
-// string; -1 would be all except the last line, -2 would be all except the last
-// two lines, etc. If end is greater than the number of lines, it is assumed to
-// be the number of lines.
+// For instance, to get the first two lines of a four-line string:
 //
-// This function produces a sub-editor, whose Text field will contain only the
-// sub-section of text specified. Editing the parent's Text field after the
-// sub-editor has been created will have no effect on the sub-editor or any
-// Editor produced from it. The sub-editor as well as any Editors produced from
-// it can be merged back into the original Editor by calling Commit().
-// Alternatively, all such sub-editors can be merged recursively by calling
-// CommitAll().
+//	ed := Edit("Line #1\nLine #2\nLine #3\nLine #4")
+//	ed = ed.LinesFrom(2)
+//
+//	fmt.Printf("%v\n", ed.Text)  // will be "Line #3\nLine #4".
+//
+// The `start` may be negative, in which case it will be relative to the end of
+// the text; -1 would be the index of the last line, -2 would be the index of
+// the second-to-last line, etc.
+//
+// If `end` specifies an index that is past the end of the text, that index is
+// assumed to be the end of the text (i.e. 1 greater than the index of the final
+// line). If it specifies an index that is before the start of a string, it is
+// assumed to be 0.
+//
+// This is a Sub-Editor function. See the note on [Editor] for more info.
+//
+// This function is affected by the following options of the Editor it is called
+// on:
+//
+//   - `LineSeparator` specifies what string should be used to delimit lines.
+//   - `NoTrailingLineSeparators` specifies whether it should consider a final
+//     instance of `LineSeparator` to be ending the prior line, or giving the
+//     start of a new line. If NoTrailingLineSeparators is true, a trailing
+//     LineSeparator is considered to start a new (empty) line.
 func (ed Editor) LinesTo(end int) Editor {
 	return ed.Lines(0, end)
 }
 
 // String returns the finished, fully edited string. If the Editor is a
-// sub-editor, calling String() will return the section that it edited along
-// with the unedited prefix and suffix.
+// sub-editor, CommitAll() is called first and the Text from the resulting
+// editor is returned, else Text is returned.
 func (ed Editor) String() string {
 	if ed.IsSubEditor() {
 		ed = ed.CommitAll()

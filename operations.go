@@ -14,9 +14,9 @@ var (
 	spaceCollapser = regexp.MustCompile(" +")
 )
 
-// LineOperation is a function that takes a zero-indexed line number and the
-// contents of that line and performs some operation on the string to get a
-// new string to replace the contents of the line with.
+// LineOperation is a function that accpets a zero-indexed line number and the
+// contents of that line and performs some operation to produce zero or more new
+// lines to replace the contents of the line with.
 //
 // The return value for a LineOperation is a slice of lines to insert at the
 // old line position. This can be used to delete the line or insert additional
@@ -24,15 +24,15 @@ var (
 // proper position relative to the old line in the slice, and to delete the
 // original line, a slice with len < 1 can be returned.
 //
-// The idx will always be the index of the line before any transformations were
-// applied; e.g. if used in ForEachLine, a call to a LineOperation with idx = 4
-// will always be after a call with idx = 3, regardless of the size of the
-// returned slice in the prior call.
+// `idx` will always be the index of the line before any transformations were
+// applied; e.g. if used in [Editor.Apply], a call to a LineOperation with
+// idx = 4 will always be after a call with idx = 3, regardless of the size of
+// the returned slice in the prior call.
 type LineOperation func(idx int, line string) []string
 
-// ParagraphOperation is a function that takes a zero-indexed paragraph number
-// and the contents of that paragraph and performs some operation on the string
-// to get a new string to replace the contents of the paragraph with.
+// ParagraphOperation is a function that accepts a zero-indexed paragraph number
+// and the contents of that paragraph and performs some operation to produce
+// zero or more new paragraphs to replace the contents of the paragraph with.
 //
 // The return value for a ParagraphOperation is a slice of paragraphs to insert
 // at the old paragraph position. This can be used to delete the paragraph or
@@ -41,37 +41,63 @@ type LineOperation func(idx int, line string) []string
 // slice; to delete the original paragraph, a slice with len < 1 can be
 // returned.
 //
-// The idx will always be the index of the paragraph before any transformations
-// were applied; e.g. if used in ForEachLine, a call to a ParagraphOperation
-// with idx = 4 will always be after a call with idx = 3, regardless of the size
-// of the returned slice in the prior call.
+// `idx` will always be the index of the paragraph before any transformations
+// were applied; e.g. if used in [Editor.ApplyParagraphs], a call to a
+// ParagraphOperation with idx = 4 will always be after a call with idx = 3,
+// regardless of the size of the returned slice in the prior call.
 //
 // The paragraphs may have additional contents at the beginning and end as part
-// of a the currently defined ParagraphSeparator. In this case, such content
-// that would come at the start of the paragraph is provided in sepPrefix, and
-// such content that would come at the end of the paragraph is provied in
-// sepSuffix. Callers of the ParagraphOperation will automatically add the
+// of the currently defined ParagraphSeparator. In this case, such content that
+// would come at the start of the paragraph is provided in sepPrefix, and such
+// content that would come at the end of the paragraph is provied in sepSuffix.
+// These values are provided for reference within a ParagraphOperation, but a
+// ParagraphOperation should assume the caller of it will automatically add the
 // separators (which will include the affixes) as needed to the returned
 // paragraph(s).
 type ParagraphOperation func(idx int, para, sepPrefix, sepSuffix string) []string
 
 type gParagraphOperation func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String
 
-// Apply applies the given LineOperation for each line in the text. Line
-// termination at the last line is transparently handled as per the options
-// currently set on the Editor.
+// Apply applies the given LineOperation to each line in the Text. Line
+// termination at the last line is transparently handled as per the options set
+// on the Editor.
 //
-// This will NOT be called at least once for an empty editor UNLESS NoTrailing is set.
+// The LineOperation should assume it will receive each line without its line
+// terminator, and must assume that anything it returns will have that handled
+// by the caller.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` specifies what string should be used to delimit lines.
+//   - `NoTrailingLineSeparators` specifies whether it should consider a final
+//     instance of `LineSeparator` to be ending the prior line, or giving the
+//     start of a new line. If NoTrailingLineSeparators is true, a trailing
+//     LineSeparator is considered to start a new (empty) line. Additionally, if
+//     it is set to true, the LineOperation will be called at least once for an
+//     empty string, whereas if it is set to false and the Editor text is set to
+//     an empty string, the LineOperation will not be called.
 func (ed Editor) Apply(op LineOperation) Editor {
 	ed = ed.ApplyOpts(op, ed.Options)
 	return ed
 }
 
-// ApplyOpts applies the given LineOperation for each line in the text. Line
-// termination at the last line is transparently handled as per the provided
-// options.
+// ApplyOpts applies the given LineOperation to each line in the Text, using the
+// provided options.
 //
-// each line does not have line sep in it in input or output.
+// The LineOperation should assume it will receive each line without its line
+// terminator, and must assume that anything it returns will have re-adding the
+// separator to it handled by the caller.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` specifies what string should be used to delimit lines.
+//   - `NoTrailingLineSeparators` specifies whether it should consider a final
+//     instance of `LineSeparator` to be ending the prior line, or giving the
+//     start of a new line. If NoTrailingLineSeparators is true, a trailing
+//     LineSeparator is considered to start a new (empty) line. Additionally, if
+//     it is set to true, the LineOperation will be called at least once for an
+//     empty string, whereas if it is set to false and the Editor text is set to
+//     an empty string, the LineOperation will not be called.
 func (ed Editor) ApplyOpts(op LineOperation, opts Options) Editor {
 	opts = opts.WithDefaults()
 	lines := ed.WithOptions(opts).linesSep(opts.LineSeparator)
@@ -95,63 +121,212 @@ func (ed Editor) ApplyOpts(op LineOperation, opts Options) Editor {
 	return ed
 }
 
-// ApplyParagraphs applies a ParagraphOperation to the text in the Editor.
-// TODO: better docs
+// ApplyParagraphs applies the given ParagraphOperation to each paragraph in
+// the Text of the Editor, using the options currently set on the Editor.
+//
+// The ParagraphOperation should assume it will receive each paragraph without
+// its paragraph separator, and must assume that anything it returns will have
+// re-adding the separator to it handled by the caller.
+//
+// When the ParagraphSeparator of the Editor's options is set to a sequence that
+// includes visible characters that take up horizontal space, the
+// ParagraphOperation will receive the prefix and suffix of the paragraph that
+// would be in the joined string due to the separator, with variables
+// `sepPrefix` and `sepSuffix`. This is not intended to allow the operation to
+// add them back in manually, as that is handled by the caller, but for it to
+// perform book-keeping and length checks and act accordingly, such when
+// attempting to output something that is intended to be aligned.
+//
+// Unlike with LineSeparator, a ParagraphSeparator is always considered a
+// separator, not a terminator, so the affixes may vary per paragraph if the
+// ParagraphSeparator has line breaks in it. In particular, in that case the
+// first paragraph will have an empty prefix, and the last paragraph will have
+// an empty suffix, and all other paragraphs will have non-empty prefixes and
+// suffixes.
+//
+// For example:
+//
+//	opts := Options{ParagraphSeparator: "<P1>\n<P2>"}
+//	ed := Edit("para1<P1>\n<P2>para2<P1>\n<P2>para3<P1>\n<P2>para4")
+//	ed = ed.WithOptions(opts)
+//
+//	paraOp := func(idx int, para, sepPrefix, sepSuffix string) []string {
+//	  newPara := fmt.Sprintf("(PREFIX=%s,PARA=%s,SUFFIX=%s)", sepPrefix, para, sepSuffix)
+//	  return []string{newPara}
+//	}
+//
+//	ed.ApplyParagraphs(paraOp).String()
+//	// the above will give the string:
+//	//   (PREFIX=,PARA=para1,SUFFIX=<P1>)<P1>
+//	//   <P2>(PREFIX=<P2>,PARA=para2,SUFFIX=<P1>)<P1>
+//	//   <P2>(PREFIX=<P2>,PARA=para3,SUFFIX=<P1>)<P1>
+//	//   <P2>(PREFIX=<P2>,PARA=para4,SUFFIX=)
+//
+// Note that treating the paragraph separator as a splitter and not a terminator
+// also means that the ParagraphOperation is always called at least once, even
+// for an empty editor.
+//
+// This function is affected by the following options:
+//
+//   - `ParagraphSeparator` specifies the string that paragraphs are split by.
 func (ed Editor) ApplyParagraphs(op ParagraphOperation) Editor {
 	ed = ed.ApplyParagraphsOpts(op, ed.Options)
 	return ed
 }
 
-// ApplyParagraphsOpts gets all the paragraphs without any paragraph separators,
-// performs some operation on them, and then puts the paragraphs back together.
+// ApplyParagraphsOpts applies the given ParagraphOperation to each paragraph in
+// the Text of the Editor, using the provided options.
 //
-// NOTE: unlike with ApplyLines, there will ALWAYS be at least one paragraph, even in the case
-// of the empty string. Paragraphs are considered to be split, not terminated.
-// TODO: Better docs
+// The ParagraphOperation should assume it will receive each paragraph without
+// its paragraph separator, and must assume that anything it returns will have
+// re-adding the separator to it handled by the caller.
+//
+// When the ParagraphSeparator of Options is set to a sequence that includes
+// visible characters that take up horizontal space, the ParagraphOperation will
+// receive the prefix and suffix of the paragraph that would be in the joined
+// string due to the separator, with variables `sepPrefix` and `sepSuffix`. This
+// is not intended to allow the operation to add them back in manually, as that
+// is handled by the caller, but for it to perform book-keeping and length
+// checks and act accordingly, such when attempting to output something that is
+// intended to be aligned.
+//
+// Unlike with LineSeparator, a ParagraphSeparator is always considered a
+// separator, not a terminator, so the affixes may vary per paragraph if the
+// ParagraphSeparator has line breaks in it. In particular, in that case the
+// first paragraph will have an empty prefix, and the last paragraph will have
+// an empty suffix, and all other paragraphs will have non-empty prefixes and
+// suffixes.
+//
+// For example:
+//
+//	opts := Options{ParagraphSeparator: "<P1>\n<P2>"}
+//	ed := Edit("para1<P1>\n<P2>para2<P1>\n<P2>para3<P1>\n<P2>para4")
+//
+//	paraOp := func(idx int, para, sepPrefix, sepSuffix string) []string {
+//	  newPara := fmt.Sprintf("(PREFIX=%s,PARA=%s,SUFFIX=%s)", sepPrefix, para, sepSuffix)
+//	  return []string{newPara}
+//	}
+//
+//	ed.ApplyParagraphsOpts(paraOp, opts).String()
+//	// the above will give the string:
+//	//   (PREFIX=,PARA=para1,SUFFIX=<P1>)<P1>
+//	//   <P2>(PREFIX=<P2>,PARA=para2,SUFFIX=<P1>)<P1>
+//	//   <P2>(PREFIX=<P2>,PARA=para3,SUFFIX=<P1>)<P1>
+//	//   <P2>(PREFIX=<P2>,PARA=para4,SUFFIX=)
+//
+// Note that treating the paragraph separator as a splitter and not a terminator
+// also means that the ParagraphOperation is always called at least once, even
+// for an empty editor.
+//
+// This function is affected by the following options:
+//
+//   - `ParagraphSeparator` specifies the string that paragraphs are split by.
 func (ed Editor) ApplyParagraphsOpts(op ParagraphOperation, opts Options) Editor {
 	return ed.applyGParagraphsOpts(func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String {
 		return gem.Slice(op(idx, para.String(), sepPrefix.String(), sepSuffix.String()))
 	}, opts)
 }
 
-// CollapseSpace converts all runs of white space characters to a single
-// space. A sequence of LineSeparator is considered whitespace regardless of the
-// classification of the characters within it for the purposes of this function.
+// CollapseSpace converts all runs of whitespace characters to a single space
+// character.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is always considered whitespace, and will be collapsed
+//     into a space regardless of the classification of the characters within
+//     it.
 func (ed Editor) CollapseSpace() Editor {
 	return ed.CollapseSpaceOpts(ed.Options)
 }
 
-// CollapseSpaceOpts converts all runs of white space characters to a single
-// space. A sequence of LineSeparator is considered whitespace regardless of the
-// classification of the characters within it for the purposes of this function.
+// CollapseSpaceOpts converts all runs of whitespace characters to a single
+// space character using the provided options.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is always considered whitespace, and will be collapsed
+//     into a space regardless of the classification of the characters within
+//     it.
 func (ed Editor) CollapseSpaceOpts(opts Options) Editor {
 	opts = opts.WithDefaults()
 	ed.Text = collapseSpace(_g(ed.Text), _g(opts.LineSeparator)).String()
 	return ed
 }
 
-// Indent adds the currently configured indent string level times at the start
-// of each line in the Editor. If level is 0 or less, the text is unchanged.
+// Indent adds an indent string at the start of each line in the Editor. The
+// string used for a single level of indent is determined by Editor options and
+// will be applied `level` times. If `level` is 0 or less, the text is
+// unchanged.
 //
-// Need to make note for NoTrailing behavior.
+// With default options set, this operation has no effect on an empty editor.
 //
-// note that custom parasep does nothing if not combined w preserve.
+// This function is affected by the following options:
+//
+//   - `IndentStr` is the sequence to use to indent a single level.
+//   - `LineSeparator` is the separator that determines what each line is so
+//     that each line may be indented by the specified amount.
+//   - `NoTrailingLineSeparators` alters whether LineSeparator is expected to be
+//     at the end of a complete line. If this is set to true, then a
+//     LineSeparator does not need to present at the end of a complete line. Any
+//     trailing line separator for a non-empty editor is then considered to
+//     split the last line from a new, empty line, which will be indented. In
+//     addition, the empty editor would in fact be considered to have a single
+//     line, which would be indented.
+//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//     only have effect if PreserveParagraphs is set to true.
+//   - `PreserveParagraphs` gives whether to respect paragraphs instead of
+//     treating all lines as equal. If set to true, the Text is first split into
+//     paragraphs by ParagraphSeparator, then the indent is applied to each
+//     paragraph.
+//
+// There is a potentially strange behavior that occurs when
+// NoTrailingLineSeparators is set to true, PreserveParagraphs is set to true,
+// and the LineSeparator could be misinterpreted as part of ParagraphSeparator.
+// In this case, the paragraph separation will be prioritized over the line
+// separator, possibly in an unintended fasion. For instance, if
+// ParagraphSeparator is set to "\n\n" (the default) and LineSeparator is set to
+// "\n" (the default), a sequence of "\n\n\n" would be interpreted as the
+// paragraph separator followed by the line separator. This may be fixed in a
+// later version of this library.
 func (ed Editor) Indent(level int) Editor {
 	return ed.IndentOpts(level, ed.Options)
 }
 
-// IndentOpts adds an indent string level times at the start of each line in the
-// Editor. If level is 0 or less, the text is unchanged.
+// IndentOpts adds an indent string at the start of each line in the Editor
+// using the provided options. The string used for a single level of indent is
+// determined by the provided options and will be applied `level` times. If
+// `level` is 0 or less, the text is unchanged.
 //
-// The provided Options object is used to override the options currently set on
-// the Editor for the indent. LineSeparator, IndentStr, and
-// NoTrailingLineSeparators are read from the provided Options obejct.
+// With default options set, this operation has no effect on an empty editor.
 //
-// add note on a folded line term with no line terminators that ends up ambiguous
-// w a complete run of para sep, para sep will be prioritized so if parasep is
-// "\n\n" and lineSep is "\n" and noTrailing is on, the sequence \n\n\n will be
-// interpreted as 'PARA BREAK' followed by 'LINE BREAK'. probably not intended but
-// will need to fix this in a later version.
+// This function is affected by the following options:
+//
+//   - `IndentStr` is the sequence to use to indent a single level.
+//   - `LineSeparator` is the separator that determines what each line is so
+//     that each line may be indented by the specified amount.
+//   - `NoTrailingLineSeparators` alters whether LineSeparator is expected to be
+//     at the end of a complete line. If this is set to true, then a
+//     LineSeparator does not need to present at the end of a complete line. Any
+//     trailing line separator for a non-empty editor is then considered to
+//     split the last line from a new, empty line, which will be indented. In
+//     addition, the empty editor would in fact be considered to have a single
+//     line, which would be indented.
+//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//     only have effect if PreserveParagraphs is set to true.
+//   - `PreserveParagraphs` gives whether to respect paragraphs instead of
+//     treating all lines as equal. If set to true, the Text is first split into
+//     paragraphs by ParagraphSeparator, then the indent is applied to each
+//     paragraph.
+//
+// There is a potentially strange behavior that occurs when
+// NoTrailingLineSeparators is set to true, PreserveParagraphs is set to true,
+// and the LineSeparator could be misinterpreted as part of ParagraphSeparator.
+// In this case, the paragraph separation will be prioritized over the line
+// separator, possibly in an unintended fasion. For instance, if
+// ParagraphSeparator is set to "\n\n" (the default) and LineSeparator is set to
+// "\n" (the default), a sequence of "\n\n\n" would be interpreted as the
+// paragraph separator followed by the line separator. This may be fixed in a
+// later version of this library.
 func (ed Editor) IndentOpts(level int, opts Options) Editor {
 	if level < 1 {
 		// caller wants fewer than 1 indent. Okay, that is zero; return
@@ -179,10 +354,22 @@ func (ed Editor) IndentOpts(level int, opts Options) Editor {
 	}
 }
 
-// Insert adds a string to the text at the following position. The position is
-// zero-indexed and is the unicode codepoint index. The text will be inserted
-// starting at this index and any content previously there will be moved up to
-// make room.
+// Insert adds a string to the Text at the given position. The position is
+// zero-indexed and refers to the visible characters in the Text. At whatever
+// position is given, the existing text is moved forward to make room for the
+// new text.
+//
+// For example, to insert the text "burb" in the middle:
+//
+//	ed := Edit("S world!")
+//
+//	ed.Insert(1, "burb")
+//
+//	ed.String()  // gives "Sburb world!"
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
 func (ed Editor) Insert(charPos int, text string) Editor {
 	before := ed.CharsTo(charPos).Text
 	after := ed.CharsFrom(charPos).Text
@@ -191,21 +378,137 @@ func (ed Editor) Insert(charPos int, text string) Editor {
 	return ed
 }
 
-// InsertDefinitionsTable creates a table that gives two-columns; one for
-// words on the left and the other for definitions on the right.
+// InsertDefinitionsTable creates a table of term definitions and inserts it
+// into the Text of the Editor. Definition tables are a two-column table that
+// put the terms being defined on the left and their definitions on the right.
+// The terms are indented by two space characters.
 //
-// pos is the character position to insert the table at.
+// They look like this:
 //
-// The options currently set on the editor are used for the table.
+//	// A definitions table:
+//
+//	  John  - Has a passion for REALLY TERRIBLE MOVIES. Likes to program
+//	          computers but is NOT VERY GOOD AT IT.
+//
+//	  Rose  - Has a passion for RATHER OBSCURE LITERATURE. Enjoys creative
+//	          writing and is SOMEWHAT SECRETIVE ABOUT IT.
+//
+//	  Dave  - Has a penchant for spinning out UNBELIEVABLY ILL JAMS with his
+//	          TURNTABLES AND MIXING GEAR. Likes to rave about BANDS NO ONE'S
+//	          EVER HEARD OF BUT HIM.
+//
+//	  Jade  - Has so many INTERESTS, she has trouble keeping track of them all,
+//	          even with an assortment of COLORFUL REMINDERS on her fingers to
+//	          help sort out everything on her mind.
+//
+// The character position to insert the table at is given by `pos`. The
+// definitions themselves are given as a slice of 2-tuples of strings, where the
+// first item in the tuple is the term and the second item is the definition. If
+// no definitions are given, or an empty slice is passed in, there will be no
+// output. Finally, the complete maximum width of the table to output including
+// the leading indent is given in `width`. Note that not every line will be this
+// long; wrapping will often cause them to be shorter.
+//
+// Example to get the above table:
+//
+//	ed := Edit("")
+//
+//	johnDef := "Has a passion for REALLY TERRIBLE MOVIES ..."
+//	roseDef := "Has a passion for RATHER OBSCURE LITERATURE ..."
+//	daveDef := "Has a penchant for spinning out UNBELIEVABLY ILL JAMS ..."
+//	jadeDef := "Has so many INTERESTS ..."
+//
+//	defs := [][2]string{
+//	  {"John", johnDef},
+//	  {"Rose", roseDef},
+//	  {"Dave", daveDef),
+//	  {"Jade", jadeDef),
+//	}
+//
+//	ed.InsertDefinitionsTable(0, defs, 76)
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is used to separate each line of the table output.
+//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//     only have effect if PreserveParagraphs is set to true.
+//   - `PreserveParagraphs` is used to separate each term/definition pair from
+//     the other definitions.
+//   - `NoTrailingLineSeparators` sets whether to include a trailing
+//     LineSeparator at the end of the table. If set to true, it will be omited,
+//     otherwise the table will end with a LineSeparator.
 func (ed Editor) InsertDefinitionsTable(pos int, definitions [][2]string, width int) Editor {
 	return ed.InsertDefinitionsTableOpts(pos, definitions, width, ed.Options)
 }
 
-// InsertDefinitionsTableOpts creates a table that gives two-columns; one for
-// words on the left and the other for definitions on the right.
+// InsertDefinitionsTableOpts creates a table of term definitions using the
+// provided options and inserts it into the Text of the Editor. Definition
+// tables are a two-column table that put the terms being defined on the left
+// and their definitions on the right. The terms are indented by two space
+// characters.
 //
-// pos is the character position to insert the table at.
-// NOTE: always will add a newline if notrailing is false, UNLESS output would be empty anyways (no defs).
+// They look like this:
+//
+//	// A definitions table:
+//
+//	  John  - Has a passion for REALLY TERRIBLE MOVIES. Likes to program
+//	          computers but is NOT VERY GOOD AT IT.
+//
+//	  Rose  - Has a passion for RATHER OBSCURE LITERATURE. Enjoys creative
+//	          writing and is SOMEWHAT SECRETIVE ABOUT IT.
+//
+//	  Dave  - Has a penchant for spinning out UNBELIEVABLY ILL JAMS with his
+//	          TURNTABLES AND MIXING GEAR. Likes to rave about BANDS NO ONE'S
+//	          EVER HEARD OF BUT HIM.
+//
+//	  Jade  - Has so many INTERESTS, she has trouble keeping track of them all,
+//	          even with an assortment of COLORFUL REMINDERS on her fingers to
+//	          help sort out everything on her mind.
+//
+// The character position to insert the table at is given by `pos`. The
+// definitions themselves are given as a slice of 2-tuples of strings, where the
+// first item in the tuple is the term and the second item is the definition. If
+// no definitions are given, or an empty slice is passed in, there will be no
+// output. Finally, the complete maximum width of the table to output including
+// the leading indent is given in `width`. Note that not every line will be this
+// long; wrapping will often cause them to be shorter.
+//
+// Example to get the above table:
+//
+//	ed := Edit("")
+//
+//	johnDef := "Has a passion for REALLY TERRIBLE MOVIES ..."
+//	roseDef := "Has a passion for RATHER OBSCURE LITERATURE ..."
+//	daveDef := "Has a penchant for spinning out UNBELIEVABLY ILL JAMS ..."
+//	jadeDef := "Has so many INTERESTS ..."
+//
+//	defs := [][2]string{
+//	  {"John", johnDef},
+//	  {"Rose", roseDef},
+//	  {"Dave", daveDef),
+//	  {"Jade", jadeDef),
+//	}
+//
+//	ed.InsertDefinitionsTableOpts(0, defs, 76, Options{})
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is used to separate each line of the table output.
+//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//     only have effect if PreserveParagraphs is set to true.
+//   - `PreserveParagraphs` is used to separate each term/definition pair from
+//     the other definitions.
+//   - `NoTrailingLineSeparators` sets whether to include a trailing
+//     LineSeparator at the end of the table. If set to true, it will be omited,
+//     otherwise the table will end with a LineSeparator.
 func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, width int, opts Options) Editor {
 	opts = opts.WithDefaults()
 
@@ -274,8 +577,15 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 	}
 }
 
-// InsertTwoColumns takes two seperate text sequences and puts them into two
-// columns. Each column will be properly wrapped to fit.
+// InsertTwoColumns builds two columns of side-by-side text from two sequences
+// of text. The leftText and the rightText do not need any special preparation
+// to be used as the body of each column, as they will be automatically wrapped
+// to fit.
+//
+// `pos` gives the position to insert the columns at within the Editor.
+// `leftText`
+//
+// TODO: get more docs, left off here
 //
 // This function will attempt to align the columns such that the returned text
 // is widthTarget large at its widest point. If the left and right columns
