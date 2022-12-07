@@ -225,24 +225,36 @@ func (ed Editor) ApplyParagraphsOpts(op ParagraphOperation, opts Options) Editor
 	}, opts)
 }
 
-// CollapseSpace converts all runs of white space characters to a single
-// space. A sequence of LineSeparator is considered whitespace regardless of the
-// classification of the characters within it for the purposes of this function.
+// CollapseSpace converts all runs of whitespace characters to a single space
+// character.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is always considered whitespace, and will be collapsed
+//     into a space regardless of the classification of the characters within
+//     it.
 func (ed Editor) CollapseSpace() Editor {
 	return ed.CollapseSpaceOpts(ed.Options)
 }
 
-// CollapseSpaceOpts converts all runs of white space characters to a single
-// space. A sequence of LineSeparator is considered whitespace regardless of the
-// classification of the characters within it for the purposes of this function.
+// CollapseSpaceOpts converts all runs of whitespace characters to a single
+// space character using the provided options.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is always considered whitespace, and will be collapsed
+//     into a space regardless of the classification of the characters within
+//     it.
 func (ed Editor) CollapseSpaceOpts(opts Options) Editor {
 	opts = opts.WithDefaults()
 	ed.Text = collapseSpace(_g(ed.Text), _g(opts.LineSeparator)).String()
 	return ed
 }
 
-// Indent adds the currently configured indent string level times at the start
-// of each line in the Editor. If level is 0 or less, the text is unchanged.
+// Indent adds an indent string at the start of each line in the Editor. The
+// string used for a single level of indent is determined by Editor options and
+// will be applied `level` times. If `level` is 0 or less, the text is
+// unchanged.
 //
 // Need to make note for NoTrailing behavior.
 //
