@@ -14,9 +14,9 @@ var (
 	spaceCollapser = regexp.MustCompile(" +")
 )
 
-// LineOperation is a function that takes a zero-indexed line number and the
-// contents of that line and performs some operation on the string to get a
-// new string to replace the contents of the line with.
+// LineOperation is a function that accpets a zero-indexed line number and the
+// contents of that line and performs some operation to produce zero or more new
+// lines to replace the contents of the line with.
 //
 // The return value for a LineOperation is a slice of lines to insert at the
 // old line position. This can be used to delete the line or insert additional
@@ -24,15 +24,15 @@ var (
 // proper position relative to the old line in the slice, and to delete the
 // original line, a slice with len < 1 can be returned.
 //
-// The idx will always be the index of the line before any transformations were
-// applied; e.g. if used in ForEachLine, a call to a LineOperation with idx = 4
-// will always be after a call with idx = 3, regardless of the size of the
-// returned slice in the prior call.
+// `idx` will always be the index of the line before any transformations were
+// applied; e.g. if used in [Editor.Apply], a call to a LineOperation with
+// idx = 4 will always be after a call with idx = 3, regardless of the size of
+// the returned slice in the prior call.
 type LineOperation func(idx int, line string) []string
 
-// ParagraphOperation is a function that takes a zero-indexed paragraph number
-// and the contents of that paragraph and performs some operation on the string
-// to get a new string to replace the contents of the paragraph with.
+// ParagraphOperation is a function that accepts a zero-indexed paragraph number
+// and the contents of that paragraph and performs some operation to produce
+// zero or more new paragraphs to replace the contents of the paragraph with.
 //
 // The return value for a ParagraphOperation is a slice of paragraphs to insert
 // at the old paragraph position. This can be used to delete the paragraph or
@@ -41,37 +41,63 @@ type LineOperation func(idx int, line string) []string
 // slice; to delete the original paragraph, a slice with len < 1 can be
 // returned.
 //
-// The idx will always be the index of the paragraph before any transformations
-// were applied; e.g. if used in ForEachLine, a call to a ParagraphOperation
-// with idx = 4 will always be after a call with idx = 3, regardless of the size
-// of the returned slice in the prior call.
+// `idx` will always be the index of the paragraph before any transformations
+// were applied; e.g. if used in [Editor.ApplyParagraphs], a call to a
+// ParagraphOperation with idx = 4 will always be after a call with idx = 3,
+// regardless of the size of the returned slice in the prior call.
 //
 // The paragraphs may have additional contents at the beginning and end as part
-// of a the currently defined ParagraphSeparator. In this case, such content
-// that would come at the start of the paragraph is provided in sepPrefix, and
-// such content that would come at the end of the paragraph is provied in
-// sepSuffix. Callers of the ParagraphOperation will automatically add the
+// of the currently defined ParagraphSeparator. In this case, such content that
+// would come at the start of the paragraph is provided in sepPrefix, and such
+// content that would come at the end of the paragraph is provied in sepSuffix.
+// These values are provided for reference within a ParagraphOperation, but a
+// ParagraphOperation should assume the caller of it will automatically add the
 // separators (which will include the affixes) as needed to the returned
 // paragraph(s).
 type ParagraphOperation func(idx int, para, sepPrefix, sepSuffix string) []string
 
 type gParagraphOperation func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String
 
-// Apply applies the given LineOperation for each line in the text. Line
-// termination at the last line is transparently handled as per the options
-// currently set on the Editor.
+// Apply applies the given LineOperation to each line in the Text. Line
+// termination at the last line is transparently handled as per the options set
+// on the Editor.
 //
-// This will NOT be called at least once for an empty editor UNLESS NoTrailing is set.
+// The LineOperation should assume it will receive each line without its line
+// terminator, and must assume that anything it returns will have that handled
+// by the caller.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` specifies what string should be used to delimit lines.
+//   - `NoTrailingLineSeparators` specifies whether it should consider a final
+//     instance of `LineSeparator` to be ending the prior line, or giving the
+//     start of a new line. If NoTrailingLineSeparators is true, a trailing
+//     LineSeparator is considered to start a new (empty) line. Additionally, if
+//     it is set to true, the LineOperation will be called at least once for an
+//     empty string, whereas if it is set to false and the Editor text is set to
+//     an empty string, the LineOperation will not be called.
 func (ed Editor) Apply(op LineOperation) Editor {
 	ed = ed.ApplyOpts(op, ed.Options)
 	return ed
 }
 
-// ApplyOpts applies the given LineOperation for each line in the text. Line
-// termination at the last line is transparently handled as per the provided
-// options.
+// ApplyOpts applies the given LineOperation to each line in the Text, using the
+// provided options.
 //
-// each line does not have line sep in it in input or output.
+// The LineOperation should assume it will receive each line without its line
+// terminator, and must assume that anything it returns will have re-adding the
+// separator to it handled by the caller.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` specifies what string should be used to delimit lines.
+//   - `NoTrailingLineSeparators` specifies whether it should consider a final
+//     instance of `LineSeparator` to be ending the prior line, or giving the
+//     start of a new line. If NoTrailingLineSeparators is true, a trailing
+//     LineSeparator is considered to start a new (empty) line. Additionally, if
+//     it is set to true, the LineOperation will be called at least once for an
+//     empty string, whereas if it is set to false and the Editor text is set to
+//     an empty string, the LineOperation will not be called.
 func (ed Editor) ApplyOpts(op LineOperation, opts Options) Editor {
 	opts = opts.WithDefaults()
 	lines := ed.WithOptions(opts).linesSep(opts.LineSeparator)
@@ -95,19 +121,104 @@ func (ed Editor) ApplyOpts(op LineOperation, opts Options) Editor {
 	return ed
 }
 
-// ApplyParagraphs applies a ParagraphOperation to the text in the Editor.
-// TODO: better docs
+// ApplyParagraphs applies the given ParagraphOperation to each paragraph in
+// the Text of the Editor, using the options currently set on the Editor.
+//
+// The ParagraphOperation should assume it will receive each paragraph without
+// its paragraph separator, and must assume that anything it returns will have
+// re-adding the separator to it handled by the caller.
+//
+// When the ParagraphSeparator of the Editor's options is set to a sequence that
+// includes visible characters that take up horizontal space, the
+// ParagraphOperation will receive the prefix and suffix of the paragraph that
+// would be in the joined string due to the separator, with variables
+// `sepPrefix` and `sepSuffix`. This is not intended to allow the operation to
+// add them back in manually, as that is handled by the caller, but for it to
+// perform book-keeping and length checks and act accordingly, such when
+// attempting to output something that is intended to be aligned.
+//
+// Unlike with LineSeparator, a ParagraphSeparator is always considered a
+// separator, not a terminator, so the affixes may vary per paragraph if the
+// ParagraphSeparator has line breaks in it. In particular, in that case the
+// first paragraph will have an empty prefix, and the last paragraph will have
+// an empty suffix, and all other paragraphs will have non-empty prefixes and
+// suffixes.
+//
+// For example:
+//  opts := Options{ParagraphSeparator: "<P1>\n<P2>"}
+//  ed := Edit("para1<P1>\n<P2>para2<P1>\n<P2>para3<P1>\n<P2>para4")
+//  ed = ed.WithOptions(opts)
+//
+//  paraOp := func(idx int, para, sepPrefix, sepSuffix string) []string {
+//    newPara := fmt.Sprintf("(PREFIX=%s,PARA=%s,SUFFIX=%s)", sepPrefix, para, sepSuffix)
+//    return []string{newPara}
+//  }
+//  
+//  ed.ApplyParagraphs(paraOp).String()
+//  // the above will give the string:
+//  //   (PREFIX=,PARA=para1,SUFFIX=<P1>)<P1>
+//  //   <P2>(PREFIX=<P2>,PARA=para2,SUFFIX=<P1>)<P1>
+//  //   <P2>(PREFIX=<P2>,PARA=para3,SUFFIX=<P1>)<P1>
+//  //   <P2>(PREFIX=<P2>,PARA=para4,SUFFIX=)
+//
+// Note that treating the paragraph separator as a splitter and not a terminator
+// also means that the ParagraphOperation is always called at least once, even
+// for an empty editor.
+//
+// This function is affected by the following options:
+//
+//   - `ParagraphSeparator` specifies the string that paragraphs are split by.
 func (ed Editor) ApplyParagraphs(op ParagraphOperation) Editor {
 	ed = ed.ApplyParagraphsOpts(op, ed.Options)
 	return ed
 }
 
-// ApplyParagraphsOpts gets all the paragraphs without any paragraph separators,
-// performs some operation on them, and then puts the paragraphs back together.
+// ApplyParagraphsOpts applies the given ParagraphOperation to each paragraph in
+// the Text of the Editor, using the provided options.
 //
-// NOTE: unlike with ApplyLines, there will ALWAYS be at least one paragraph, even in the case
-// of the empty string. Paragraphs are considered to be split, not terminated.
-// TODO: Better docs
+// The ParagraphOperation should assume it will receive each paragraph without
+// its paragraph separator, and must assume that anything it returns will have
+// re-adding the separator to it handled by the caller.
+//
+// When the ParagraphSeparator of Options is set to a sequence that includes
+// visible characters that take up horizontal space, the ParagraphOperation will
+// receive the prefix and suffix of the paragraph that would be in the joined
+// string due to the separator, with variables `sepPrefix` and `sepSuffix`. This
+// is not intended to allow the operation to add them back in manually, as that
+// is handled by the caller, but for it to perform book-keeping and length
+// checks and act accordingly, such when attempting to output something that is
+// intended to be aligned.
+//
+// Unlike with LineSeparator, a ParagraphSeparator is always considered a
+// separator, not a terminator, so the affixes may vary per paragraph if the
+// ParagraphSeparator has line breaks in it. In particular, in that case the
+// first paragraph will have an empty prefix, and the last paragraph will have
+// an empty suffix, and all other paragraphs will have non-empty prefixes and
+// suffixes.
+//
+// For example:
+//  opts := Options{ParagraphSeparator: "<P1>\n<P2>"}
+//  ed := Edit("para1<P1>\n<P2>para2<P1>\n<P2>para3<P1>\n<P2>para4")
+//
+//  paraOp := func(idx int, para, sepPrefix, sepSuffix string) []string {
+//    newPara := fmt.Sprintf("(PREFIX=%s,PARA=%s,SUFFIX=%s)", sepPrefix, para, sepSuffix)
+//    return []string{newPara}
+//  }
+//  
+//  ed.ApplyParagraphsOpts(paraOp, opts).String()
+//  // the above will give the string:
+//  //   (PREFIX=,PARA=para1,SUFFIX=<P1>)<P1>
+//  //   <P2>(PREFIX=<P2>,PARA=para2,SUFFIX=<P1>)<P1>
+//  //   <P2>(PREFIX=<P2>,PARA=para3,SUFFIX=<P1>)<P1>
+//  //   <P2>(PREFIX=<P2>,PARA=para4,SUFFIX=)
+//
+// Note that treating the paragraph separator as a splitter and not a terminator
+// also means that the ParagraphOperation is always called at least once, even
+// for an empty editor.
+//
+// This function is affected by the following options:
+//
+//   - `ParagraphSeparator` specifies the string that paragraphs are split by.
 func (ed Editor) ApplyParagraphsOpts(op ParagraphOperation, opts Options) Editor {
 	return ed.applyGParagraphsOpts(func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String {
 		return gem.Slice(op(idx, para.String(), sepPrefix.String(), sepSuffix.String()))
