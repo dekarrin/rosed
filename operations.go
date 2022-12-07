@@ -580,6 +580,8 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 // `pos` gives the position to insert the columns at within the Editor.
 // `leftText`
 //
+// TODO: get more docs, left off here
+//
 // This function will attempt to align the columns such that the returned text
 // is widthTarget large at its widest point. If the left and right columns
 // cannot be wrapped such that widthTarget is achieved (for instance due to
