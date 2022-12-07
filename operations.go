@@ -725,16 +725,44 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 	return ed.Insert(pos, combinedBlock.Join().String())
 }
 
-// Justify takes the contents in the Editor and justifies all lines to the given
-// width.
+// Justify edits the whitespace in each line of the Editor's text such that all
+// words are spaced approximately equally and the line as a whole spans the
+// given width.
 //
-// The options currently set on the Editor are used for this operation.
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is what sequence separates lines of input.
+//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//     only have effect if PreserveParagraphs is set to true.
+//   - `PreserveParagraphs` gives whether to respect paragraphs instead of
+//     simply considering them text to be justified. If set to true, the Text is
+//     first split into paragraphs by ParagraphSeparator, then the justify is
+//     applied to each paragraph.
 func (ed Editor) Justify(width int) Editor {
 	return ed.JustifyOpts(width, ed.Options)
 }
 
-// JustifyOpts takes the contents in the Editor and justifies all lines to the
-// given width.
+// JustifyOpts edits the whitespace in each line of the Editor's text such that
+// all words are spaced approximately equally and the line as a whole spans the
+// given width using the provided options.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is what sequence separates lines of input.
+//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//     only have effect if PreserveParagraphs is set to true.
+//   - `PreserveParagraphs` gives whether to respect paragraphs instead of
+//     simply considering them text to be justified. If set to true, the Text is
+//     first split into paragraphs by ParagraphSeparator, then the justify is
+//     applied to each paragraph.
 func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 	opts = opts.WithDefaults()
 
