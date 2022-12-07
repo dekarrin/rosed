@@ -572,8 +572,13 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 	}
 }
 
-// InsertTwoColumns takes two seperate text sequences and puts them into two
-// columns. Each column will be properly wrapped to fit.
+// InsertTwoColumns builds two columns of side-by-side text from two sequences
+// of text. The leftText and the rightText do not need any special preparation
+// to be used as the body of each column, as they will be automatically wrapped
+// to fit.
+//
+// `pos` gives the position to insert the columns at within the Editor.
+// `leftText`
 //
 // This function will attempt to align the columns such that the returned text
 // is widthTarget large at its widest point. If the left and right columns
