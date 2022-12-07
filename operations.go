@@ -256,25 +256,75 @@ func (ed Editor) CollapseSpaceOpts(opts Options) Editor {
 // will be applied `level` times. If `level` is 0 or less, the text is
 // unchanged.
 //
-// Need to make note for NoTrailing behavior.
+// With default options set, this operation has no effect on an empty editor.
 //
-// note that custom parasep does nothing if not combined w preserve.
+// This function is affected by the following options:
+//
+//   - `IndentStr` is the sequence to use to indent a single level.
+//   - `LineSeparator` is the separator that determines what each line is so
+//     that each line may be indented by the specified amount.
+//   - `NoTrailingLineSeparators` alters whether LineSeparator is expected to be
+//     at the end of a complete line. If this is set to true, then a
+//     LineSeparator does not need to present at the end of a complete line. Any
+//     trailing line separator for a non-empty editor is then considered to
+//     split the last line from a new, empty line, which will be indented. In
+//     addition, the empty editor would in fact be considered to have a single
+//     line, which would be indented.
+//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//     only have effect if PreserveParagraphs is set to true.
+//   - `PreserveParagraphs` gives whether to respect paragraphs instead of
+//     treating all lines as equal. If set to true, the Text is first split into
+//     paragraphs by ParagraphSeparator, then the indent is applied to each
+//     paragraph.
+//
+// There is a potentially strange behavior that occurs when
+// NoTrailingLineSeparators is set to true, PreserveParagraphs is set to true,
+// and the LineSeparator could be misinterpreted as part of ParagraphSeparator.
+// In this case, the paragraph separation will be prioritized over the line
+// separator, possibly in an unintended fasion. For instance, if
+// ParagraphSeparator is set to "\n\n" (the default) and LineSeparator is set to
+// "\n" (the default), a sequence of "\n\n\n" would be interpreted as the
+// paragraph separator followed by the line separator. This may be fixed in a
+// later version of this library.
 func (ed Editor) Indent(level int) Editor {
 	return ed.IndentOpts(level, ed.Options)
 }
 
-// IndentOpts adds an indent string level times at the start of each line in the
-// Editor. If level is 0 or less, the text is unchanged.
+// IndentOpts adds an indent string at the start of each line in the Editor
+// using the provided options. The string used for a single level of indent is
+// determined by the provided options and will be applied `level` times. If
+// `level` is 0 or less, the text is unchanged.
 //
-// The provided Options object is used to override the options currently set on
-// the Editor for the indent. LineSeparator, IndentStr, and
-// NoTrailingLineSeparators are read from the provided Options obejct.
+// With default options set, this operation has no effect on an empty editor.
 //
-// add note on a folded line term with no line terminators that ends up ambiguous
-// w a complete run of para sep, para sep will be prioritized so if parasep is
-// "\n\n" and lineSep is "\n" and noTrailing is on, the sequence \n\n\n will be
-// interpreted as 'PARA BREAK' followed by 'LINE BREAK'. probably not intended but
-// will need to fix this in a later version.
+// This function is affected by the following options:
+//
+//   - `IndentStr` is the sequence to use to indent a single level.
+//   - `LineSeparator` is the separator that determines what each line is so
+//     that each line may be indented by the specified amount.
+//   - `NoTrailingLineSeparators` alters whether LineSeparator is expected to be
+//     at the end of a complete line. If this is set to true, then a
+//     LineSeparator does not need to present at the end of a complete line. Any
+//     trailing line separator for a non-empty editor is then considered to
+//     split the last line from a new, empty line, which will be indented. In
+//     addition, the empty editor would in fact be considered to have a single
+//     line, which would be indented.
+//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//     only have effect if PreserveParagraphs is set to true.
+//   - `PreserveParagraphs` gives whether to respect paragraphs instead of
+//     treating all lines as equal. If set to true, the Text is first split into
+//     paragraphs by ParagraphSeparator, then the indent is applied to each
+//     paragraph.
+//
+// There is a potentially strange behavior that occurs when
+// NoTrailingLineSeparators is set to true, PreserveParagraphs is set to true,
+// and the LineSeparator could be misinterpreted as part of ParagraphSeparator.
+// In this case, the paragraph separation will be prioritized over the line
+// separator, possibly in an unintended fasion. For instance, if
+// ParagraphSeparator is set to "\n\n" (the default) and LineSeparator is set to
+// "\n" (the default), a sequence of "\n\n\n" would be interpreted as the
+// paragraph separator followed by the line separator. This may be fixed in a
+// later version of this library.
 func (ed Editor) IndentOpts(level int, opts Options) Editor {
 	if level < 1 {
 		// caller wants fewer than 1 indent. Okay, that is zero; return
@@ -302,10 +352,21 @@ func (ed Editor) IndentOpts(level int, opts Options) Editor {
 	}
 }
 
-// Insert adds a string to the text at the following position. The position is
-// zero-indexed and is the unicode codepoint index. The text will be inserted
-// starting at this index and any content previously there will be moved up to
-// make room.
+// Insert adds a string to the Text at the given position. The position is
+// zero-indexed and refers to the visible characters in the Text. At whatever
+// position is given, the existing text is moved forward to make room for the
+// new text.
+//
+// For example, to insert the text "burb" in the middle:
+//  ed := Edit("S world!")
+//
+//  ed.Insert(1, "burb")
+//  
+//  ed.String()  // gives "Sburb world!"
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
 func (ed Editor) Insert(charPos int, text string) Editor {
 	before := ed.CharsTo(charPos).Text
 	after := ed.CharsFrom(charPos).Text
@@ -314,21 +375,135 @@ func (ed Editor) Insert(charPos int, text string) Editor {
 	return ed
 }
 
-// InsertDefinitionsTable creates a table that gives two-columns; one for
-// words on the left and the other for definitions on the right.
+// InsertDefinitionsTable creates a table of term definitions and inserts it
+// into the Text of the Editor. Definition tables are a two-column table that
+// put the terms being defined on the left and their definitions on the right.
+// The terms are indented by two space characters.
 //
-// pos is the character position to insert the table at.
+// They look like this:
+//  // A definitions table:
 //
-// The options currently set on the editor are used for the table.
+//    John  - Has a passion for REALLY TERRIBLE MOVIES. Likes to program
+//            computers but is NOT VERY GOOD AT IT.
+// 
+//    Rose  - Has a passion for RATHER OBSCURE LITERATURE. Enjoys creative
+//            writing and is SOMEWHAT SECRETIVE ABOUT IT.
+// 
+//    Dave  - Has a penchant for spinning out UNBELIEVABLY ILL JAMS with his
+//            TURNTABLES AND MIXING GEAR. Likes to rave about BANDS NO ONE'S
+//            EVER HEARD OF BUT HIM.
+// 
+//    Jade  - Has so many INTERESTS, she has trouble keeping track of them all,
+//            even with an assortment of COLORFUL REMINDERS on her fingers to
+//            help sort out everything on her mind.
+//
+// The character position to insert the table at is given by `pos`. The
+// definitions themselves are given as a slice of 2-tuples of strings, where the
+// first item in the tuple is the term and the second item is the definition. If
+// no definitions are given, or an empty slice is passed in, there will be no
+// output. Finally, the complete maximum width of the table to output including
+// the leading indent is given in `width`. Note that not every line will be this
+// long; wrapping will often cause them to be shorter.
+//
+// Example to get the above table:
+//
+//  ed := Edit("")
+//
+//  johnDef := "Has a passion for REALLY TERRIBLE MOVIES ..."
+//  roseDef := "Has a passion for RATHER OBSCURE LITERATURE ..."
+//  daveDef := "Has a penchant for spinning out UNBELIEVABLY ILL JAMS ..."
+//  jadeDef := "Has so many INTERESTS ..."
+//
+//  defs := [][2]string{
+//    {"John", johnDef},
+//    {"Rose", roseDef},
+//    {"Dave", daveDef),
+//    {"Jade", jadeDef),
+//  }
+//
+//  ed.InsertDefinitionsTable(0, defs, 76)
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is used to separate each line of the table output.
+//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//     only have effect if PreserveParagraphs is set to true.
+//   - `PreserveParagraphs` is used to separate each term/definition pair from
+//     the other definitions.
+//   - `NoTrailingLineSeparators` sets whether to include a trailing
+//     LineSeparator at the end of the table. If set to true, it will be omited,
+//     otherwise the table will end with a LineSeparator.
 func (ed Editor) InsertDefinitionsTable(pos int, definitions [][2]string, width int) Editor {
 	return ed.InsertDefinitionsTableOpts(pos, definitions, width, ed.Options)
 }
 
-// InsertDefinitionsTableOpts creates a table that gives two-columns; one for
-// words on the left and the other for definitions on the right.
+// InsertDefinitionsTableOpts creates a table of term definitions using the
+// provided options and inserts it into the Text of the Editor. Definition
+// tables are a two-column table that put the terms being defined on the left
+// and their definitions on the right. The terms are indented by two space
+// characters.
 //
-// pos is the character position to insert the table at.
-// NOTE: always will add a newline if notrailing is false, UNLESS output would be empty anyways (no defs).
+// They look like this:
+//  // A definitions table:
+//
+//    John  - Has a passion for REALLY TERRIBLE MOVIES. Likes to program
+//            computers but is NOT VERY GOOD AT IT.
+// 
+//    Rose  - Has a passion for RATHER OBSCURE LITERATURE. Enjoys creative
+//            writing and is SOMEWHAT SECRETIVE ABOUT IT.
+// 
+//    Dave  - Has a penchant for spinning out UNBELIEVABLY ILL JAMS with his
+//            TURNTABLES AND MIXING GEAR. Likes to rave about BANDS NO ONE'S
+//            EVER HEARD OF BUT HIM.
+// 
+//    Jade  - Has so many INTERESTS, she has trouble keeping track of them all,
+//            even with an assortment of COLORFUL REMINDERS on her fingers to
+//            help sort out everything on her mind.
+//
+// The character position to insert the table at is given by `pos`. The
+// definitions themselves are given as a slice of 2-tuples of strings, where the
+// first item in the tuple is the term and the second item is the definition. If
+// no definitions are given, or an empty slice is passed in, there will be no
+// output. Finally, the complete maximum width of the table to output including
+// the leading indent is given in `width`. Note that not every line will be this
+// long; wrapping will often cause them to be shorter.
+//
+// Example to get the above table:
+//
+//  ed := Edit("")
+//
+//  johnDef := "Has a passion for REALLY TERRIBLE MOVIES ..."
+//  roseDef := "Has a passion for RATHER OBSCURE LITERATURE ..."
+//  daveDef := "Has a penchant for spinning out UNBELIEVABLY ILL JAMS ..."
+//  jadeDef := "Has so many INTERESTS ..."
+//
+//  defs := [][2]string{
+//    {"John", johnDef},
+//    {"Rose", roseDef},
+//    {"Dave", daveDef),
+//    {"Jade", jadeDef),
+//  }
+//
+//  ed.InsertDefinitionsTableOpts(0, defs, 76, Options{})
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is used to separate each line of the table output.
+//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//     only have effect if PreserveParagraphs is set to true.
+//   - `PreserveParagraphs` is used to separate each term/definition pair from
+//     the other definitions.
+//   - `NoTrailingLineSeparators` sets whether to include a trailing
+//     LineSeparator at the end of the table. If set to true, it will be omited,
+//     otherwise the table will end with a LineSeparator.
 func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, width int, opts Options) Editor {
 	opts = opts.WithDefaults()
 
