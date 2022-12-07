@@ -50,7 +50,7 @@ type parentRef struct {
 // This function is grapheme-aware and indexes text by human-readable
 // characters, not by the bytes or runes that make it up. See the note on
 // Grapheme-Awareness in the [rosed] package docs for more info.
-// 
+//
 // This is a Sub-Editor function. See the note on [Editor] for more info.
 func (ed Editor) Chars(start, end int) Editor {
 	// ask gem string for the grapheme-based char positions
@@ -122,7 +122,7 @@ func (ed Editor) Chars(start, end int) Editor {
 // This function is grapheme-aware and indexes text by human-readable
 // characters, not by the bytes or runes that make it up. See the note on
 // Grapheme-Awareness in the [rosed] package docs for more info.
-// 
+//
 // This is a Sub-Editor function. See the note on [Editor] for more info.
 func (ed Editor) CharsFrom(start int) Editor {
 	return ed.Chars(start, len(ed.Text))
@@ -150,7 +150,7 @@ func (ed Editor) CharsFrom(start int) Editor {
 // This function is grapheme-aware and indexes text by human-readable
 // characters, not by the bytes or runes that make it up. See the note on
 // Grapheme-Awareness in the [rosed] package docs for more info.
-// 
+//
 // This is a Sub-Editor function. See the note on [Editor] for more info.
 func (ed Editor) CharsTo(end int) Editor {
 	return ed.Chars(0, end)

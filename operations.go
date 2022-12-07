@@ -145,21 +145,22 @@ func (ed Editor) ApplyOpts(op LineOperation, opts Options) Editor {
 // suffixes.
 //
 // For example:
-//  opts := Options{ParagraphSeparator: "<P1>\n<P2>"}
-//  ed := Edit("para1<P1>\n<P2>para2<P1>\n<P2>para3<P1>\n<P2>para4")
-//  ed = ed.WithOptions(opts)
 //
-//  paraOp := func(idx int, para, sepPrefix, sepSuffix string) []string {
-//    newPara := fmt.Sprintf("(PREFIX=%s,PARA=%s,SUFFIX=%s)", sepPrefix, para, sepSuffix)
-//    return []string{newPara}
-//  }
-//  
-//  ed.ApplyParagraphs(paraOp).String()
-//  // the above will give the string:
-//  //   (PREFIX=,PARA=para1,SUFFIX=<P1>)<P1>
-//  //   <P2>(PREFIX=<P2>,PARA=para2,SUFFIX=<P1>)<P1>
-//  //   <P2>(PREFIX=<P2>,PARA=para3,SUFFIX=<P1>)<P1>
-//  //   <P2>(PREFIX=<P2>,PARA=para4,SUFFIX=)
+//	opts := Options{ParagraphSeparator: "<P1>\n<P2>"}
+//	ed := Edit("para1<P1>\n<P2>para2<P1>\n<P2>para3<P1>\n<P2>para4")
+//	ed = ed.WithOptions(opts)
+//
+//	paraOp := func(idx int, para, sepPrefix, sepSuffix string) []string {
+//	  newPara := fmt.Sprintf("(PREFIX=%s,PARA=%s,SUFFIX=%s)", sepPrefix, para, sepSuffix)
+//	  return []string{newPara}
+//	}
+//
+//	ed.ApplyParagraphs(paraOp).String()
+//	// the above will give the string:
+//	//   (PREFIX=,PARA=para1,SUFFIX=<P1>)<P1>
+//	//   <P2>(PREFIX=<P2>,PARA=para2,SUFFIX=<P1>)<P1>
+//	//   <P2>(PREFIX=<P2>,PARA=para3,SUFFIX=<P1>)<P1>
+//	//   <P2>(PREFIX=<P2>,PARA=para4,SUFFIX=)
 //
 // Note that treating the paragraph separator as a splitter and not a terminator
 // also means that the ParagraphOperation is always called at least once, even
@@ -197,20 +198,21 @@ func (ed Editor) ApplyParagraphs(op ParagraphOperation) Editor {
 // suffixes.
 //
 // For example:
-//  opts := Options{ParagraphSeparator: "<P1>\n<P2>"}
-//  ed := Edit("para1<P1>\n<P2>para2<P1>\n<P2>para3<P1>\n<P2>para4")
 //
-//  paraOp := func(idx int, para, sepPrefix, sepSuffix string) []string {
-//    newPara := fmt.Sprintf("(PREFIX=%s,PARA=%s,SUFFIX=%s)", sepPrefix, para, sepSuffix)
-//    return []string{newPara}
-//  }
-//  
-//  ed.ApplyParagraphsOpts(paraOp, opts).String()
-//  // the above will give the string:
-//  //   (PREFIX=,PARA=para1,SUFFIX=<P1>)<P1>
-//  //   <P2>(PREFIX=<P2>,PARA=para2,SUFFIX=<P1>)<P1>
-//  //   <P2>(PREFIX=<P2>,PARA=para3,SUFFIX=<P1>)<P1>
-//  //   <P2>(PREFIX=<P2>,PARA=para4,SUFFIX=)
+//	opts := Options{ParagraphSeparator: "<P1>\n<P2>"}
+//	ed := Edit("para1<P1>\n<P2>para2<P1>\n<P2>para3<P1>\n<P2>para4")
+//
+//	paraOp := func(idx int, para, sepPrefix, sepSuffix string) []string {
+//	  newPara := fmt.Sprintf("(PREFIX=%s,PARA=%s,SUFFIX=%s)", sepPrefix, para, sepSuffix)
+//	  return []string{newPara}
+//	}
+//
+//	ed.ApplyParagraphsOpts(paraOp, opts).String()
+//	// the above will give the string:
+//	//   (PREFIX=,PARA=para1,SUFFIX=<P1>)<P1>
+//	//   <P2>(PREFIX=<P2>,PARA=para2,SUFFIX=<P1>)<P1>
+//	//   <P2>(PREFIX=<P2>,PARA=para3,SUFFIX=<P1>)<P1>
+//	//   <P2>(PREFIX=<P2>,PARA=para4,SUFFIX=)
 //
 // Note that treating the paragraph separator as a splitter and not a terminator
 // also means that the ParagraphOperation is always called at least once, even
@@ -358,11 +360,12 @@ func (ed Editor) IndentOpts(level int, opts Options) Editor {
 // new text.
 //
 // For example, to insert the text "burb" in the middle:
-//  ed := Edit("S world!")
 //
-//  ed.Insert(1, "burb")
-//  
-//  ed.String()  // gives "Sburb world!"
+//	ed := Edit("S world!")
+//
+//	ed.Insert(1, "burb")
+//
+//	ed.String()  // gives "Sburb world!"
 //
 // This function is grapheme-aware and indexes text by human-readable
 // characters, not by the bytes or runes that make it up. See the note on
@@ -381,21 +384,22 @@ func (ed Editor) Insert(charPos int, text string) Editor {
 // The terms are indented by two space characters.
 //
 // They look like this:
-//  // A definitions table:
 //
-//    John  - Has a passion for REALLY TERRIBLE MOVIES. Likes to program
-//            computers but is NOT VERY GOOD AT IT.
-// 
-//    Rose  - Has a passion for RATHER OBSCURE LITERATURE. Enjoys creative
-//            writing and is SOMEWHAT SECRETIVE ABOUT IT.
-// 
-//    Dave  - Has a penchant for spinning out UNBELIEVABLY ILL JAMS with his
-//            TURNTABLES AND MIXING GEAR. Likes to rave about BANDS NO ONE'S
-//            EVER HEARD OF BUT HIM.
-// 
-//    Jade  - Has so many INTERESTS, she has trouble keeping track of them all,
-//            even with an assortment of COLORFUL REMINDERS on her fingers to
-//            help sort out everything on her mind.
+//	// A definitions table:
+//
+//	  John  - Has a passion for REALLY TERRIBLE MOVIES. Likes to program
+//	          computers but is NOT VERY GOOD AT IT.
+//
+//	  Rose  - Has a passion for RATHER OBSCURE LITERATURE. Enjoys creative
+//	          writing and is SOMEWHAT SECRETIVE ABOUT IT.
+//
+//	  Dave  - Has a penchant for spinning out UNBELIEVABLY ILL JAMS with his
+//	          TURNTABLES AND MIXING GEAR. Likes to rave about BANDS NO ONE'S
+//	          EVER HEARD OF BUT HIM.
+//
+//	  Jade  - Has so many INTERESTS, she has trouble keeping track of them all,
+//	          even with an assortment of COLORFUL REMINDERS on her fingers to
+//	          help sort out everything on her mind.
 //
 // The character position to insert the table at is given by `pos`. The
 // definitions themselves are given as a slice of 2-tuples of strings, where the
@@ -407,21 +411,21 @@ func (ed Editor) Insert(charPos int, text string) Editor {
 //
 // Example to get the above table:
 //
-//  ed := Edit("")
+//	ed := Edit("")
 //
-//  johnDef := "Has a passion for REALLY TERRIBLE MOVIES ..."
-//  roseDef := "Has a passion for RATHER OBSCURE LITERATURE ..."
-//  daveDef := "Has a penchant for spinning out UNBELIEVABLY ILL JAMS ..."
-//  jadeDef := "Has so many INTERESTS ..."
+//	johnDef := "Has a passion for REALLY TERRIBLE MOVIES ..."
+//	roseDef := "Has a passion for RATHER OBSCURE LITERATURE ..."
+//	daveDef := "Has a penchant for spinning out UNBELIEVABLY ILL JAMS ..."
+//	jadeDef := "Has so many INTERESTS ..."
 //
-//  defs := [][2]string{
-//    {"John", johnDef},
-//    {"Rose", roseDef},
-//    {"Dave", daveDef),
-//    {"Jade", jadeDef),
-//  }
+//	defs := [][2]string{
+//	  {"John", johnDef},
+//	  {"Rose", roseDef},
+//	  {"Dave", daveDef),
+//	  {"Jade", jadeDef),
+//	}
 //
-//  ed.InsertDefinitionsTable(0, defs, 76)
+//	ed.InsertDefinitionsTable(0, defs, 76)
 //
 // This function is grapheme-aware and indexes text by human-readable
 // characters, not by the bytes or runes that make it up. See the note on
@@ -448,21 +452,22 @@ func (ed Editor) InsertDefinitionsTable(pos int, definitions [][2]string, width 
 // characters.
 //
 // They look like this:
-//  // A definitions table:
 //
-//    John  - Has a passion for REALLY TERRIBLE MOVIES. Likes to program
-//            computers but is NOT VERY GOOD AT IT.
-// 
-//    Rose  - Has a passion for RATHER OBSCURE LITERATURE. Enjoys creative
-//            writing and is SOMEWHAT SECRETIVE ABOUT IT.
-// 
-//    Dave  - Has a penchant for spinning out UNBELIEVABLY ILL JAMS with his
-//            TURNTABLES AND MIXING GEAR. Likes to rave about BANDS NO ONE'S
-//            EVER HEARD OF BUT HIM.
-// 
-//    Jade  - Has so many INTERESTS, she has trouble keeping track of them all,
-//            even with an assortment of COLORFUL REMINDERS on her fingers to
-//            help sort out everything on her mind.
+//	// A definitions table:
+//
+//	  John  - Has a passion for REALLY TERRIBLE MOVIES. Likes to program
+//	          computers but is NOT VERY GOOD AT IT.
+//
+//	  Rose  - Has a passion for RATHER OBSCURE LITERATURE. Enjoys creative
+//	          writing and is SOMEWHAT SECRETIVE ABOUT IT.
+//
+//	  Dave  - Has a penchant for spinning out UNBELIEVABLY ILL JAMS with his
+//	          TURNTABLES AND MIXING GEAR. Likes to rave about BANDS NO ONE'S
+//	          EVER HEARD OF BUT HIM.
+//
+//	  Jade  - Has so many INTERESTS, she has trouble keeping track of them all,
+//	          even with an assortment of COLORFUL REMINDERS on her fingers to
+//	          help sort out everything on her mind.
 //
 // The character position to insert the table at is given by `pos`. The
 // definitions themselves are given as a slice of 2-tuples of strings, where the
@@ -474,21 +479,21 @@ func (ed Editor) InsertDefinitionsTable(pos int, definitions [][2]string, width 
 //
 // Example to get the above table:
 //
-//  ed := Edit("")
+//	ed := Edit("")
 //
-//  johnDef := "Has a passion for REALLY TERRIBLE MOVIES ..."
-//  roseDef := "Has a passion for RATHER OBSCURE LITERATURE ..."
-//  daveDef := "Has a penchant for spinning out UNBELIEVABLY ILL JAMS ..."
-//  jadeDef := "Has so many INTERESTS ..."
+//	johnDef := "Has a passion for REALLY TERRIBLE MOVIES ..."
+//	roseDef := "Has a passion for RATHER OBSCURE LITERATURE ..."
+//	daveDef := "Has a penchant for spinning out UNBELIEVABLY ILL JAMS ..."
+//	jadeDef := "Has so many INTERESTS ..."
 //
-//  defs := [][2]string{
-//    {"John", johnDef},
-//    {"Rose", roseDef},
-//    {"Dave", daveDef),
-//    {"Jade", jadeDef),
-//  }
+//	defs := [][2]string{
+//	  {"John", johnDef},
+//	  {"Rose", roseDef},
+//	  {"Dave", daveDef),
+//	  {"Jade", jadeDef),
+//	}
 //
-//  ed.InsertDefinitionsTableOpts(0, defs, 76, Options{})
+//	ed.InsertDefinitionsTableOpts(0, defs, 76, Options{})
 //
 // This function is grapheme-aware and indexes text by human-readable
 // characters, not by the bytes or runes that make it up. See the note on

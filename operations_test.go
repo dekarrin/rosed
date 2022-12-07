@@ -612,14 +612,14 @@ func Test_ApplyParagraphsOpts(t *testing.T) {
 			input: "para1<P1>\n<P2>para2<P1>\n<P2>para3<P1>\n<P2>para4",
 			op: func(idx int, para, sepPrefix, sepSuffix string) []string {
 				newPara := fmt.Sprintf("(PREFIX=%s,TEXT=%s,SUFFIX=%s)", sepPrefix, para, sepSuffix)
-				
+
 				return []string{newPara}
 			},
 			options: Options{ParagraphSeparator: "<P1>\n<P2>"},
-			expect:  "(PREFIX=,TEXT=para1,SUFFIX=<P1>)<P1>\n" +
-					 "<P2>(PREFIX=<P2>,TEXT=para2,SUFFIX=<P1>)<P1>\n" +
-					 "<P2>(PREFIX=<P2>,TEXT=para3,SUFFIX=<P1>)<P1>\n" +
-					 "<P2>(PREFIX=<P2>,TEXT=para4,SUFFIX=)",
+			expect: "(PREFIX=,TEXT=para1,SUFFIX=<P1>)<P1>\n" +
+				"<P2>(PREFIX=<P2>,TEXT=para2,SUFFIX=<P1>)<P1>\n" +
+				"<P2>(PREFIX=<P2>,TEXT=para3,SUFFIX=<P1>)<P1>\n" +
+				"<P2>(PREFIX=<P2>,TEXT=para4,SUFFIX=)",
 		},
 	}
 
