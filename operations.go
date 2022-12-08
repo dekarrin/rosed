@@ -253,6 +253,20 @@ func (ed Editor) CollapseSpaceOpts(opts Options) Editor {
 	return ed
 }
 
+// Delete removes text from the Editor. All text after the deleted sequence is
+// moved left to the starting position of the deleted sequence.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+func (ed Editor) Delete(start, end int) Editor {
+	before := ed.CharsTo(start).Text
+	after := ed.CharsFrom(end).Text
+
+	ed.Text = before + after
+	return ed
+}
+
 // Indent adds an indent string at the start of each line in the Editor. The
 // string used for a single level of indent is determined by Editor options and
 // will be applied `level` times. If `level` is 0 or less, the text is
@@ -789,6 +803,24 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 	return ed.ApplyOpts(func(idx int, line string) []string {
 		return []string{justifyLine(_g(line), width).String()}
 	}, opts)
+}
+
+// Overtype adds characters at the given position, writing over any that already
+// exist. If the overtyped text would make the string longer than it is, it is
+// extended to make room.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+func (ed Editor) Overtype(charPos int, text string) Editor {
+	inboundText := gem.New(text)
+
+	before := ed.CharsTo(charPos).Text
+	after := ed.CharsFrom(charPos + inboundText.Len()).Text
+	
+	ed.Text = before + inboundText.String() + after
+	
+	return ed
 }
 
 // Wrap wraps the Editor Text to the given width. The text will have whitespace

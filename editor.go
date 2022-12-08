@@ -6,7 +6,7 @@ import "strings"
 // on it that are neither text operations nor sub-editor splitting operations.
 
 // Editor contains text that is being operated on and provides several operations
-// that can be applied. It is the primary way to edit text using the rosed package.
+// that can be applied. to it. It is the primary way to edit text using the rosed package.
 //
 // The zero value is an editor ready to operate on the empty string; alternatively,
 // Edit() can be called to produce an Editor ready to operate on the passed-in
