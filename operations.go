@@ -66,16 +66,17 @@ type gParagraphOperation func(idx int, para, sepPrefix, sepSuffix gem.String) []
 // terminator, and must assume that anything it returns will have that handled
 // by the caller.
 //
-// This function is affected by the following options:
+// This function is affected by the following [Options]:
 //
-//   - `LineSeparator` specifies what string should be used to delimit lines.
-//   - `NoTrailingLineSeparators` specifies whether it should consider a final
-//     instance of `LineSeparator` to be ending the prior line, or giving the
+//   - LineSeparator specifies what string in the source text should be used to
+//     delimit lines to be passed to the LineOperation.
+//   - NoTrailingLineSeparators specifies whether the function should consider a
+//     final instance of LineSeparator to be ending the prior line or giving the
 //     start of a new line. If NoTrailingLineSeparators is true, a trailing
-//     LineSeparator is considered to start a new (empty) line. Additionally, if
-//     it is set to true, the LineOperation will be called at least once for an
-//     empty string, whereas if it is set to false and the Editor text is set to
-//     an empty string, the LineOperation will not be called.
+//     LineSeparator is considered to start a new (empty) line; additionally,
+//     the LineOperation will be called at least once for an empty string. If
+//     NoTrailingLineSeparators is set to false and the Editor text is set to an
+//     empty string, the LineOperation will not be called.
 func (ed Editor) Apply(op LineOperation) Editor {
 	ed = ed.ApplyOpts(op, ed.Options)
 	return ed
@@ -88,16 +89,17 @@ func (ed Editor) Apply(op LineOperation) Editor {
 // terminator, and must assume that anything it returns will have re-adding the
 // separator to it handled by the caller.
 //
-// This function is affected by the following options:
+// This function is affected by the following [Options]:
 //
-//   - `LineSeparator` specifies what string should be used to delimit lines.
-//   - `NoTrailingLineSeparators` specifies whether it should consider a final
-//     instance of `LineSeparator` to be ending the prior line, or giving the
+//   - LineSeparator specifies what string in the source text should be used to
+//     delimit lines to be passed to the LineOperation.
+//   - NoTrailingLineSeparators specifies whether the function should consider a
+//     final instance of LineSeparator to be ending the prior line or giving the
 //     start of a new line. If NoTrailingLineSeparators is true, a trailing
-//     LineSeparator is considered to start a new (empty) line. Additionally, if
-//     it is set to true, the LineOperation will be called at least once for an
-//     empty string, whereas if it is set to false and the Editor text is set to
-//     an empty string, the LineOperation will not be called.
+//     LineSeparator is considered to start a new (empty) line; additionally,
+//     the LineOperation will be called at least once for an empty string. If
+//     NoTrailingLineSeparators is set to false and the Editor text is set to an
+//     empty string, the LineOperation will not be called.
 func (ed Editor) ApplyOpts(op LineOperation, opts Options) Editor {
 	opts = opts.WithDefaults()
 	lines := ed.WithOptions(opts).linesSep(opts.LineSeparator)

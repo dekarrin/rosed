@@ -5,19 +5,24 @@ import "strings"
 // This file contains basic structural elements of Editor as well as functions
 // on it that are neither text operations nor sub-editor splitting operations.
 
-// Editor contains text that is being operated on and provides several operations
-// that can be applied. to it. It is the primary way to edit text using the rosed package.
+// Editor performs editing operatoins on text. It is the primary way to edit
+// text using the rosed package.
 //
-// The zero value is an editor ready to operate on the empty string; alternatively,
-// Edit() can be called to produce an Editor ready to operate on the passed-in
-// string. There is no functional difference between a zero-value Editor having its
-// Text property set manually to a string and calling Edit() with a string; they will
-// produce identical Editors.
+// The zero value is an editor ready to operate on the empty string.
+// Alternatively, [Edit] can be called to produce an Editor ready to operate on
+// the passed-in string. There is no functional difference between a zero-value
+// Editor having its Text property set manually and calling Edit with a string;
+// they will produce identical Editors.
 //
-// All operations on an Editor treat the Editor as immutable; calling an operation
-// returns a new Editor with its Text property set to the result of the operation.
-// It is valid to manually set properties of an Editor and this will not break the
-// assumptions made by operations called on it.
+// All operations on an Editor treat it as immutable; calling an operation
+// returns a new Editor with its Text property set to the result of the
+// operation. It is valid to manually set properties of an Editor and this will
+// not break the assumptions made by operations called on it.
+//
+// Editor has an Options member for including an [Options] instance to control
+// the behavior of certain functions called on it. If left unset, functions
+// called on the Editor will treat it as though it has been set with the
+// equivalent of calling [Options.WithDefaults] on an empty Options struct.
 //
 // # Sub-Editor Functions
 //
@@ -25,11 +30,13 @@ import "strings"
 // only the sub-section of text specified. Editing the parent's Text field after
 // the sub-editor has been created will have no effect on the sub-editor or any
 // Editor produced from it, but note that it may have an affect on the result of
-// calling Commit() on the sub-editor.
+// calling Commit() on the sub-editor and as a result is not the inteded usage
+// of sub-editors.
 //
-// The sub-editor as well as any sub-editors produced from it can be merged back
-// into the original Editor by calling Commit(). Alternatively, all such
-// sub-editors can be merged recursively by calling CommitAll().
+// The sub-editor can be merged back into the original Editor by calling
+// [Editor.Commit] on the sub-editor. Alternatively, all such sub-editors can be
+// merged recursively up to the root Editor by calling [Editor.CommitAll] on the
+// sub-editor.
 type Editor struct {
 	// Text is the string that will be operated on.
 	Text string

@@ -6,7 +6,7 @@ import (
 
 const (
 	// DefaultIndentString is the default string used for a single horizontal
-	// indent by default.
+	// indent.
 	DefaultIndentString = "\t"
 
 	// DefaultLineSeparator is the default line separator sequence.
