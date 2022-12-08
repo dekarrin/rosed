@@ -21,7 +21,7 @@ adding proper documentation, this version has been published in the meantime.
 
 TODO: examples of what this lib can do
 
-# What This Library Is Not
+## What This Library Is Not
 
 * Performant - Especially for initial release the idea is to create a library
 that is easy to use. Better performance may come in later versions but that is
