@@ -1581,3 +1581,269 @@ func Test_InsertDefinitionsTableOpts(t *testing.T) {
 		})
 	}
 }
+
+func Test_Editor_Delete(t *testing.T) {
+	testCases := []struct {
+		name   string
+		input  string
+		start  int
+		end    int
+		expect string
+	}{
+		{
+			name:   "delete nothing from empty",
+			input:  "",
+			start:  0,
+			end:    0,
+			expect: "",
+		},
+		{
+			name:   "delete 1 char from empty",
+			input:  "",
+			start:  0,
+			end:    1,
+			expect: "",
+		},
+		{
+			name:   "delete several chars from empty",
+			input:  "",
+			start:  0,
+			end:    3,
+			expect: "",
+		},
+		{
+			name:   "delete past end of empty",
+			input:  "",
+			start:  1,
+			end:    2,
+			expect: "",
+		},
+		{
+			name:   "delete invalid range from empty",
+			input:  "",
+			start:  20,
+			end:    2,
+			expect: "",
+		},
+		{
+			name:   "delete invalid range from empty",
+			input:  "",
+			start:  20,
+			end:    2,
+			expect: "",
+		},
+		{
+			name:   "delete nothing from start",
+			input:  "rose",
+			start:  0,
+			end:    0,
+			expect: "rose",
+		},
+		{
+			name:   "delete nothing from middle",
+			input:  "rose",
+			start:  1,
+			end:    1,
+			expect: "rose",
+		},
+		{
+			name:   "delete nothing from end",
+			input:  "rose",
+			start:  3,
+			end:    3,
+			expect: "rose",
+		},
+		{
+			name:   "delete nothing from past end",
+			input:  "rose",
+			start:  4,
+			end:    4,
+			expect: "rose",
+		},
+		{
+			name:   "delete 1 char at start",
+			input:  "rose",
+			start:  0,
+			end:    1,
+			expect: "ose",
+		},
+		{
+			name:   "delete 1 char in middle",
+			input:  "rose",
+			start:  2,
+			end:    3,
+			expect: "roe",
+		},
+		{
+			name:   "delete 1 char at end",
+			input:  "rose",
+			start:  3,
+			end:    4,
+			expect: "ros",
+		},
+		{
+			name:   "delete 1 char past end (for none total)",
+			input:  "rose",
+			start:  4,
+			end:    5,
+			expect: "rose",
+		},
+		{
+			name:   "delete multi chars at start",
+			input:  "rose and jade",
+			start:  0,
+			end:    9,
+			expect: "jade",
+		},
+		{
+			name:   "delete multi chars in middle",
+			input:  "rose and jade",
+			start:  4,
+			end:    9,
+			expect: "rosejade",
+		},
+		{
+			name:   "delete multi chars at end",
+			input:  "rose and jade",
+			start:  4,
+			end:    13,
+			expect: "rose",
+		},
+		{
+			name:   "delete multi chars through end",
+			input:  "rose and jade",
+			start:  4,
+			end:    200,
+			expect: "rose",
+		},
+		{
+			name:   "delete entire string",
+			input:  "rose and jade",
+			start:  0,
+			end:    13,
+			expect: "",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := Edit(tc.input).Delete(tc.start, tc.end).String()
+
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
+func Test_Editor_Overtype(t *testing.T) {
+	testCases := []struct {
+		name   string
+		input  string
+		pos    int
+		text   string
+		expect string
+	}{
+		{
+			name:   "add empty string to empty string",
+			input:  "",
+			pos:    0,
+			text:   "",
+			expect: "",
+		},
+		{
+			name:   "add non-empty to empty",
+			input:  "",
+			pos:    0,
+			text:   "Hello!",
+			expect: "Hello!",
+		},
+		{
+			name:   "add empty to non-empty start",
+			input:  "test",
+			pos:    0,
+			text:   "",
+			expect: "test",
+		},
+		{
+			name:   "add empty to non-empty middle",
+			input:  "test",
+			pos:    1,
+			text:   "",
+			expect: "test",
+		},
+		{
+			name:   "add empty to non-empty end",
+			input:  "test",
+			pos:    4,
+			text:   "",
+			expect: "test",
+		},
+		{
+			name:   "add empty past non-empty end",
+			input:  "test",
+			pos:    80,
+			text:   "",
+			expect: "test",
+		},
+		{
+			name:   "overtype at start",
+			input:  "test-test-test",
+			pos:    0,
+			text:   "TEST",
+			expect: "TEST-test-test",
+		},
+		{
+			name:   "overtype in middle",
+			input:  "test-test-test",
+			pos:    5,
+			text:   "TEST",
+			expect: "test-TEST-test",
+		},
+		{
+			name:   "overtype at end",
+			input:  "test-test-test",
+			pos:    10,
+			text:   "TEST",
+			expect: "test-test-TEST",
+		},
+		{
+			name:   "overtype past end",
+			input:  "test-test-test",
+			pos:    14,
+			text:   "TEST",
+			expect: "test-test-testTEST",
+		},
+		{
+			name:   "overtype through end, from middle",
+			input:  "test-test-test",
+			pos:    5,
+			text:   "8888-8888-TEST",
+			expect: "test-8888-8888-TEST",
+		},
+		{
+			name:   "overtype through end, from start",
+			input:  "test",
+			pos:    0,
+			text:   "TEST-AND-TEST",
+			expect: "TEST-AND-TEST",
+		},
+		{
+			name:   "overtype exactly from start to end",
+			input:  "test",
+			pos:    0,
+			text:   "TEST",
+			expect: "TEST",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := Edit(tc.input).Overtype(tc.pos, tc.text).String()
+
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}

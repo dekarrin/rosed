@@ -66,16 +66,17 @@ type gParagraphOperation func(idx int, para, sepPrefix, sepSuffix gem.String) []
 // terminator, and must assume that anything it returns will have that handled
 // by the caller.
 //
-// This function is affected by the following options:
+// This function is affected by the following [Options]:
 //
-//   - `LineSeparator` specifies what string should be used to delimit lines.
-//   - `NoTrailingLineSeparators` specifies whether it should consider a final
-//     instance of `LineSeparator` to be ending the prior line, or giving the
+//   - LineSeparator specifies what string in the source text should be used to
+//     delimit lines to be passed to the LineOperation.
+//   - NoTrailingLineSeparators specifies whether the function should consider a
+//     final instance of LineSeparator to be ending the prior line or giving the
 //     start of a new line. If NoTrailingLineSeparators is true, a trailing
-//     LineSeparator is considered to start a new (empty) line. Additionally, if
-//     it is set to true, the LineOperation will be called at least once for an
-//     empty string, whereas if it is set to false and the Editor text is set to
-//     an empty string, the LineOperation will not be called.
+//     LineSeparator is considered to start a new (empty) line; additionally,
+//     the LineOperation will be called at least once for an empty string. If
+//     NoTrailingLineSeparators is set to false and the Editor text is set to an
+//     empty string, the LineOperation will not be called.
 func (ed Editor) Apply(op LineOperation) Editor {
 	ed = ed.ApplyOpts(op, ed.Options)
 	return ed
@@ -88,16 +89,17 @@ func (ed Editor) Apply(op LineOperation) Editor {
 // terminator, and must assume that anything it returns will have re-adding the
 // separator to it handled by the caller.
 //
-// This function is affected by the following options:
+// This function is affected by the following [Options]:
 //
-//   - `LineSeparator` specifies what string should be used to delimit lines.
-//   - `NoTrailingLineSeparators` specifies whether it should consider a final
-//     instance of `LineSeparator` to be ending the prior line, or giving the
+//   - LineSeparator specifies what string in the source text should be used to
+//     delimit lines to be passed to the LineOperation.
+//   - NoTrailingLineSeparators specifies whether the function should consider a
+//     final instance of LineSeparator to be ending the prior line or giving the
 //     start of a new line. If NoTrailingLineSeparators is true, a trailing
-//     LineSeparator is considered to start a new (empty) line. Additionally, if
-//     it is set to true, the LineOperation will be called at least once for an
-//     empty string, whereas if it is set to false and the Editor text is set to
-//     an empty string, the LineOperation will not be called.
+//     LineSeparator is considered to start a new (empty) line; additionally,
+//     the LineOperation will be called at least once for an empty string. If
+//     NoTrailingLineSeparators is set to false and the Editor text is set to an
+//     empty string, the LineOperation will not be called.
 func (ed Editor) ApplyOpts(op LineOperation, opts Options) Editor {
 	opts = opts.WithDefaults()
 	lines := ed.WithOptions(opts).linesSep(opts.LineSeparator)
@@ -250,6 +252,24 @@ func (ed Editor) CollapseSpace() Editor {
 func (ed Editor) CollapseSpaceOpts(opts Options) Editor {
 	opts = opts.WithDefaults()
 	ed.Text = collapseSpace(_g(ed.Text), _g(opts.LineSeparator)).String()
+	return ed
+}
+
+// Delete removes text from the Editor. All text after the deleted sequence is
+// moved left to the starting position of the deleted sequence.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+func (ed Editor) Delete(start, end int) Editor {
+	if start >= end {
+		return ed
+	}
+
+	before := ed.CharsTo(start).Text
+	after := ed.CharsFrom(end).Text
+
+	ed.Text = before + after
 	return ed
 }
 
@@ -583,45 +603,85 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 // to fit.
 //
 // `pos` gives the position to insert the columns at within the Editor.
-// `leftText`
 //
-// TODO: get more docs, left off here
+// `leftText` is the text to put into the left column.
 //
-// This function will attempt to align the columns such that the returned text
-// is widthTarget large at its widest point. If the left and right columns
-// cannot be wrapped such that widthTarget is achieved (for instance due to
-// widthTarget being smaller than the line with longest combined length of the
-// two columns plus minSpaceBetween), the lowest possible integer greater than
-// widthTarget will be used.
+// `rightText` is the text to put into the right column.
 //
-// The columns will be wrapped such that the the left column will take up
-// leftColPercent of the available layout area (width - space between), and the
-// right column will take up the rest. If leftColPercent is less than 0.0, it
-// will be assumed to be 0.0. If greater than 1.0, it will be assumed to be 1.0.
+// `minSpaceBetween` is the amount of space between the two columns. It will
+// only be this small if the left side after wrapping reaches its full length.
+//
+// `width` is how much horizontal space the two columns will take up. Note that
+// if the right column after wrapping never reaches its full length, it is
+// possible that no line will be this many characters across.
+//
+// `leftColPercent` is a float from 0.0 to 1.0 that gives how much of the
+// available width (width - minSpaceBetween) the left column should take up. The
+// right column will infer its width from that as well. If leftColPercent is
+// less than 0.0, it will be assumed to be 0.0. If greater than 1.0, it will be
+// assumed to be 1.0.
+//
 // The minimum width that a column can be is always 2 characters wide.
-func (ed Editor) InsertTwoColumns(pos int, leftText string, rightText string, minSpaceBetween int, widthTarget int, leftColPercent float64) Editor {
-	return ed.InsertTwoColumnsOpts(pos, leftText, rightText, minSpaceBetween, widthTarget, leftColPercent, ed.Options)
+//
+// If the left column ends up taking more vertical space than the right column,
+// the left column will have spaces added on subsequent lines to meet with where
+// the right column would have started if it had had more lines.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is used to separate each line of the output.
+//   - `NoTrailingLineSeparators` sets whether to include a trailing
+//     LineSeparator at the end of the generated columns. If set to true, it
+//     will be omited, otherwise the columns will end with a LineSeparator.
+func (ed Editor) InsertTwoColumns(pos int, leftText string, rightText string, minSpaceBetween int, width int, leftColPercent float64) Editor {
+	return ed.InsertTwoColumnsOpts(pos, leftText, rightText, minSpaceBetween, width, leftColPercent, ed.Options)
 }
 
-// InsertTwoColumnsOpts takes two seperate text sequences and puts them into two
-// columns. Each column will be properly wrapped to fit.
+// InsertTwoColumnsOpts builds two columns of side-by-side text from two
+// sequences of text using the provided options. The leftText and the rightText
+// do not need any special preparation to be used as the body of each column, as
+// they will be automatically wrapped to fit.
 //
-// This function will attempt to align the columns such that the returned text
-// is widthTarget large at its widest point. If the left and right columns
-// cannot be wrapped such that widthTarget is achieved (for instance due to
-// widthTarget being smaller than the line with longest combined length of the
-// two columns plus minSpaceBetween), the lowest possible integer greater than
-// widthTarget will be used.
+// `pos` gives the position to insert the columns at within the Editor.
 //
-// The columns will be wrapped such that the the left column will take up
-// leftColPercent of the available layout area (width - space between), and the
-// right column will take up the rest. If leftColPercent is less than 0.0, it
-// will be assumed to be 0.0. If greater than 1.0, it will be assumed to be 1.0.
+// `leftText` is the text to put into the left column.
+//
+// `rightText` is the text to put into the right column.
+//
+// `minSpaceBetween` is the amount of space between the two columns. It will
+// only be this small if the left side after wrapping reaches its full length.
+//
+// `width` is how much horizontal space the two columns will take up. Note that
+// if the right column after wrapping never reaches its full length, it is
+// possible that no line will be this many characters across.
+//
+// `leftColPercent` is a float from 0.0 to 1.0 that gives how much of the
+// available width (width - minSpaceBetween) the left column should take up. The
+// right column will infer its width from that as well. If leftColPercent is
+// less than 0.0, it will be assumed to be 0.0. If greater than 1.0, it will be
+// assumed to be 1.0.
+//
 // The minimum width that a column can be is always 2 characters wide.
 //
-// ADD NOTE: will add a trailing line separator if noTrailing is false.
-// ADD NOTE: left side will be wider to meet right column side.
-func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string, minSpaceBetween int, widthTarget int, leftColPercent float64, opts Options) Editor {
+// If the left column ends up taking more vertical space than the right column,
+// the left column will have spaces added on subsequent lines to meet with where
+// the right column would have started if it had had more lines.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is used to separate each line of the output.
+//   - `NoTrailingLineSeparators` sets whether to include a trailing
+//     LineSeparator at the end of the generated columns. If set to true, it
+//     will be omited, otherwise the columns will end with a LineSeparator.
+func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string, minSpaceBetween int, width int, leftColPercent float64, opts Options) Editor {
 	if leftText == "" && rightText == "" {
 		return ed
 	}
@@ -638,11 +698,10 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 	// dash. In addition, there must be enough space for the minSpaceBetween, so
 	// maxWidthTarget must be at least the sum of these lengths otherwise we
 	// cannot respect it.
-	width := widthTarget
 	minLeftColWidth := 2
 	minRightColWidth := 2
 	minWidth := minSpaceBetween + minLeftColWidth + minRightColWidth
-	if widthTarget < minWidth {
+	if width < minWidth {
 		width = minWidth
 	}
 
@@ -686,16 +745,44 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 	return ed.Insert(pos, combinedBlock.Join().String())
 }
 
-// Justify takes the contents in the Editor and justifies all lines to the given
-// width.
+// Justify edits the whitespace in each line of the Editor's text such that all
+// words are spaced approximately equally and the line as a whole spans the
+// given width.
 //
-// The options currently set on the Editor are used for this operation.
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is what sequence separates lines of input.
+//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//     only have effect if PreserveParagraphs is set to true.
+//   - `PreserveParagraphs` gives whether to respect paragraphs instead of
+//     simply considering them text to be justified. If set to true, the Text is
+//     first split into paragraphs by ParagraphSeparator, then the justify is
+//     applied to each paragraph.
 func (ed Editor) Justify(width int) Editor {
 	return ed.JustifyOpts(width, ed.Options)
 }
 
-// JustifyOpts takes the contents in the Editor and justifies all lines to the
-// given width.
+// JustifyOpts edits the whitespace in each line of the Editor's text such that
+// all words are spaced approximately equally and the line as a whole spans the
+// given width using the provided options.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is what sequence separates lines of input.
+//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//     only have effect if PreserveParagraphs is set to true.
+//   - `PreserveParagraphs` gives whether to respect paragraphs instead of
+//     simply considering them text to be justified. If set to true, the Text is
+//     first split into paragraphs by ParagraphSeparator, then the justify is
+//     applied to each paragraph.
 func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 	opts = opts.WithDefaults()
 
@@ -724,17 +811,72 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 	}, opts)
 }
 
-// Wrap performs a wrap of all text to the given width. If width is less than 2,
-// it is assumed to be 2 because no meaningful wrap algorithm can be applied to
-// anything smaller.
+// Overtype adds characters at the given position, writing over any that already
+// exist. If the overtyped text would make the string longer than it is, it is
+// extended to make room.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+func (ed Editor) Overtype(charPos int, text string) Editor {
+	inboundText := gem.New(text)
+
+	before := ed.CharsTo(charPos).Text
+	after := ed.CharsFrom(charPos + inboundText.Len()).Text
+
+	ed.Text = before + inboundText.String() + after
+
+	return ed
+}
+
+// Wrap wraps the Editor Text to the given width. The text will have whitespace
+// collapsed prior to being wrapped.
+//
+// If width is less than 2, it is assumed to be 2 because no meaningful wrap
+// algorithm can be applied to anything smaller.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is placed at the end of each line. If any sequence of
+//     LineSeparator exists in the Text prior to calling this function, it will
+//     first be collapsed into a single space character as part of whitespace
+//     collapsing.
+//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//     only have effect if PreserveParagraphs is set to true.
+//   - `PreserveParagraphs` gives whether to respect paragraphs instead of
+//     simply considering them text to be wrapped. If set to true, the Text is
+//     first split into paragraphs by ParagraphSeparator, then the wrap is
+//     applied to each paragraph.
 func (ed Editor) Wrap(width int) Editor {
 	return ed.WrapOpts(width, ed.Options)
 }
 
-// WrapOpts performs a wrap of all text to the given width. The provided options
-// are used instead of the Editor's built-in options. If width is less than 2,
-// it is assumed to be 2 because no meaningful wrap algorithm can be applied to
-// anything smaller.
+// WrapOpts wraps the Editor Text to the given width using the supplied options.
+// The text will have whitespace collapsed prior to being wrapped.
+//
+// If width is less than 2, it is assumed to be 2 because no meaningful wrap
+// algorithm can be applied to anything smaller.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This function is affected by the following options:
+//
+//   - `LineSeparator` is placed at the end of each line. If any sequence of
+//     LineSeparator exists in the Text prior to calling this function, it will
+//     first be collapsed into a single space character as part of whitespace
+//     collapsing.
+//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//     only have effect if PreserveParagraphs is set to true.
+//   - `PreserveParagraphs` gives whether to respect paragraphs instead of
+//     simply considering them text to be wrapped. If set to true, the Text is
+//     first split into paragraphs by ParagraphSeparator, then the wrap is
+//     applied to each paragraph.
 func (ed Editor) WrapOpts(width int, opts Options) Editor {
 	opts = opts.WithDefaults()
 
