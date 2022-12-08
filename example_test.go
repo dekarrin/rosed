@@ -52,9 +52,5 @@ func ExampleEditor_ApplyOpts() {
 	
 	fmt.Println(ed.String())
 	// Output:
-	// Alpha Kid #1: Jane
-	// Nobody here!
-	// Alpha Kid #2: Dirk
-	// Alpha Kid #3: Roxy
-	// Nobody here!
+	// Alpha Kid #1: Jane<br/>Nobody here!<br/>Alpha Kid #2: Dirk<br/>Alpha Kid #3: Roxy<br/>Nobody here!
 }
