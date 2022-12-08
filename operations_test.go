@@ -1581,3 +1581,66 @@ func Test_InsertDefinitionsTableOpts(t *testing.T) {
 		})
 	}
 }
+
+func Test_Editor_Overtype(t *testing.T) {
+	testCases := []struct{
+		name string
+		input string
+		pos int
+		text string
+		expect string
+	}{
+		{
+			name: "add empty string to empty string",
+			input: "",
+			pos: 0,
+			text: "",
+			expect: "",
+		},
+		{
+			name: "add non-empty to empty",
+			input: "",
+			pos: 0,
+			text: "Hello!",
+			expect: "Hello!",
+		},
+		{
+			name: "add empty to non-empty start",
+			input: "test",
+			pos: 0,
+			text: "",
+			expect: "test",
+		},
+		{
+			name: "add empty to non-empty middle",
+			input: "test",
+			pos: 1,
+			text: "",
+			expect: "test",
+		},
+		{
+			name: "add empty to non-empty end",
+			input: "test",
+			pos: 4,
+			text: "",
+			expect: "test",
+		},
+		{
+			name: "add empty past non-empty end",
+			input: "test",
+			pos: 80,
+			text: "",
+			expect: "test",
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			
+			actual := Edit(tc.input).Overtype(tc.pos, tc.text).String()
+			
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
