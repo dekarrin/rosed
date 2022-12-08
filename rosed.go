@@ -79,6 +79,8 @@
 // The Editor.Text member can be accessed directly, but this might not be the
 // complete text if the Editor is a sub-editor; String() always merges all
 // changes before returning the text.
+//
+// TODO: general note on python slic-ish indexing.
 package rosed
 
 import "github.com/dekarrin/rosed/internal/gem"

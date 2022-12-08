@@ -260,6 +260,10 @@ func (ed Editor) CollapseSpaceOpts(opts Options) Editor {
 // characters, not by the bytes or runes that make it up. See the note on
 // Grapheme-Awareness in the [rosed] package docs for more info.
 func (ed Editor) Delete(start, end int) Editor {
+	if start >= end {
+		return ed
+	}
+	
 	before := ed.CharsTo(start).Text
 	after := ed.CharsFrom(end).Text
 
