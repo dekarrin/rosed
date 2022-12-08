@@ -263,7 +263,7 @@ func (ed Editor) Delete(start, end int) Editor {
 	if start >= end {
 		return ed
 	}
-	
+
 	before := ed.CharsTo(start).Text
 	after := ed.CharsFrom(end).Text
 
@@ -821,9 +821,9 @@ func (ed Editor) Overtype(charPos int, text string) Editor {
 
 	before := ed.CharsTo(charPos).Text
 	after := ed.CharsFrom(charPos + inboundText.Len()).Text
-	
+
 	ed.Text = before + inboundText.String() + after
-	
+
 	return ed
 }
 

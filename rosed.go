@@ -24,24 +24,24 @@
 // both iteration over the string and [unicode/utf8.RuneCountInString] would
 // return a higher number of runes than perhaps would be expected.
 //
-//  import (
-//      "fmt"
-//      "unicode/utf"
-//  )
-//  
-//  func UnicodeTest() {
-//      // This word appears to be 7 characters long:
-//      precomposed := "fiancée"
-//      decomposed := "fiance\u0301e"
+//	import (
+//	    "fmt"
+//	    "unicode/utf"
+//	)
 //
-//      // and in fact, if printed, both show the same sequence to a human
-//      // user:
-//      fmt.Println(precomposed)  // shows "fiancée"
-//      fmt.Println(decomposed)   // ALSO shows "fiancée"
+//	func UnicodeTest() {
+//	    // This word appears to be 7 characters long:
+//	    precomposed := "fiancée"
+//	    decomposed := "fiance\u0301e"
 //
-//      fmt.Println(utf8.RuneCountInString(precomposed))  // prints 7
-//      fmt.Println(utf8.RuneCountInString(decomposed))   // prints 8 (?!)
-//  }
+//	    // and in fact, if printed, both show the same sequence to a human
+//	    // user:
+//	    fmt.Println(precomposed)  // shows "fiancée"
+//	    fmt.Println(decomposed)   // ALSO shows "fiancée"
+//
+//	    fmt.Println(utf8.RuneCountInString(precomposed))  // prints 7
+//	    fmt.Println(utf8.RuneCountInString(decomposed))   // prints 8 (?!)
+//	}
 //
 // See [UAX #15: Unicode Normalization Forms] for more info on the forms that a
 // Unicode string can take based on how it represents graphemes.
@@ -52,33 +52,33 @@
 // handles all ways that a single "human-readable" character could be
 // represented.
 //
-//  import (
-//      "fmt"
-//      
-//      "github.com/dekarrin/rosed"
-//  )
+//	import (
+//	    "fmt"
 //
-//  wrapped1 := rosed.Edit("My fiancée and I went to the bistro").Wrap(10).String()
-//  wrapped2 := rosed.Edit("My fiance\u0301e and I went to the bistro").Wrap(10).String()
+//	    "github.com/dekarrin/rosed"
+//	)
 //
-//  // because rosed is grapheme aware, both representations are wrapped the
-//  // same way:
+//	wrapped1 := rosed.Edit("My fiancée and I went to the bistro").Wrap(10).String()
+//	wrapped2 := rosed.Edit("My fiance\u0301e and I went to the bistro").Wrap(10).String()
 //
-//  fmt.Println(wrapped1)
-//  // Prints out:
-//  //
-//  // My fiancée
-//  // and I went
-//  // to the
-//  // bistro.
+//	// because rosed is grapheme aware, both representations are wrapped the
+//	// same way:
 //
-//  fmt.Println(wrapped2)
-//  // Prints out:
-//  // 
-//  // My fiancée
-//  // and I went
-//  // to the
-//  // bistro.
+//	fmt.Println(wrapped1)
+//	// Prints out:
+//	//
+//	// My fiancée
+//	// and I went
+//	// to the
+//	// bistro.
+//
+//	fmt.Println(wrapped2)
+//	// Prints out:
+//	//
+//	// My fiancée
+//	// and I went
+//	// to the
+//	// bistro.
 //
 // Note that this library does not handle Unicode-normalized collation; that
 // may be covered at a later time but for now it was deemed too much to
@@ -86,19 +86,16 @@
 // must be added to the program for it to function and possible dependence on
 // local-specific settings.
 //
-// [UAX #15: Unicode Normalization Forms]: https://unicode.org/reports/tr15/
-// [UAX #29: Unicode Text Segmentation]: https://unicode.org/reports/tr29/
-//
 // # Basic Usage
 //
 // All editing starts with an [Editor]. The zero-value can be used to start with
 // blank text, otherwise Edit() can be called to give the text to work with.
 // Additionally, if desired, the Editor can have its Text property set to the
 // text to operate on.
-// 
-//  ed1 := rosed.Editor{}
-//  ed2 := rosed.Edit("my text")
-//  ed3 := rosed.Editor{Text: "my text"}
+//
+//	ed1 := rosed.Editor{}
+//	ed2 := rosed.Edit("my text")
+//	ed3 := rosed.Editor{Text: "my text"}
 //
 // From that point, Editor functions can be called to modify the text in it.
 // Editors are considered to be immutable by all functions that operate on them;
@@ -106,20 +103,20 @@
 // an operation as opposed to actually modifying the Text of the Editor they are
 // called on.
 //
-//  // Here's an example of using Overtype to replace some text:
-//  ed := rosed.Edit("How are you, Miss Lalonde?")
-//  overtypedEd := ed.Overtype(4, "goes it")
+//	// Here's an example of using Overtype to replace some text:
+//	ed := rosed.Edit("How are you, Miss Lalonde?")
+//	overtypedEd := ed.Overtype(4, "goes it")
 //
-//  // The original Editor is unchanged; the text
-//  // will be "How are you, Miss Lalonde?":
-//  originalText := ed.String()
-//  
-//  // But the text in the Editor returned by Overtype
-//  // will be "How goes it, Miss Lalonde?":
-//  output1 := overtypedEd.String()
+//	// The original Editor is unchanged; the text
+//	// will be "How are you, Miss Lalonde?":
+//	originalText := ed.String()
 //
-//  // Alternatively, all calls can be chained:
-//  output2 := rosed.Edit("How are you, Miss Lalonde?").Overtype(4, "goes it").String()
+//	// But the text in the Editor returned by Overtype
+//	// will be "How goes it, Miss Lalonde?":
+//	output1 := overtypedEd.String()
+//
+//	// Alternatively, all calls can be chained:
+//	output2 := rosed.Edit("How are you, Miss Lalonde?").Overtype(4, "goes it").String()
 //
 // [Editor.Overtype] is not a particularly exciting example of this library's
 // use; [Editor.Wrap], [Editor.InsertTwoColumns], and
@@ -136,25 +133,25 @@
 // The Options struct itself supports a fluent interface for changing its
 // values, using its WithX methods.
 //
-//  // can create Options struct with members set directly:
-//  opts1 := rosed.Options{PreserveParagraphs: true}
+//	// can create Options struct with members set directly:
+//	opts1 := rosed.Options{PreserveParagraphs: true}
 //
-//  // or by taking the zero-value and calling WithX functions:
-//  opts2 := rosed.Options{}.WithPreserveParagraphs(true)
+//	// or by taking the zero-value and calling WithX functions:
+//	opts2 := rosed.Options{}.WithPreserveParagraphs(true)
 //
 // Editor operations will mention which options they are affected by and how in
 // their documentation comments. Alternatively, to set the options specifically
 // for a particular call of an Editor operation, call the XOpts version of it.
 //
-//  input := "More then ever, you feel, what's the word you're looking for? Of course. Housetrapped."
-//  opts := rosed.Options{PreserveParagraphs: true}
-//  ed := rosed.Edit(input)
-//  
-//  // Options can be set by giving them to the Editor prior to calling an operation:
-//  output := ed.WithOptions(opts).Wrap(10).String()
+//	input := "More then ever, you feel, what's the word you're looking for? Of course. Housetrapped."
+//	opts := rosed.Options{PreserveParagraphs: true}
+//	ed := rosed.Edit(input)
 //
-//  // ...or by calling the Opts version of the operation:
-//  output := ed.WrapOpts(10, opts).String()
+//	// Options can be set by giving them to the Editor prior to calling an operation:
+//	output := ed.WithOptions(opts).Wrap(10).String()
+//
+//	// ...or by calling the Opts version of the operation:
+//	output := ed.WrapOpts(10, opts).String()
 //
 // Note that Editor.WithOptions, like all other Editor functions, treats the
 // Editor it operates on as immutable. It returns an Editor that has those
@@ -162,12 +159,12 @@
 // permanently set the Options on a particular Editor, you can assign an Options
 // struct to Editor.Options manually.
 //
-//  // this is perfectly acceptable:
-//  ed := rosed.Editor{
-//      Options: rosed.Options{
-//          LineSeparator: "\r\n",
-//      },
-//  }
+//	// this is perfectly acceptable:
+//	ed := rosed.Editor{
+//	    Options: rosed.Options{
+//	        LineSeparator: "\r\n",
+//	    },
+//	}
 //
 // # Editing Partial Sections
 //
@@ -184,22 +181,22 @@
 // This will produce an Editor that consists of the full text prior to selecting
 // a particular section, with all changes made to the sub-section merged in.
 //
-//  ed := rosed.Edit("Hello, World!")
+//	ed := rosed.Edit("Hello, World!")
 //
-//  // edits only the ", " part
-//  subEd := ed.Chars(5, 7)
+//	// edits only the ", " part
+//	subEd := ed.Chars(5, 7)
 //
-//  // Make subEd.Text be "\t, "
-//  subEd = subEd.Indent(1)
+//	// Make subEd.Text be "\t, "
+//	subEd = subEd.Indent(1)
 //
-//  // And bring it all back together
-//  ed = subEd.Commit()
+//	// And bring it all back together
+//	ed = subEd.Commit()
 //
-//  // Get the result string, which will be "Hello\t, world!"
-//  output1 := ed.String()
+//	// Get the result string, which will be "Hello\t, world!"
+//	output1 := ed.String()
 //
-//  // The same steps using the fluent style:
-//  output2 := rosed.Edit("Hello, World!").Chars(5, 7).Indent(1).Commit().String()
+//	// The same steps using the fluent style:
+//	output2 := rosed.Edit("Hello, World!").Chars(5, 7).Indent(1).Commit().String()
 //
 // If multiple sub-editors have been made, [Editor.CommitAll] can be used to
 // apply all changes recursively and return an Editor operating on the full
@@ -207,8 +204,8 @@
 // called, making it an excellent choice to get Editor.Text without needing to
 // be concerned with whether they are operating on a sub-editor.
 //
-//  // Commit() or CommitAll() is not needed before string:
-//  output := rosed.Edit("Hello, World!").Chars(5, 7).Indent(1).String()
+//	// Commit() or CommitAll() is not needed before string:
+//	output := rosed.Edit("Hello, World!").Chars(5, 7).Indent(1).String()
 //
 // Note that it is possible to create a sub-editor, and then create another
 // sub-editor off of the same original Editor. This may have unexpected results
@@ -229,13 +226,13 @@
 // would specify someting before the start of the collection, it is
 // automatically assumed to be 0.
 //
-//  ed := rosed.Edit("John, Dave, and Jade")
-//  
-//  // whoops, we forget to add someone 9 characters before the end!
-//  ed = ed.Insert(-9, "Rose, ")
+//	ed := rosed.Edit("John, Dave, and Jade")
 //
-//  // this will be the correct "John, Dave, Rose, and Jade"
-//  output := ed.String()
+//	// whoops, we forget to add someone 9 characters before the end!
+//	ed = ed.Insert(-9, "Rose, ")
+//
+//	// this will be the correct "John, Dave, Rose, and Jade"
+//	output := ed.String()
 //
 // Many functions that do this will mention it explicitly, but all functions
 // that accept positions can interpret negative positions.
@@ -248,24 +245,27 @@
 // [Editor.Apply] and [Editor.ApplyParagraphs]. These allow the user to provide
 // a custom function to operate on text on a per-line or per-paragraph basis.
 //
-//  textBody := `John\nRose\nDave\nJade`
+//	textBody := `John\nRose\nDave\nJade`
 //
-//  namerFunc := func(lineIdx int, line string) []string {
-//      newStr := fmt.Sprintf("Beta Kid #%d: %s", lineIdx + 1, line)
-//      return []string{newStr}
-//  }
+//	namerFunc := func(lineIdx int, line string) []string {
+//	    newStr := fmt.Sprintf("Beta Kid #%d: %s", lineIdx + 1, line)
+//	    return []string{newStr}
+//	}
 //
-//  output := rosed.Edit(textBody).Apply(namerFunc).String()
-//  // The output will be:
-//  //
-//  // Beta Kid #1: John
-//  // Beta Kid #2: Rose
-//  // Beta Kid #3: Dave
-//  // Beta Kid #4: Jade
+//	output := rosed.Edit(textBody).Apply(namerFunc).String()
+//	// The output will be:
+//	//
+//	// Beta Kid #1: John
+//	// Beta Kid #2: Rose
+//	// Beta Kid #3: Dave
+//	// Beta Kid #4: Jade
 //
 // Do note that as the [LineOperation] or [ParagraphOperation] passed to the
 // above functions will be user-defined, they will not be grapheme-aware unless
 // the user ensures that this is the case.
+//
+// [UAX #15: Unicode Normalization Forms]: https://unicode.org/reports/tr15/
+// [UAX #29: Unicode Text Segmentation]: https://unicode.org/reports/tr29/
 package rosed
 
 import "github.com/dekarrin/rosed/internal/gem"
