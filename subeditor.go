@@ -128,7 +128,7 @@ func (ed Editor) CharsTo(end int) Editor {
 // Commit takes the substring that a sub-editor is operating on and merges it
 // with its parent. It returns an Editor which is a copy of the current one but
 // with its text set to the merged string.
-// 
+//
 // If the Editor is already a full-text Editor, the merge operation simply
 // copies the current text since there is nothing to merge with, so calling
 // Commit returns an identical copy of the Editor.

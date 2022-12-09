@@ -254,8 +254,8 @@ func (ed Editor) Delete(start, end int) Editor {
 //   - LineSeparator is the separator that determines what each line is.
 //   - NoTrailingLineSeparators alters whether LineSeparator is expected to be
 //     at the end of a complete line. If this is set to true, then a
-//     LineSeparator does not need to present at the end of a complete line. Any
-//     trailing line separator for a non-empty editor is then considered to
+//     LineSeparator does not need to be present at the end of a complete line.
+//     Any trailing line separator for a non-empty editor is then considered to
 //     split the last line from a new, empty line, which will be indented. In
 //     addition, the empty editor will be considered to have a single line,
 //     which will be indented.
@@ -291,8 +291,8 @@ func (ed Editor) Indent(level int) Editor {
 //   - LineSeparator is the separator that determines what each line is.
 //   - NoTrailingLineSeparators alters whether LineSeparator is expected to be
 //     at the end of a complete line. If this is set to true, then a
-//     LineSeparator does not need to present at the end of a complete line. Any
-//     trailing line separator for a non-empty editor is then considered to
+//     LineSeparator does not need to be present at the end of a complete line.
+//     Any trailing line separator for a non-empty editor is then considered to
 //     split the last line from a new, empty line, which will be indented. In
 //     addition, the empty editor will be considered to have a single line,
 //     which will be indented.
