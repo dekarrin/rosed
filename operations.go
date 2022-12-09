@@ -85,21 +85,8 @@ func (ed Editor) Apply(op LineOperation) Editor {
 // ApplyOpts applies the given LineOperation to each line in the text, using the
 // provided options.
 //
-// The LineOperation should assume it will receive each line without its line
-// terminator, and must assume that anything it returns will have re-adding the
-// separator to it handled by the caller.
-//
-// This function is affected by the following [Options]:
-//
-//   - LineSeparator specifies what string in the source text should be used to
-//     delimit lines to be passed to the LineOperation.
-//   - NoTrailingLineSeparators specifies whether the function should consider a
-//     final instance of LineSeparator to be ending the prior line or giving the
-//     start of a new line. If NoTrailingLineSeparators is true, a trailing
-//     LineSeparator is considered to start a new (empty) line; additionally,
-//     the LineOperation will be called at least once for an empty string. If
-//     NoTrailingLineSeparators is set to false and the Editor text is set to an
-//     empty string, the LineOperation will not be called.
+// This is identical to [Editor.Apply] but provides the ability to set Options
+// for the invocation.
 func (ed Editor) ApplyOpts(op LineOperation, opts Options) Editor {
 	opts = opts.WithDefaults()
 	lines := ed.WithOptions(opts).linesSep(opts.LineSeparator)
@@ -124,7 +111,7 @@ func (ed Editor) ApplyOpts(op LineOperation, opts Options) Editor {
 }
 
 // ApplyParagraphs applies the given ParagraphOperation to each paragraph in
-// the Text of the Editor, using the options currently set on the Editor.
+// the text of the Editor.
 //
 // The ParagraphOperation should assume it will receive each paragraph without
 // its paragraph separator, and must assume that anything it returns will have
@@ -162,35 +149,10 @@ func (ed Editor) ApplyParagraphs(op ParagraphOperation) Editor {
 }
 
 // ApplyParagraphsOpts applies the given ParagraphOperation to each paragraph in
-// the Text of the Editor, using the provided options.
+// the text of the Editor, using the provided options.
 //
-// The ParagraphOperation should assume it will receive each paragraph without
-// its paragraph separator, and must assume that anything it returns will have
-// re-adding the separator to it handled by the caller.
-//
-// When the ParagraphSeparator of Options is set to a sequence that includes
-// visible characters that take up horizontal space, the ParagraphOperation will
-// receive the prefix and suffix of the paragraph that would be in the joined
-// string due to the separator, with variables `sepPrefix` and `sepSuffix`. This
-// is not intended to allow the operation to add them back in manually, as that
-// is handled by the caller, but for it to perform book-keeping and length
-// checks and act accordingly, such when attempting to output something that is
-// intended to be aligned.
-//
-// Unlike with LineSeparator, a ParagraphSeparator is always considered a
-// separator, not a terminator, so the affixes may vary per paragraph if the
-// ParagraphSeparator has line breaks in it; in that case the first paragraph
-// will have an empty prefix, the last paragraph will have an empty suffix, and
-// all other paragraphs will have non-empty prefixes and suffixes. An example
-// usage of this behavior is present in the example for this function.
-//
-// Note that treating the paragraph separator as a splitter and not a terminator
-// means that the ParagraphOperation is always called at least once, even for an
-// empty editor.
-//
-// This function is affected by the following options:
-//
-//   - ParagraphSeparator specifies the string that paragraphs are split by.
+// This is identical to [Editor.ApplyParagraphs] but provides the ability to set
+// Options for the invocation.
 func (ed Editor) ApplyParagraphsOpts(op ParagraphOperation, opts Options) Editor {
 	return ed.applyGParagraphsOpts(func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String {
 		return gem.Slice(op(idx, para.String(), sepPrefix.String(), sepSuffix.String()))
@@ -212,11 +174,8 @@ func (ed Editor) CollapseSpace() Editor {
 // CollapseSpaceOpts converts all consecutive whitespace characters to a single
 // space character using the provided options.
 //
-// This function is affected by the following [Options]:
-//
-//   - LineSeparator is always considered whitespace, and will be collapsed
-//     into a space regardless of the classification of the characters within
-//     it.
+// This is identical to [Editor.CollapseSpace] but provides the ability to set
+// Options for the invocation.
 func (ed Editor) CollapseSpaceOpts(opts Options) Editor {
 	opts = opts.WithDefaults()
 	ed.Text = collapseSpace(_g(ed.Text), _g(opts.LineSeparator)).String()
@@ -279,38 +238,10 @@ func (ed Editor) Indent(level int) Editor {
 }
 
 // IndentOpts adds an indent string at the start of each line in the Editor
-// using the provided options. The string used for a single level of indent is
-// determined by Editor options and will be applied level times. If level is 0
-// or less, the text will be unchanged.
+// using the provided options.
 //
-// With default options set, this operation has no effect on an empty editor.
-//
-// This function is affected by the following [Options]:
-//
-//   - IndentStr is the sequence to use to indent a single level.
-//   - LineSeparator is the separator that determines what each line is.
-//   - NoTrailingLineSeparators alters whether LineSeparator is expected to be
-//     at the end of a complete line. If this is set to true, then a
-//     LineSeparator does not need to be present at the end of a complete line.
-//     Any trailing line separator for a non-empty editor is then considered to
-//     split the last line from a new, empty line, which will be indented. In
-//     addition, the empty editor will be considered to have a single line,
-//     which will be indented.
-//   - ParagraphSeparator is the separator used to split paragraphs. It will
-//     only have effect if PreserveParagraphs is set to true.
-//   - PreserveParagraphs gives whether to respect paragraphs instead of
-//     treating paragraph breaks as normal text. If set to true, the text is
-//     first split into paragraphs by ParagraphSeparator, then the indent is
-//     applied to each paragraph.
-//
-// Note that there is a behavior that occurs when NoTrailingLineSeparators is
-// set to true, PreserveParagraphs is set to true, and the LineSeparator could
-// be misinterpreted as part of ParagraphSeparator. In this case, the paragraph
-// separation will be prioritized over the line separator, possibly in an
-// unintended fashion. For instance, if ParagraphSeparator is set to "\n\n" (the
-// default) and LineSeparator is set to "\n" (the default), a sequence of
-// "\n\n\n" would be interpreted as the paragraph separator followed by the line
-// separator. This may be fixed in a later version of this library.
+// This is identical to [Editor.Indent] but provides the ability to set Options
+// for the invocation.
 func (ed Editor) IndentOpts(level int, opts Options) Editor {
 	if level < 1 {
 		// caller wants fewer than 1 indent. Okay, that is zero; return
@@ -402,34 +333,17 @@ func (ed Editor) InsertDefinitionsTable(pos int, definitions [][2]string, width 
 }
 
 // InsertDefinitionsTableOpts creates a table of term definitions using the
-// provided options and inserts it into the text of the Editor. A definitions
-// table is a two-column table that puts the terms being defined on the left and
-// their definitions on the right. The terms are indented by two space
-// characters. For a sample definitions table, see
-// [Editor.InsertDefinitionsTable].
+// provided options and inserts it into the text of the Editor.
 //
-// The character position to insert the table at is given by the pos argument.
-// The definitions themselves are given as a slice of 2-tuples of strings, where
-// the first item in each tuple is the term and the second item is the
-// definition. If no definitions are given, or an empty slice is passed in,
-// there will be no output.
-//
-// The complete maximum width of the table to output including the leading
-// indent is given by the width argument. Note that not every line will be this
-// long; wrapping will often cause them to be shorter.
+// This is identical to [Editor.InsertDefinitionsTable] but provides the ability
+// to set Options for the invocation.
 //
 // This function is grapheme-aware and indexes text by human-readable
 // characters, not by the bytes or runes that make it up. See the note on
 // Grapheme-Awareness in the [rosed] package docs for more info.
 //
-// This function is affected by the following [Options]:
-//
-//   - LineSeparator is used to separate each line of the table output.
-//   - ParagraphSeparator is used to separate each term/definition pair from the
-//     other definitions.
-//   - NoTrailingLineSeparators sets whether to include a trailing
-//     LineSeparator at the end of the table. If set to true, it will be omited,
-//     otherwise the table will end with a LineSeparator.
+// This function is affected by the same [Options] as
+// [Editor.InsertDefinitionsTable].
 func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, width int, opts Options) Editor {
 	opts = opts.WithDefaults()
 
