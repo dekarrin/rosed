@@ -84,7 +84,7 @@
 // may be covered at a later time but for now it was deemed too much to
 // implement for version 1.0, given the large amount of data from Unicode that
 // must be added to the program for it to function and possible dependence on
-// local-specific settings.
+// locale-specific settings.
 //
 // # Basic Usage
 //

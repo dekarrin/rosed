@@ -243,78 +243,74 @@ func (ed Editor) Delete(start, end int) Editor {
 
 // Indent adds an indent string at the start of each line in the Editor. The
 // string used for a single level of indent is determined by Editor options and
-// will be applied `level` times. If `level` is 0 or less, the text is
+// will be applied level times. If level is 0 or less, the text will be
 // unchanged.
 //
 // With default options set, this operation has no effect on an empty editor.
 //
-// This function is affected by the following options:
+// This function is affected by the following [Options]:
 //
-//   - `IndentStr` is the sequence to use to indent a single level.
-//   - `LineSeparator` is the separator that determines what each line is so
-//     that each line may be indented by the specified amount.
-//   - `NoTrailingLineSeparators` alters whether LineSeparator is expected to be
+//   - IndentStr is the sequence to use to indent a single level.
+//   - LineSeparator is the separator that determines what each line is.
+//   - NoTrailingLineSeparators alters whether LineSeparator is expected to be
 //     at the end of a complete line. If this is set to true, then a
 //     LineSeparator does not need to present at the end of a complete line. Any
 //     trailing line separator for a non-empty editor is then considered to
 //     split the last line from a new, empty line, which will be indented. In
-//     addition, the empty editor would in fact be considered to have a single
-//     line, which would be indented.
-//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//     addition, the empty editor will be considered to have a single line,
+//     which will be indented.
+//   - ParagraphSeparator is the separator used to split paragraphs. It will
 //     only have effect if PreserveParagraphs is set to true.
-//   - `PreserveParagraphs` gives whether to respect paragraphs instead of
-//     treating all lines as equal. If set to true, the Text is first split into
-//     paragraphs by ParagraphSeparator, then the indent is applied to each
-//     paragraph.
+//   - PreserveParagraphs gives whether to respect paragraphs instead of
+//     treating paragraph breaks as normal text. If set to true, the text is
+//     first split into paragraphs by ParagraphSeparator, then the indent is
+//     applied to each paragraph.
 //
-// There is a potentially strange behavior that occurs when
-// NoTrailingLineSeparators is set to true, PreserveParagraphs is set to true,
-// and the LineSeparator could be misinterpreted as part of ParagraphSeparator.
-// In this case, the paragraph separation will be prioritized over the line
-// separator, possibly in an unintended fasion. For instance, if
-// ParagraphSeparator is set to "\n\n" (the default) and LineSeparator is set to
-// "\n" (the default), a sequence of "\n\n\n" would be interpreted as the
-// paragraph separator followed by the line separator. This may be fixed in a
-// later version of this library.
+// Note that there is a behavior that occurs when NoTrailingLineSeparators is
+// set to true, PreserveParagraphs is set to true, and the LineSeparator could
+// be misinterpreted as part of ParagraphSeparator. In this case, the paragraph
+// separation will be prioritized over the line separator, possibly in an
+// unintended fashion. For instance, if ParagraphSeparator is set to "\n\n" (the
+// default) and LineSeparator is set to "\n" (the default), a sequence of
+// "\n\n\n" would be interpreted as the paragraph separator followed by the line
+// separator. This may be fixed in a later version of this library.
 func (ed Editor) Indent(level int) Editor {
 	return ed.IndentOpts(level, ed.Options)
 }
 
 // IndentOpts adds an indent string at the start of each line in the Editor
 // using the provided options. The string used for a single level of indent is
-// determined by the provided options and will be applied `level` times. If
-// `level` is 0 or less, the text is unchanged.
+// determined by Editor options and will be applied level times. If level is 0
+// or less, the text will be unchanged.
 //
 // With default options set, this operation has no effect on an empty editor.
 //
-// This function is affected by the following options:
+// This function is affected by the following [Options]:
 //
-//   - `IndentStr` is the sequence to use to indent a single level.
-//   - `LineSeparator` is the separator that determines what each line is so
-//     that each line may be indented by the specified amount.
-//   - `NoTrailingLineSeparators` alters whether LineSeparator is expected to be
+//   - IndentStr is the sequence to use to indent a single level.
+//   - LineSeparator is the separator that determines what each line is.
+//   - NoTrailingLineSeparators alters whether LineSeparator is expected to be
 //     at the end of a complete line. If this is set to true, then a
 //     LineSeparator does not need to present at the end of a complete line. Any
 //     trailing line separator for a non-empty editor is then considered to
 //     split the last line from a new, empty line, which will be indented. In
-//     addition, the empty editor would in fact be considered to have a single
-//     line, which would be indented.
-//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//     addition, the empty editor will be considered to have a single line,
+//     which will be indented.
+//   - ParagraphSeparator is the separator used to split paragraphs. It will
 //     only have effect if PreserveParagraphs is set to true.
-//   - `PreserveParagraphs` gives whether to respect paragraphs instead of
-//     treating all lines as equal. If set to true, the Text is first split into
-//     paragraphs by ParagraphSeparator, then the indent is applied to each
-//     paragraph.
+//   - PreserveParagraphs gives whether to respect paragraphs instead of
+//     treating paragraph breaks as normal text. If set to true, the text is
+//     first split into paragraphs by ParagraphSeparator, then the indent is
+//     applied to each paragraph.
 //
-// There is a potentially strange behavior that occurs when
-// NoTrailingLineSeparators is set to true, PreserveParagraphs is set to true,
-// and the LineSeparator could be misinterpreted as part of ParagraphSeparator.
-// In this case, the paragraph separation will be prioritized over the line
-// separator, possibly in an unintended fasion. For instance, if
-// ParagraphSeparator is set to "\n\n" (the default) and LineSeparator is set to
-// "\n" (the default), a sequence of "\n\n\n" would be interpreted as the
-// paragraph separator followed by the line separator. This may be fixed in a
-// later version of this library.
+// Note that there is a behavior that occurs when NoTrailingLineSeparators is
+// set to true, PreserveParagraphs is set to true, and the LineSeparator could
+// be misinterpreted as part of ParagraphSeparator. In this case, the paragraph
+// separation will be prioritized over the line separator, possibly in an
+// unintended fashion. For instance, if ParagraphSeparator is set to "\n\n" (the
+// default) and LineSeparator is set to "\n" (the default), a sequence of
+// "\n\n\n" would be interpreted as the paragraph separator followed by the line
+// separator. This may be fixed in a later version of this library.
 func (ed Editor) IndentOpts(level int, opts Options) Editor {
 	if level < 1 {
 		// caller wants fewer than 1 indent. Okay, that is zero; return

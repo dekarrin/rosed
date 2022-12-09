@@ -261,3 +261,13 @@ func ExampleEditor_CommitAll() {
 	//		Line 2: A rationale
 	//		Line 3: A conclusion
 }
+
+// This example shows the deletion of unwanted text in the editor.
+func ExampleEditor_Delete() {
+	ed := Edit("Here is some EXTRA text")
+	
+	ed = ed.Delete(13, 19)
+	
+	fmt.Println(ed.String())
+	// Output: Here is some text
+}
