@@ -417,24 +417,19 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 // to be used as the body of each column, as they will be automatically wrapped
 // to fit.
 //
-// `pos` gives the position to insert the columns at within the Editor.
-//
-// `leftText` is the text to put into the left column.
-//
-// `rightText` is the text to put into the right column.
-//
-// `minSpaceBetween` is the amount of space between the two columns. It will
-// only be this small if the left side after wrapping reaches its full length.
-//
-// `width` is how much horizontal space the two columns will take up. Note that
-// if the right column after wrapping never reaches its full length, it is
-// possible that no line will be this many characters across.
-//
-// `leftColPercent` is a float from 0.0 to 1.0 that gives how much of the
-// available width (width - minSpaceBetween) the left column should take up. The
-// right column will infer its width from that as well. If leftColPercent is
-// less than 0.0, it will be assumed to be 0.0. If greater than 1.0, it will be
-// assumed to be 1.0.
+// This function has several parameters:
+//   - pos gives the position to insert the columns at within the Editor.
+//   - leftText is the text to put into the left column.
+//   - rightText is the text to put into the right column.
+//   - minSpaceBetween is the amount of space between the two columns at the
+//     left column's widest possible length.
+//   - width is how much horizontal space the two columns along with the space
+//     between them should be wrapped to.
+//   - leftColPercent is a number from 0.0 to 1.0 that gives how much of the
+//     available width (width - minSpaceBetween) the left column should take up.
+//     The right column will infer its width from what remains. If
+//     leftColPercent is less than 0.0, it will be assumed to be 0.0. If greater
+//     than 1.0, it will be assumed to be 1.0.
 //
 // The minimum width that a column can be is always 2 characters wide.
 //
@@ -448,7 +443,7 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 //
 // This function is affected by the following options:
 //
-//   - `LineSeparator` is used to separate each line of the output.
+//   - LineSeparator is used to separate each line of the output.
 //   - `NoTrailingLineSeparators` sets whether to include a trailing
 //     LineSeparator at the end of the generated columns. If set to true, it
 //     will be omited, otherwise the columns will end with a LineSeparator.
