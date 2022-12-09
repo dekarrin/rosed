@@ -26,26 +26,19 @@ type parentRef struct {
 	end int
 }
 
-// Chars produces an Editor to operate on a subset of its Text. The returned
-// Editor operates on text from the nth character up to (but not including)
-// the ith character, where n is `start` and i is `end`.
+// Chars produces an Editor to operate on a subset of the characters in the
+// Editor's text. The returned Editor operates on text from the nth character up
+// to (but not including) the ith character, where n is start and i is end.
 //
-// For instance, to get the 'ell' of "Hello!":
+// The start or end parameter may be negative, in which case it will be relative
+// to the end of the string; -1 would be the index of the last character, -2
+// would be the index of the second-to-last character, etc.
 //
-//	ed := Edit("Hello!")
-//	ed = ed.Chars(1, 4)
+// If the one of the parameters specifies an index that is past the end of the
+// string, that index is assumed to be the end of the string. If either specify
+// an index that is before the start of a string, it is assumed to be 0.
 //
-//	fmt.Printf("%v\n", ed.Text)  // will be "ell".
-//
-// The `start` or `end` may be negative, in which case it will be relative to
-// the end of the string; -1 would be the index of the last character, -2 would
-// be the index of the second-to-last character, etc.
-//
-// If `start` or `end` specifies an index that is past the end of the string,
-// that index is assumed to be the end of the string. If either specify an index
-// that is before the start of a string, it is assumed to be 0.
-//
-// If `end` is less than `start`, it is assumed to be equal to `start`.
+// If end is less than start, it is assumed to be equal to start.
 //
 // This function is grapheme-aware and indexes text by human-readable
 // characters, not by the bytes or runes that make it up. See the note on
@@ -100,24 +93,12 @@ func (ed Editor) Chars(start, end int) Editor {
 	return ed.subEd(byteStart, byteEnd)
 }
 
-// CharsFrom produces an Editor to operate on a subset of its Text. The returned
-// Editor operates on text from the nth character up to the end of the string,
-// where n is `start`.
+// CharsFrom produces an Editor to operate on a subset of the characters in the
+// Editor's text. The returned Editor operates on text from the nth character up
+// to the end of the string, where n is start.
 //
-// For instance, to get the 'llo!' of "Hello!":
-//
-//	ed := Edit("Hello!")
-//	ed = ed.CharsFrom(2)
-//
-//	fmt.Printf("%v\n", ed.Text)  // will be "llo!".
-//
-// `start` may be negative, in which case it will be relative to the end of the
-// string; -1 would be the index of the last character, -2 would be the index of
-// the second-to-last character, etc.
-//
-// If `start` specifies an index that is past the end of the string, that index
-// is assumed to be the end of the string. If it specifies an index that is
-// before the start of a string, it is assumed to be 0.
+// Calling this function is identical to calling [Editor.Chars] with the given
+// start and with end set to the end of the string.
 //
 // This function is grapheme-aware and indexes text by human-readable
 // characters, not by the bytes or runes that make it up. See the note on
@@ -128,24 +109,12 @@ func (ed Editor) CharsFrom(start int) Editor {
 	return ed.Chars(start, len(ed.Text))
 }
 
-// CharsTo produces an Editor to operate on a subset of its Text. The returned
-// Editor operates on text from the first character up to but not including the
-// nth character, where n is `end`.
+// CharsTo produces an Editor to operate on a subset of the characters in the
+// Editor's text. The returned Editor operates on text from the first character
+// up to but not including the nth character, where n is `end`.
 //
-// For instance, to get the 'He' of "Hello!":
-//
-//	ed := Edit("Hello!")
-//	ed = ed.CharsTo(2)
-//
-//	fmt.Printf("%v\n", ed.Text)  // will be "He".
-//
-// `end` may be negative, in which case it will be relative to the end of the
-// string; -1 would be the index of the last character, -2 would be the index of
-// the second-to-last character, etc.
-//
-// If `end` specifies an index that is past the end of the string, that index is
-// assumed to be the end of the string. If it specifies an index that is before
-// the start of a string, it is assumed to be 0.
+// Calling this function is identical to calling [Editor.Chars] with the given
+// end and with start set to the start of the string.
 //
 // This function is grapheme-aware and indexes text by human-readable
 // characters, not by the bytes or runes that make it up. See the note on
@@ -157,17 +126,12 @@ func (ed Editor) CharsTo(end int) Editor {
 }
 
 // Commit takes the substring that a sub-editor is operating on and merges it
-// with its parent.
-//
-// Returns an Editor which is a copy of the current one but with its Text set to
-// the merged string.
-//
-// If the Editor is already full-text Editor, the merge operation is simply to
-// copy the current Text since there is no prefix or suffix, so calling Commit
-// returns a duplicate of the Editor.
-//
-// Operations on the returned Editor will be on the parent's string (if any)
-// rather than on the subset of it.
+// with its parent. It returns an Editor which is a copy of the current one but
+// with its text set to the merged string.
+// 
+// If the Editor is already a full-text Editor, the merge operation simply
+// copies the current text since there is nothing to merge with, so calling
+// Commit returns an identical copy of the Editor.
 func (ed Editor) Commit() Editor {
 	if !ed.IsSubEditor() {
 		return ed
@@ -187,17 +151,13 @@ func (ed Editor) Commit() Editor {
 }
 
 // CommitAll takes the substring that a sub-editor is operating on and merges it
-// with its parent recursively to get a new complete string.
+// with its parent recursively. Returns an Editor which is a copy of the current
+// one but with its text set to the result of merging every sub-editor from the
+// one CommitAll is called on up to the root Editor.
 //
-// Returns an Editor which is a copy of the current one but with its Text set to
-// the merged complete string.
-//
-// If the Editor is already a full-text Editor, the merge operation is simply to
-// copy the current Text since there is no prefix or suffix, so calling
-// CommitAll simply returns a copy of the Editor.
-//
-// Operations on the returned Editor will be on the complete string rather than
-// on a subset of it.
+// If the Editor is already a full-text Editor, the merge operation simply
+// copies the current text since there is nothing to merge with, so calling
+// CommitAll returns an identical copy of the Editor.
 func (ed Editor) CommitAll() Editor {
 	// recursively do commit until we get to a full-text Editor.
 	for ed.IsSubEditor() {

@@ -58,13 +58,13 @@ type ParagraphOperation func(idx int, para, sepPrefix, sepSuffix string) []strin
 
 type gParagraphOperation func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String
 
-// Apply applies the given LineOperation to each line in the Text. Line
+// Apply applies the given LineOperation to each line in the text. Line
 // termination at the last line is transparently handled as per the options set
 // on the Editor.
 //
 // The LineOperation should assume it will receive each line without its line
-// terminator, and must assume that anything it returns will have that handled
-// by the caller.
+// terminator, and must assume that anything it returns will have re-adding the
+// separator to it handled by the caller.
 //
 // This function is affected by the following [Options]:
 //
@@ -82,7 +82,7 @@ func (ed Editor) Apply(op LineOperation) Editor {
 	return ed
 }
 
-// ApplyOpts applies the given LineOperation to each line in the Text, using the
+// ApplyOpts applies the given LineOperation to each line in the text, using the
 // provided options.
 //
 // The LineOperation should assume it will receive each line without its line
@@ -141,36 +141,21 @@ func (ed Editor) ApplyOpts(op LineOperation, opts Options) Editor {
 //
 // Unlike with LineSeparator, a ParagraphSeparator is always considered a
 // separator, not a terminator, so the affixes may vary per paragraph if the
-// ParagraphSeparator has line breaks in it. In particular, in that case the
-// first paragraph will have an empty prefix, and the last paragraph will have
-// an empty suffix, and all other paragraphs will have non-empty prefixes and
-// suffixes.
+// ParagraphSeparator has line breaks in it; in that case the first paragraph
+// will have an empty prefix, the last paragraph will have an empty suffix, and
+// all other paragraphs will have non-empty prefixes and suffixes.
 //
-// For example:
-//
-//	opts := Options{ParagraphSeparator: "<P1>\n<P2>"}
-//	ed := Edit("para1<P1>\n<P2>para2<P1>\n<P2>para3<P1>\n<P2>para4")
-//	ed = ed.WithOptions(opts)
-//
-//	paraOp := func(idx int, para, sepPrefix, sepSuffix string) []string {
-//	  newPara := fmt.Sprintf("(PREFIX=%s,PARA=%s,SUFFIX=%s)", sepPrefix, para, sepSuffix)
-//	  return []string{newPara}
-//	}
-//
-//	ed.ApplyParagraphs(paraOp).String()
-//	// the above will give the string:
-//	//   (PREFIX=,PARA=para1,SUFFIX=<P1>)<P1>
-//	//   <P2>(PREFIX=<P2>,PARA=para2,SUFFIX=<P1>)<P1>
-//	//   <P2>(PREFIX=<P2>,PARA=para3,SUFFIX=<P1>)<P1>
-//	//   <P2>(PREFIX=<P2>,PARA=para4,SUFFIX=)
+// For an example of a ParagraphOperator that uses sepPrefix and sepSuffix and
+// a custom ParagraphSeparator that makes them non-empty, see the example for
+// [Editor.ApplyParagraphsOpts].
 //
 // Note that treating the paragraph separator as a splitter and not a terminator
-// also means that the ParagraphOperation is always called at least once, even
-// for an empty editor.
+// means that the ParagraphOperation is always called at least once, even for an
+// empty editor.
 //
 // This function is affected by the following options:
 //
-//   - `ParagraphSeparator` specifies the string that paragraphs are split by.
+//   - ParagraphSeparator specifies the string that paragraphs are split by.
 func (ed Editor) ApplyParagraphs(op ParagraphOperation) Editor {
 	ed = ed.ApplyParagraphsOpts(op, ed.Options)
 	return ed
@@ -194,59 +179,42 @@ func (ed Editor) ApplyParagraphs(op ParagraphOperation) Editor {
 //
 // Unlike with LineSeparator, a ParagraphSeparator is always considered a
 // separator, not a terminator, so the affixes may vary per paragraph if the
-// ParagraphSeparator has line breaks in it. In particular, in that case the
-// first paragraph will have an empty prefix, and the last paragraph will have
-// an empty suffix, and all other paragraphs will have non-empty prefixes and
-// suffixes.
-//
-// For example:
-//
-//	opts := Options{ParagraphSeparator: "<P1>\n<P2>"}
-//	ed := Edit("para1<P1>\n<P2>para2<P1>\n<P2>para3<P1>\n<P2>para4")
-//
-//	paraOp := func(idx int, para, sepPrefix, sepSuffix string) []string {
-//	  newPara := fmt.Sprintf("(PREFIX=%s,PARA=%s,SUFFIX=%s)", sepPrefix, para, sepSuffix)
-//	  return []string{newPara}
-//	}
-//
-//	ed.ApplyParagraphsOpts(paraOp, opts).String()
-//	// the above will give the string:
-//	//   (PREFIX=,PARA=para1,SUFFIX=<P1>)<P1>
-//	//   <P2>(PREFIX=<P2>,PARA=para2,SUFFIX=<P1>)<P1>
-//	//   <P2>(PREFIX=<P2>,PARA=para3,SUFFIX=<P1>)<P1>
-//	//   <P2>(PREFIX=<P2>,PARA=para4,SUFFIX=)
+// ParagraphSeparator has line breaks in it; in that case the first paragraph
+// will have an empty prefix, the last paragraph will have an empty suffix, and
+// all other paragraphs will have non-empty prefixes and suffixes. An example
+// usage of this behavior is present in the example for this function.
 //
 // Note that treating the paragraph separator as a splitter and not a terminator
-// also means that the ParagraphOperation is always called at least once, even
-// for an empty editor.
+// means that the ParagraphOperation is always called at least once, even for an
+// empty editor.
 //
 // This function is affected by the following options:
 //
-//   - `ParagraphSeparator` specifies the string that paragraphs are split by.
+//   - ParagraphSeparator specifies the string that paragraphs are split by.
 func (ed Editor) ApplyParagraphsOpts(op ParagraphOperation, opts Options) Editor {
 	return ed.applyGParagraphsOpts(func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String {
 		return gem.Slice(op(idx, para.String(), sepPrefix.String(), sepSuffix.String()))
 	}, opts)
 }
 
-// CollapseSpace converts all runs of whitespace characters to a single space
-// character.
+// CollapseSpace converts all consecutive whitespace characters to a single
+// space character.
 //
-// This function is affected by the following options:
+// This function is affected by the following [Options]:
 //
-//   - `LineSeparator` is always considered whitespace, and will be collapsed
+//   - LineSeparator is always considered whitespace, and will be collapsed
 //     into a space regardless of the classification of the characters within
 //     it.
 func (ed Editor) CollapseSpace() Editor {
 	return ed.CollapseSpaceOpts(ed.Options)
 }
 
-// CollapseSpaceOpts converts all runs of whitespace characters to a single
+// CollapseSpaceOpts converts all consecutive whitespace characters to a single
 // space character using the provided options.
 //
-// This function is affected by the following options:
+// This function is affected by the following [Options]:
 //
-//   - `LineSeparator` is always considered whitespace, and will be collapsed
+//   - LineSeparator is always considered whitespace, and will be collapsed
 //     into a space regardless of the classification of the characters within
 //     it.
 func (ed Editor) CollapseSpaceOpts(opts Options) Editor {
