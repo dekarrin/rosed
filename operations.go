@@ -338,19 +338,11 @@ func (ed Editor) IndentOpts(level int, opts Options) Editor {
 	}
 }
 
-// Insert adds a string to the Text at the given position. The position is
-// zero-indexed and refers to the visible characters in the Text. At whatever
+// Insert adds a string to the text at the given position. The position is
+// zero-indexed and refers to the visible characters in the text. At whatever
 // position is given, the existing text is moved forward to make room for the
 // new text.
-//
-// For example, to insert the text "burb" in the middle:
-//
-//	ed := Edit("S world!")
-//
-//	ed.Insert(1, "burb")
-//
-//	ed.String()  // gives "Sburb world!"
-//
+// 
 // This function is grapheme-aware and indexes text by human-readable
 // characters, not by the bytes or runes that make it up. See the note on
 // Grapheme-Awareness in the [rosed] package docs for more info.
@@ -363,13 +355,11 @@ func (ed Editor) Insert(charPos int, text string) Editor {
 }
 
 // InsertDefinitionsTable creates a table of term definitions and inserts it
-// into the Text of the Editor. Definition tables are a two-column table that
-// put the terms being defined on the left and their definitions on the right.
+// into the text of the Editor. A definitions table is a two-column table that
+// puts the terms being defined on the left and their definitions on the right.
 // The terms are indented by two space characters.
 //
-// They look like this:
-//
-//	// A definitions table:
+//	A sample definitions table:
 //
 //	  John  - Has a passion for REALLY TERRIBLE MOVIES. Likes to program
 //	          computers but is NOT VERY GOOD AT IT.
@@ -385,44 +375,26 @@ func (ed Editor) Insert(charPos int, text string) Editor {
 //	          even with an assortment of COLORFUL REMINDERS on her fingers to
 //	          help sort out everything on her mind.
 //
-// The character position to insert the table at is given by `pos`. The
-// definitions themselves are given as a slice of 2-tuples of strings, where the
-// first item in the tuple is the term and the second item is the definition. If
-// no definitions are given, or an empty slice is passed in, there will be no
-// output. Finally, the complete maximum width of the table to output including
-// the leading indent is given in `width`. Note that not every line will be this
+// The character position to insert the table at is given by the pos argument.
+// The definitions themselves are given as a slice of 2-tuples of strings, where
+// the first item in each tuple is the term and the second item is the
+// definition. If no definitions are given, or an empty slice is passed in,
+// there will be no output.
+//
+// The complete maximum width of the table to output including the leading
+// indent is given by the width argument. Note that not every line will be this
 // long; wrapping will often cause them to be shorter.
-//
-// Example to get the above table:
-//
-//	ed := Edit("")
-//
-//	johnDef := "Has a passion for REALLY TERRIBLE MOVIES ..."
-//	roseDef := "Has a passion for RATHER OBSCURE LITERATURE ..."
-//	daveDef := "Has a penchant for spinning out UNBELIEVABLY ILL JAMS ..."
-//	jadeDef := "Has so many INTERESTS ..."
-//
-//	defs := [][2]string{
-//	  {"John", johnDef},
-//	  {"Rose", roseDef},
-//	  {"Dave", daveDef),
-//	  {"Jade", jadeDef),
-//	}
-//
-//	ed.InsertDefinitionsTable(0, defs, 76)
 //
 // This function is grapheme-aware and indexes text by human-readable
 // characters, not by the bytes or runes that make it up. See the note on
 // Grapheme-Awareness in the [rosed] package docs for more info.
 //
-// This function is affected by the following options:
+// This function is affected by the following [Options]:
 //
-//   - `LineSeparator` is used to separate each line of the table output.
-//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
-//     only have effect if PreserveParagraphs is set to true.
-//   - `PreserveParagraphs` is used to separate each term/definition pair from
-//     the other definitions.
-//   - `NoTrailingLineSeparators` sets whether to include a trailing
+//   - LineSeparator is used to separate each line of the table output.
+//   - ParagraphSeparator is used to separate each term/definition pair from the
+//     other definitions.
+//   - NoTrailingLineSeparators sets whether to include a trailing
 //     LineSeparator at the end of the table. If set to true, it will be omited,
 //     otherwise the table will end with a LineSeparator.
 func (ed Editor) InsertDefinitionsTable(pos int, definitions [][2]string, width int) Editor {
@@ -430,67 +402,32 @@ func (ed Editor) InsertDefinitionsTable(pos int, definitions [][2]string, width 
 }
 
 // InsertDefinitionsTableOpts creates a table of term definitions using the
-// provided options and inserts it into the Text of the Editor. Definition
-// tables are a two-column table that put the terms being defined on the left
-// and their definitions on the right. The terms are indented by two space
-// characters.
+// provided options and inserts it into the text of the Editor. A definitions
+// table is a two-column table that puts the terms being defined on the left and
+// their definitions on the right. The terms are indented by two space
+// characters. For a sample definitions table, see
+// [Editor.InsertDefinitionsTable].
 //
-// They look like this:
+// The character position to insert the table at is given by the pos argument.
+// The definitions themselves are given as a slice of 2-tuples of strings, where
+// the first item in each tuple is the term and the second item is the
+// definition. If no definitions are given, or an empty slice is passed in,
+// there will be no output.
 //
-//	// A definitions table:
-//
-//	  John  - Has a passion for REALLY TERRIBLE MOVIES. Likes to program
-//	          computers but is NOT VERY GOOD AT IT.
-//
-//	  Rose  - Has a passion for RATHER OBSCURE LITERATURE. Enjoys creative
-//	          writing and is SOMEWHAT SECRETIVE ABOUT IT.
-//
-//	  Dave  - Has a penchant for spinning out UNBELIEVABLY ILL JAMS with his
-//	          TURNTABLES AND MIXING GEAR. Likes to rave about BANDS NO ONE'S
-//	          EVER HEARD OF BUT HIM.
-//
-//	  Jade  - Has so many INTERESTS, she has trouble keeping track of them all,
-//	          even with an assortment of COLORFUL REMINDERS on her fingers to
-//	          help sort out everything on her mind.
-//
-// The character position to insert the table at is given by `pos`. The
-// definitions themselves are given as a slice of 2-tuples of strings, where the
-// first item in the tuple is the term and the second item is the definition. If
-// no definitions are given, or an empty slice is passed in, there will be no
-// output. Finally, the complete maximum width of the table to output including
-// the leading indent is given in `width`. Note that not every line will be this
+// The complete maximum width of the table to output including the leading
+// indent is given by the width argument. Note that not every line will be this
 // long; wrapping will often cause them to be shorter.
-//
-// Example to get the above table:
-//
-//	ed := Edit("")
-//
-//	johnDef := "Has a passion for REALLY TERRIBLE MOVIES ..."
-//	roseDef := "Has a passion for RATHER OBSCURE LITERATURE ..."
-//	daveDef := "Has a penchant for spinning out UNBELIEVABLY ILL JAMS ..."
-//	jadeDef := "Has so many INTERESTS ..."
-//
-//	defs := [][2]string{
-//	  {"John", johnDef},
-//	  {"Rose", roseDef},
-//	  {"Dave", daveDef),
-//	  {"Jade", jadeDef),
-//	}
-//
-//	ed.InsertDefinitionsTableOpts(0, defs, 76, Options{})
 //
 // This function is grapheme-aware and indexes text by human-readable
 // characters, not by the bytes or runes that make it up. See the note on
 // Grapheme-Awareness in the [rosed] package docs for more info.
 //
-// This function is affected by the following options:
+// This function is affected by the following [Options]:
 //
-//   - `LineSeparator` is used to separate each line of the table output.
-//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
-//     only have effect if PreserveParagraphs is set to true.
-//   - `PreserveParagraphs` is used to separate each term/definition pair from
-//     the other definitions.
-//   - `NoTrailingLineSeparators` sets whether to include a trailing
+//   - LineSeparator is used to separate each line of the table output.
+//   - ParagraphSeparator is used to separate each term/definition pair from the
+//     other definitions.
+//   - NoTrailingLineSeparators sets whether to include a trailing
 //     LineSeparator at the end of the table. If set to true, it will be omited,
 //     otherwise the table will end with a LineSeparator.
 func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, width int, opts Options) Editor {

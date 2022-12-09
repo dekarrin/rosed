@@ -354,3 +354,97 @@ func ExampleEditor_IndentOpts_preserveParagraphs() {
 	// 	* Dirk
 	// 	* Roxy
 }
+
+// This example inserts the text "burb" in the middle of the editor text.
+func ExampleEditor_Insert() {
+	ed := Edit("S world!")
+	
+	ed = ed.Insert(1, "burb")
+
+	fmt.Println(ed.String())
+	// Output: Sburb world!
+}
+
+// This example produces the table seen above.
+func ExampleEditor_InsertDefinitionsTable() {
+	ed := Edit("")
+
+	var johnDef, roseDef, daveDef, jadeDef string
+
+	johnDef += "Has a passion for REALLY TERRIBLE MOVIES. Likes "
+	johnDef += "to program computers but is NOT VERY GOOD AT IT."
+	
+	roseDef += "Has a passion for RATHER OBSCURE LITERATURE. "
+	roseDef += "Enjoys creative writing and is SOMEWHAT "
+	roseDef += "SECRETIVE ABOUT IT."
+	
+	daveDef += "Has a penchant for spinning out UNBELIEVABLY ILL "
+	daveDef += "JAMS with his TURNTABLES AND MIXING GEAR. Likes "
+	daveDef += "to rave about BANDS NO ONE'S EVER HEARD OF BUT HIM."
+	
+	jadeDef += "Has so many INTERESTS, she has trouble keeping "
+	jadeDef += "track of them all, even with an assortment of "
+	jadeDef += "COLORFUL REMINDERS on her fingers to help sort out "
+	jadeDef += "everything on her mind."
+
+	defs := [][2]string{
+		{"John", johnDef},
+		{"Rose", roseDef},
+		{"Dave", daveDef},
+		{"Jade", jadeDef},
+	}
+
+	ed = ed.InsertDefinitionsTable(0, defs, 76)
+	
+	fmt.Println("TABLE:")
+	fmt.Println(ed.String())
+	// Output:
+	// TABLE:
+	//   John  - Has a passion for REALLY TERRIBLE MOVIES. Likes to program
+	//           computers but is NOT VERY GOOD AT IT.
+	// 
+	//   Rose  - Has a passion for RATHER OBSCURE LITERATURE. Enjoys creative
+	//           writing and is SOMEWHAT SECRETIVE ABOUT IT.
+	//
+	//   Dave  - Has a penchant for spinning out UNBELIEVABLY ILL JAMS with his
+	//           TURNTABLES AND MIXING GEAR. Likes to rave about BANDS NO ONE'S
+	//           EVER HEARD OF BUT HIM.
+	//
+	//   Jade  - Has so many INTERESTS, she has trouble keeping track of them all,
+	//           even with an assortment of COLORFUL REMINDERS on her fingers to
+	//           help sort out everything on her mind.
+}
+
+// This example uses options to set a custom paragraph separator so that terms
+// are separated by dashes instead of blank lines.
+func ExampleEditor_InsertDefinitionsTableOpts() {
+	ed := Edit("")
+	
+	defs := [][2]string{
+		{"Apple", "A delicious fruit that can be eaten by pretty much anybody who likes fruit."},
+		{"Bottle", "Holds liquids."},
+		{"Crow's Egg", "The egg of a crow, who may or may not go CAW-CAW."},
+		{"Dog Pinata", "If you hit it, candy will come out."},
+	}
+	
+	opts := Options{
+		ParagraphSeparator: "\n------------------------------------------------------------\n",
+	}
+
+	ed = ed.InsertDefinitionsTableOpts(0, defs, 60, opts)
+	
+	fmt.Println("TABLE:")
+	fmt.Println(ed.String())
+	// Output:
+	// TABLE:
+	//   Apple       - A delicious fruit that can be eaten by
+	//                 pretty much anybody who likes fruit.
+	// ------------------------------------------------------------
+	//   Bottle      - Holds liquids.
+	// ------------------------------------------------------------
+	//   Crow's Egg  - The egg of a crow, who may or may not go
+	//                 CAW-CAW.
+	// ------------------------------------------------------------
+	//   Dog Pinata  - If you hit it, candy will come out.
+	//
+}
