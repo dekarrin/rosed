@@ -449,6 +449,7 @@ func ExampleEditor_InsertDefinitionsTableOpts() {
 	//
 }
 
+// This example creates two columns from two runs of text.
 func ExampleEditor_InsertTwoColumns() {
 	leftText := "Karkalicious, definition: makes Terezi loco. "
 	leftText += "She wants to know the secrets that she can't "
@@ -462,7 +463,7 @@ func ExampleEditor_InsertTwoColumns() {
 	// insert it at the start of the editor
 	pos := 0
 	
-	// minimum 4 spaces between each column at their closest point
+	// minimum 3 spaces between each column at their closest point
 	minSpace := 3
 	
 	// wrap the entire layout to 50 chars
@@ -484,3 +485,44 @@ func ExampleEditor_InsertTwoColumns() {
 	// photo.               given life, it is only today
 	//                      he will be given a name!
 }
+
+// This example uses options to tell the Editor to include the HTML tag "<br/>"
+// followed by a literal newline to separate lines in the output columns.
+func ExampleEditor_InsertTwoColumnsOpts() {
+	left := "A sample short text run that wraps once."
+	right := "This run of text should also take up 2 lines."
+	
+	pos := 0
+	minSpace := 3
+	width := 50
+	leftPercent := 0.5
+	
+	opts := Options{
+		LineSeparator: "<br/>\n",
+	}
+	
+	ed := Edit("").InsertTwoColumnsOpts(pos, left, right, minSpace, width, leftPercent, opts)
+	
+	fmt.Println(ed.String())
+	// Output:
+	// A sample short text run   This run of text should<br/>
+	// that wraps once.          also take up 2 lines.<br/>
+}
+
+// This example shows that only Editors created from a sub-editor producing
+// function will return true for IsSubEditor.
+func ExampleEditor_IsSubEditor() {
+	notASubEd := Edit("Hello, world!")
+	subEd := Edit("Sub, Sburb?").CharsFrom(5)
+	
+	fmt.Printf("%t\n", notASubEd.IsSubEditor())
+	fmt.Printf("%t\n", subEd.IsSubEditor())
+	// Output:
+	// false
+	// true
+}
+
+// This example shows 
+//func ExampleEditor_Justify() {
+
+//}

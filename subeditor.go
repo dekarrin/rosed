@@ -167,13 +167,16 @@ func (ed Editor) CommitAll() Editor {
 }
 
 // IsSubEditor returns whether the Editor was created to edit a sub-set of the
-// text in some parent editor. Calls to Lines(), LinesFrom(), LinesTo(),
-// Chars(), CharsFrom(), and CharsTo() will result in such an Editor.
+// text in some parent editor. Calls to [Editor.Lines], [Editor.LinesFrom],
+// [Editor.LinesTo], [Editor.Chars], [Editor.CharsFrom], and [Editor.CharsTo]
+// will result in such an Editor.
 //
-// If IsSubEditor returns true, then the Editor's Text could possibly be an
-// incomplete subset of the original text. To get the full text from a
-// sub-editor, use CommitAll to get the root parent editor with all pending
-// changes from sub-editors, including this one, applied.
+// If IsSubEditor returns true, then Editor.Text may be set to an incomplete
+// subset of the original text. To get the full text from a sub-editor, use
+// [Editor.CommitAll] to get the root parent editor with all sub-editor changes
+// applied, including the ones in this sub-editor.
+//
+// This is a Sub-Editor function. See the note on [Editor] for more info.
 func (ed Editor) IsSubEditor() bool {
 	return ed.ref != nil
 }
