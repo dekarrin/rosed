@@ -472,16 +472,6 @@ func ExampleEditor_InsertTwoColumns() {
 	leftPercent := 0.4
 	
 	ed := Edit("").InsertTwoColumns(pos, leftText, rightText, minSpace, width, leftPercent)
-	// test
-	// A young man stands in his      Karkalicious,
-	// bedroom. It just so happens    definition: makes
-	// that today, the 13th of        Terezi loco.
-	// April, 2009, is this young     
-	// man's birthday. Though it      
-	// was thirteen years ago he      
-	// was given life, it is only     
-	// today he will be given a       
-	// name!
 	
 	fmt.Println(ed.String())
 	// Output:
