@@ -273,7 +273,7 @@ func (ed Editor) IndentOpts(level int, opts Options) Editor {
 // zero-indexed and refers to the visible characters in the text. At whatever
 // position is given, the existing text is moved forward to make room for the
 // new text.
-// 
+//
 // This function is grapheme-aware and indexes text by human-readable
 // characters, not by the bytes or runes that make it up. See the note on
 // Grapheme-Awareness in the [rosed] package docs for more info.
@@ -567,7 +567,7 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 		return ed.applyGParagraphsOpts(func(idx int, para, pre, suf gem.String) []gem.String {
 			sepStart := _g(strings.Repeat("A", pre.Len()))
 			sepEnd := _g(strings.Repeat("A", suf.Len()))
-			
+
 			bl := newBlock(sepStart.Add(para).Add(sepEnd), _g(opts.LineSeparator))
 			bl.Apply(func(idx int, line string) []string {
 				return []string{justifyLine(_g(line), width).String()}
