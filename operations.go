@@ -551,6 +551,7 @@ func (ed Editor) Justify(width int) Editor {
 // JustifyOpts edits the whitespace in each line of the Editor's text such that
 // all words are spaced approximately equally and the line as a whole spans the
 // given width using the provided options.
+//
 // This is identical to [Editor.Justify] but provides the ability to set Options
 // for the invocation.
 //
