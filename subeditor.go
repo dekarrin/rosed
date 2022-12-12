@@ -111,7 +111,7 @@ func (ed Editor) CharsFrom(start int) Editor {
 
 // CharsTo produces an Editor to operate on a subset of the characters in the
 // Editor's text. The returned Editor operates on text from the first character
-// up to but not including the nth character, where n is `end`.
+// up to but not including the nth character, where n is end.
 //
 // Calling this function is identical to calling [Editor.Chars] with the given
 // end and with start set to the start of the string.

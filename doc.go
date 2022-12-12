@@ -245,7 +245,7 @@
 // [Editor.Apply] and [Editor.ApplyParagraphs]. These allow the user to provide
 // a custom function to operate on text on a per-line or per-paragraph basis.
 //
-//	textBody := `John\nRose\nDave\nJade`
+//	textBody := "John\nRose\nDave\nJade"
 //
 //	namerFunc := func(lineIdx int, line string) []string {
 //	    newStr := fmt.Sprintf("Beta Kid #%d: %s", lineIdx + 1, line)

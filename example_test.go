@@ -567,3 +567,38 @@ func ExampleEditor_JustifyOpts() {
 	// This  is a  second  paragraph  that  is  used  to  show  how
 	// paragraphs    can     be     respected     with     options.
 }
+
+// This example shows querying the number of lines for a variety of text.
+func ExampleEditor_LineCount() {
+	zeroLinesEd := Edit("")
+	fmt.Println(zeroLinesEd.LineCount())
+	
+	oneLineEd := Edit("Line 1")
+	fmt.Println(oneLineEd.LineCount())
+	
+	twoLinesEd := Edit("Line 1\nLine 2")
+	fmt.Println(twoLinesEd.LineCount())
+	
+	// Output:
+	// 0
+	// 1
+	// 2
+}
+
+// This example shows the two different ways currently-set options affect the
+// output of LineCount. In the first case, it shows how NoTrailingLineSeparators
+// affects the number of lines in an empty editor, and the in the second case,
+// it shows the use of a custom LineSeparator to change how lines are counted.
+func ExampleEditor_LineCount_options() {
+	noTrailingOpts := Options{NoTrailingLineSeparators: true}
+	emptyButNoTrailingEd := Edit("").WithOptions(noTrailingOpts)
+	fmt.Println(emptyButNoTrailingEd.LineCount())
+	
+	customLineOpts := Options{LineSeparator: "<br/>"}
+	customLineEndEd := Edit("Line 1<br/>Line 2").WithOptions(customLineOpts)
+	fmt.Println(customLineEndEd.LineCount())
+
+	// Output:
+	// 1
+	// 2
+}

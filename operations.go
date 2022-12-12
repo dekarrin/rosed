@@ -120,11 +120,11 @@ func (ed Editor) ApplyOpts(op LineOperation, opts Options) Editor {
 // When the ParagraphSeparator of the Editor's options is set to a sequence that
 // includes visible characters that take up horizontal space, the
 // ParagraphOperation will receive the prefix and suffix of the paragraph that
-// would be in the joined string due to the separator, with variables
-// `sepPrefix` and `sepSuffix`. This is not intended to allow the operation to
-// add them back in manually, as that is handled by the caller, but for it to
-// perform book-keeping and length checks and act accordingly, such when
-// attempting to output something that is intended to be aligned.
+// would be in the joined string due to the separator, with variables sepPrefix
+// and sepSuffix. This is not intended to allow the operation to add them back
+// in manually, as that is handled by the caller, but for it to perform
+// book-keeping and length checks and act accordingly, such when attempting to
+// output something that is intended to be aligned.
 //
 // Unlike with LineSeparator, a ParagraphSeparator is always considered a
 // separator, not a terminator, so the affixes may vary per paragraph if the
