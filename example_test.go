@@ -538,3 +538,32 @@ func ExampleEditor_Justify() {
 	// This      occurs       on       a      per-line       basis.
 	// Lines  closer to the justified length have less  adjustment.
 }
+
+// This example shows the use of options to make the justification respect a
+// rather contrived paragraph splitter of "\nPARA SPLIT\n"
+func ExampleEditor_JustifyOpts() {
+	input := "Some words that will have spacing justified.\n"
+	input += "This occurs on a per-line basis.\n"
+	input += "Lines closer to the justified length have less adjustment.\n"
+	input += "PARA SPLIT\n"
+	input += "This is a second paragraph that is used to show how\n"
+	input += "paragraphs can be respected with options.\n"
+	
+	opts := Options{
+		PreserveParagraphs: true,
+		ParagraphSeparator: "\nPARA SPLIT\n",
+	}
+
+	ed := Edit(input)
+	
+	ed = ed.JustifyOpts(60, opts)
+	
+	fmt.Println(ed.String())
+	// Output:
+	// Some    words   that    will    have   spacing    justified.
+	// This      occurs       on       a      per-line       basis.
+	// Lines  closer to the justified length have less  adjustment.
+	// PARA SPLIT
+	// This  is a  second  paragraph  that  is  used  to  show  how
+	// paragraphs    can     be     respected     with     options.
+}

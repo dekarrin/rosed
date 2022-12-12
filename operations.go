@@ -566,7 +566,8 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 	if opts.PreserveParagraphs {
 		return ed.applyGParagraphsOpts(func(idx int, para, pre, suf gem.String) []gem.String {
 			sepStart := _g(strings.Repeat("A", pre.Len()))
-			sepEnd := _g(strings.Repeat("A", pre.Len()))
+			sepEnd := _g(strings.Repeat("A", suf.Len()))
+			
 			bl := newBlock(sepStart.Add(para).Add(sepEnd), _g(opts.LineSeparator))
 			bl.Apply(func(idx int, line string) []string {
 				return []string{justifyLine(_g(line), width).String()}
@@ -687,8 +688,8 @@ func (ed Editor) applyGParagraphsOpts(op gParagraphOperation, opts Options) Edit
 	opts = opts.WithDefaults()
 
 	// split the paragraph separator about its line separators so we can see any
-	// extra chars that will be chopped off while in a preserve-mode wrap that
-	// messes with line separators
+	// extra chars that will be chopped off while in a preserve-mode operation
+	// that messes with line separators
 	var paraSepPrevSuffix, paraSepNextPrefix gem.String
 	parts := strings.Split(opts.ParagraphSeparator, opts.LineSeparator)
 
