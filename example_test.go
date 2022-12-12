@@ -522,7 +522,19 @@ func ExampleEditor_IsSubEditor() {
 	// true
 }
 
-// This example shows 
-//func ExampleEditor_Justify() {
+// This example shows justification of input text to a length of 60 chars.
+func ExampleEditor_Justify() {
+	input := "Some words that will have spacing justified.\n"
+	input += "This occurs on a per-line basis.\n"
+	input += "Lines closer to the justified length have less adjustment."
 
-//}
+	ed := Edit(input)
+	
+	ed = ed.Justify(60)
+	
+	fmt.Println(ed.String())
+	// Output:
+	// Some    words   that    will    have   spacing    justified.
+	// This      occurs       on       a      per-line       basis.
+	// Lines  closer to the justified length have less  adjustment.
+}
