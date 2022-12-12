@@ -412,10 +412,10 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 	}
 }
 
-// InsertTwoColumns builds two columns of side-by-side text from two sequences
-// of text. The leftText and the rightText do not need any special preparation
-// to be used as the body of each column, as they will be automatically wrapped
-// to fit.
+// InsertTwoColumns builds a two-column layout of side-by-side text from two
+// sequences of text and inserts it into the text of the Editor. The leftText
+// and the rightText do not need any special preparation to be used as the body
+// of each column, as they will be automatically wrapped to fit.
 //
 // This function has several parameters:
 //   - pos gives the position to insert the columns at within the Editor.
@@ -441,56 +441,28 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 // characters, not by the bytes or runes that make it up. See the note on
 // Grapheme-Awareness in the [rosed] package docs for more info.
 //
-// This function is affected by the following options:
+// This function is affected by the following [Options]:
 //
 //   - LineSeparator is used to separate each line of the output.
-//   - `NoTrailingLineSeparators` sets whether to include a trailing
-//     LineSeparator at the end of the generated columns. If set to true, it
-//     will be omited, otherwise the columns will end with a LineSeparator.
+//   - NoTrailingLineSeparators sets whether to include a trailing LineSeparator
+//     at the end of the generated columns. If set to true, it will be omited,
+//     otherwise the columns will end with a LineSeparator.
 func (ed Editor) InsertTwoColumns(pos int, leftText string, rightText string, minSpaceBetween int, width int, leftColPercent float64) Editor {
 	return ed.InsertTwoColumnsOpts(pos, leftText, rightText, minSpaceBetween, width, leftColPercent, ed.Options)
 }
 
-// InsertTwoColumnsOpts builds two columns of side-by-side text from two
-// sequences of text using the provided options. The leftText and the rightText
-// do not need any special preparation to be used as the body of each column, as
-// they will be automatically wrapped to fit.
+// InsertTwoColumnsOpts builds a two-column layout of side-by-side text from two
+// sequences of text using the options provided and inserts it into the text of
+// the Editor.
 //
-// `pos` gives the position to insert the columns at within the Editor.
-//
-// `leftText` is the text to put into the left column.
-//
-// `rightText` is the text to put into the right column.
-//
-// `minSpaceBetween` is the amount of space between the two columns. It will
-// only be this small if the left side after wrapping reaches its full length.
-//
-// `width` is how much horizontal space the two columns will take up. Note that
-// if the right column after wrapping never reaches its full length, it is
-// possible that no line will be this many characters across.
-//
-// `leftColPercent` is a float from 0.0 to 1.0 that gives how much of the
-// available width (width - minSpaceBetween) the left column should take up. The
-// right column will infer its width from that as well. If leftColPercent is
-// less than 0.0, it will be assumed to be 0.0. If greater than 1.0, it will be
-// assumed to be 1.0.
-//
-// The minimum width that a column can be is always 2 characters wide.
-//
-// If the left column ends up taking more vertical space than the right column,
-// the left column will have spaces added on subsequent lines to meet with where
-// the right column would have started if it had had more lines.
+// This is identical to [Editor.InsertTwoColumnsOpts] but provides the ability
+// to set Options for the invocation.
 //
 // This function is grapheme-aware and indexes text by human-readable
 // characters, not by the bytes or runes that make it up. See the note on
 // Grapheme-Awareness in the [rosed] package docs for more info.
 //
-// This function is affected by the following options:
-//
-//   - `LineSeparator` is used to separate each line of the output.
-//   - `NoTrailingLineSeparators` sets whether to include a trailing
-//     LineSeparator at the end of the generated columns. If set to true, it
-//     will be omited, otherwise the columns will end with a LineSeparator.
+// This function is affected by the same [Options] as [Editor.InsertTwoColumns].
 func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string, minSpaceBetween int, width int, leftColPercent float64, opts Options) Editor {
 	if leftText == "" && rightText == "" {
 		return ed

@@ -448,3 +448,49 @@ func ExampleEditor_InsertDefinitionsTableOpts() {
 	//   Dog Pinata  - If you hit it, candy will come out.
 	//
 }
+
+func ExampleEditor_InsertTwoColumns() {
+	leftText := "Karkalicious, definition: makes Terezi loco. "
+	leftText += "She wants to know the secrets that she can't "
+	leftText += "taste in my photo."
+	
+	rightText := "A young man stands in his bedroom. It just so happens that "
+	rightText += "today, the 13th of April, 2009, is this young man's birthday. "
+	rightText += "Though it was thirteen years ago he was given life, it is "
+	rightText += "only today he will be given a name!"
+	
+	// insert it at the start of the editor
+	pos := 0
+	
+	// minimum 4 spaces between each column at their closest point
+	minSpace := 3
+	
+	// wrap the entire layout to 50 chars
+	width := 50
+	
+	// make the left column take up 40% of the available space
+	leftPercent := 0.4
+	
+	ed := Edit("").InsertTwoColumns(pos, leftText, rightText, minSpace, width, leftPercent)
+	// test
+	// A young man stands in his      Karkalicious,
+	// bedroom. It just so happens    definition: makes
+	// that today, the 13th of        Terezi loco.
+	// April, 2009, is this young     
+	// man's birthday. Though it      
+	// was thirteen years ago he      
+	// was given life, it is only     
+	// today he will be given a       
+	// name!
+	
+	fmt.Println(ed.String())
+	// Output:
+	// Karkalicious,        A young man stands in his
+	// definition: makes    bedroom. It just so happens
+	// Terezi loco. She     that today, the 13th of
+	// wants to know the    April, 2009, is this young
+	// secrets that she     man's birthday. Though it was
+	// can't taste in my    thirteen years ago he was
+	// photo.               given life, it is only today
+	//                      he will be given a name!
+}
