@@ -605,9 +605,9 @@ func ExampleEditor_LineCount_options() {
 // string.
 func ExampleEditor_Lines() {
 	ed := Edit("Act 1\nAct 2\nAct 3\nAct 4\nAct 5")
-	
+
 	ed = ed.Lines(1, 4)
-	
+
 	// Not doing Editor.String for the example because that would call Commit
 	// and get back the starting string.
 	fmt.Println(ed.Text)
@@ -620,9 +620,9 @@ func ExampleEditor_Lines() {
 // This example gets a subeditor on the last two lines of a five-line string.
 func ExampleEditor_LinesFrom() {
 	ed := Edit("Act 1\nAct 2\nAct 3\nAct 4\nAct 5")
-	
+
 	ed = ed.LinesFrom(3)
-	
+
 	// Not doing Editor.String for the example because that would call Commit
 	// and get back the starting string.
 	fmt.Println(ed.Text)
@@ -634,9 +634,9 @@ func ExampleEditor_LinesFrom() {
 // This example gets a subeditor on the first three lines of a five-line string.
 func ExampleEditor_LinesTo() {
 	ed := Edit("Act 1\nAct 2\nAct 3\nAct 4\nAct 5")
-	
+
 	ed = ed.LinesTo(3)
-	
+
 	// Not doing Editor.String for the example because that would call Commit
 	// and get back the starting string.
 	fmt.Println(ed.Text)
@@ -653,9 +653,9 @@ func ExampleEditor_LinesTo() {
 // it would end up not replacing the entire intended section.
 func ExampleEditor_Overtype() {
 	ed := Edit("How are you, Miss Lalonde?")
-	
+
 	ed = ed.Overtype(4, "goes it")
-	
+
 	fmt.Println(ed.String())
 	// Output: How goes it, Miss Lalonde?
 }
@@ -663,9 +663,9 @@ func ExampleEditor_Overtype() {
 // This example uses String on a normal Editor to get its text.
 func ExampleEditor_String() {
 	ed := Edit("Some text")
-	
+
 	text := ed.String()
-	
+
 	fmt.Println(text)
 	// Output: Some text
 }
@@ -676,9 +676,9 @@ func ExampleEditor_String() {
 func ExampleEditor_String_subEditor() {
 	ed := Edit("Act 1\nAct 2\nAct BLAH\nAct 4\nAct 5")
 	subEd := ed.Lines(2, 3)
-	
+
 	subEd = subEd.Delete(4, 8).Insert(4, "3")
-	
+
 	fullText := subEd.String()
 	fmt.Println(fullText)
 	// Output:
@@ -692,9 +692,9 @@ func ExampleEditor_String_subEditor() {
 // This example sets the IndentStr property of the Options on the Editor.
 func ExampleEditor_WithOptions() {
 	ed := Edit("Vriska Serket")
-	
+
 	ed = ed.WithOptions(ed.Options.WithIndentStr("-->"))
-	
+
 	fmt.Println(ed.Options.IndentStr)
 	// Output: -->
 }
@@ -702,9 +702,9 @@ func ExampleEditor_WithOptions() {
 // This example shows wrapping applied to a long string.
 func ExampleEditor_Wrap() {
 	ed := Edit("Your name is VRISKA SERKET. You are a master of EXTREME ROLEPLAYING.")
-	
+
 	ed = ed.Wrap(25)
-	
+
 	fmt.Println(ed.String())
 	// Output:
 	// Your name is VRISKA
@@ -727,17 +727,17 @@ func ExampleEditor_WrapOpts() {
 	text += "You are something of an APOCALYPSE BUFF, which is something you<br/>\n"
 	text += "can be on Alternia. You are fascinated by end of the world<br/>\n"
 	text += "scenarios."
-	
+
 	opts := Options{
-		LineSeparator: "<br/>\n",
+		LineSeparator:      "<br/>\n",
 		ParagraphSeparator: "<br/>\n<br/>\n",
 		PreserveParagraphs: true,
 	}
-	
+
 	ed := Edit(text)
-	
+
 	ed = ed.WrapOpts(50, opts)
-	
+
 	fmt.Println(ed.String())
 	// Output:
 	// Your name is VRISKA SERKET.<br/>
@@ -755,9 +755,9 @@ func ExampleEditor_WrapOpts() {
 
 func ExampleOptions_String() {
 	opts := Options{IndentStr: "-->"}
-	
+
 	str := opts.String()
-	
+
 	fmt.Println(str)
 	// Output:
 	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false}
@@ -767,11 +767,11 @@ func ExampleOptions_String() {
 // properties to their default values while leaving the set values alone.
 func ExampleOptions_WithDefaults() {
 	opts := Options{
-		LineSeparator: "<br/>",
+		LineSeparator:      "<br/>",
 		PreserveParagraphs: true,
 	}
 	fmt.Println(opts)
-	
+
 	optsDefault := opts.WithDefaults()
 	fmt.Println(optsDefault)
 	// Output:
@@ -781,9 +781,9 @@ func ExampleOptions_WithDefaults() {
 
 func ExampleOptions_WithIndentStr() {
 	opts := Options{}
-	
+
 	opts = opts.WithIndentStr("-->")
-	
+
 	fmt.Println(opts.String())
 	// Output:
 	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false}
@@ -791,9 +791,9 @@ func ExampleOptions_WithIndentStr() {
 
 func ExampleOptions_WithLineSeparator() {
 	opts := Options{}
-	
+
 	opts = opts.WithLineSeparator("<br/>")
-	
+
 	fmt.Println(opts.String())
 	// Output:
 	// Options{ParagraphSeparator: "", LineSeparator: "<br/>", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false}
@@ -801,9 +801,9 @@ func ExampleOptions_WithLineSeparator() {
 
 func ExampleOptions_WithNoTrailingLineSeparators() {
 	opts := Options{}
-	
+
 	opts = opts.WithNoTrailingLineSeparators(true)
-	
+
 	fmt.Println(opts.String())
 	// Output:
 	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: true, PreserveParagraphs: false}
@@ -811,9 +811,9 @@ func ExampleOptions_WithNoTrailingLineSeparators() {
 
 func ExampleOptions_WithParagraphSeparator() {
 	opts := Options{}
-	
+
 	opts = opts.WithParagraphSeparator("<P>")
-	
+
 	fmt.Println(opts.String())
 	// Output:
 	// Options{ParagraphSeparator: "<P>", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false}
@@ -821,9 +821,9 @@ func ExampleOptions_WithParagraphSeparator() {
 
 func ExampleOptions_WithPreserveParagraphs() {
 	opts := Options{}
-	
+
 	opts = opts.WithPreserveParagraphs(true)
-	
+
 	fmt.Println(opts.String())
 	// Output:
 	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: true}

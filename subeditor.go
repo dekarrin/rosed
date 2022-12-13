@@ -251,6 +251,7 @@ func (ed Editor) Lines(start, end int) Editor {
 
 	return ed.subEd(byteStart, byteEnd)
 }
+
 // LinesFrom produces an Editor to operate on a subset of the lines in the
 // Editor's text. The returned Editor operates on text from the nth line up to
 // the end of the text, where n is start.

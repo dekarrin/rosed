@@ -560,7 +560,7 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 			} else {
 				para = text.Sub(sepStart.Len(), text.Len())
 			}
-			
+
 			return []gem.String{para}
 		}, opts)
 	}
