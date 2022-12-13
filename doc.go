@@ -83,7 +83,7 @@
 // Note that this library does not handle Unicode-normalized collation; that
 // may be covered at a later time but for now it was deemed too much to
 // implement for version 1.0, given the large amount of data from Unicode that
-// must be added to the program for it to function and possible dependence on
+// must be added to the library for it to function and possible dependence on
 // locale-specific settings.
 //
 // # Basic Usage

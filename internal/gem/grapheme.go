@@ -404,7 +404,7 @@ func shouldBreakAfter(r rune, chars []rune, i int) bool {
 		}
 	}
 
-	// GB12 & GB13 - Do not break wihtin emoji flag sequences
+	// GB12 & GB13 - Do not break within emoji flag sequences
 	if isCbRegionalIndicator(r) {
 		for j := i; j >= 0; j -= 2 {
 			// the one we are on chars[j] is always RI
