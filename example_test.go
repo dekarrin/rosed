@@ -661,3 +661,32 @@ func ExampleEditor_Overtype() {
 	fmt.Println(ed.String())
 	// Output: How goes it, Miss Lalonde?
 }
+
+// This example uses String on a normal Editor to get its text.
+func ExampleEditor_String() {
+	ed := Edit("Some text")
+	
+	text := ed.String()
+	
+	fmt.Println(text)
+	// Output: Some text
+}
+
+// This example uses String on a sub-editor to avoid having to explicitly call
+// [Editor.Commit] or [Editor.CommitAll] after performing an operation on the
+// sub-editor.
+func ExampleEditor_String_subeditor() {
+	ed := Edit("Act 1\nAct 2\nAct BLAH\nAct 4\nAct 5")
+	subEd := ed.Lines(2, 3)
+	
+	subEd = subEd.Delete(4, 8).Insert(4, "3")
+	
+	fullText := subEd.String()
+	fmt.Println(fullText)
+	// Output:
+	// Act 1
+	// Act 2
+	// Act 3
+	// Act 4
+	// Act 5
+}
