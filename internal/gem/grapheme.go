@@ -258,7 +258,6 @@ func (str String) Sub(start, end int) String {
 	copy.r = copy.r[runesStart:runesEnd]
 
 	// ANY further ops require resplitting
-	// TODO: shouldnt we be able to calc it? I mean we know what was removed from the
 	// rune slice
 	copy.gc = nil
 	return copy
@@ -316,8 +315,8 @@ func Strings(from []String) []string {
 // about to occur, even though passing String by value does pass pointers (via
 // slice-type members)
 //
-// TODO: gem.String is generally passed by value now and immutable. Is this still
-// needed?
+// gem.String is generally passed by value now and immutable, but keeping this
+// because it makes it convenient for deep-copying the members of it.
 func (str String) clone() String {
 	gc := str.gc
 	clone := String{
