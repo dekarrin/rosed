@@ -164,6 +164,15 @@ func main() {
 
 ### Sub-Section Selection
 
+## Contributing
+This library uses its [GitHub Issues Page](https://github.com/dekarrin/rosed/issues)
+for coordination of work. If you'd like to assist with an open issue, feel free
+to drop a comment on the issue mentioning it. Fork the repo into your own, make
+the changes, then raise a PR to bring them in.
+
+If there's a bug you'd like to report or new feature you'd like to see in this
+library, feel free to open a new issue on its [GitHub Issues Page](https://github.com/dekarrin/rosed/issues).
+
 ## Example Text Source
 In case you didn't quite comprehend the refrance [sic], most of the samples,
 test cases, and example texts used in this library's documentation have been
