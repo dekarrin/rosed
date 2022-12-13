@@ -2,7 +2,7 @@
 // It assumes that all text is encoded in UTF-8, the default encoding of source
 // code string literals in golang.
 //
-// "rosed" is pronounced as "Rose-Ed" but any pronunciation that can be
+// "rosed" is pronounced as "Rose-Edd" but any pronunciation that can be
 // understood to mean this library is accepted.
 //
 // # Grapheme-Awareness
@@ -24,24 +24,28 @@
 // both iteration over the string and [unicode/utf8.RuneCountInString] would
 // return a higher number of runes than perhaps would be expected.
 //
-//	import (
-//	    "fmt"
-//	    "unicode/utf"
-//	)
+//  package main
+// 
+//  import (
+//  	"fmt"
+//  	"unicode/utf8"
+//  )
+//  
+//  func main() {
+//  	// This word appears to be 7 characters long:
+//  	precomposed := "fiancée"
+//  	decomposed := "fiance\u0301e"
+//  
+//  	// and in fact, if printed, both show the same sequence to a human
+//  	// user:
+//  	fmt.Println(precomposed)  // shows "fiancée"
+//  	fmt.Println(decomposed)   // ALSO shows "fiancée"
+//  
+//  	fmt.Println(utf8.RuneCountInString(precomposed))  // prints 7
+//  	fmt.Println(utf8.RuneCountInString(decomposed))   // prints 8 (?!)
+//  }
 //
-//	func UnicodeTest() {
-//	    // This word appears to be 7 characters long:
-//	    precomposed := "fiancée"
-//	    decomposed := "fiance\u0301e"
-//
-//	    // and in fact, if printed, both show the same sequence to a human
-//	    // user:
-//	    fmt.Println(precomposed)  // shows "fiancée"
-//	    fmt.Println(decomposed)   // ALSO shows "fiancée"
-//
-//	    fmt.Println(utf8.RuneCountInString(precomposed))  // prints 7
-//	    fmt.Println(utf8.RuneCountInString(decomposed))   // prints 8 (?!)
-//	}
+// Try it on the Go Playground: https://go.dev/play/p/UiyXIHhWn_0
 //
 // See [UAX #15: Unicode Normalization Forms] for more info on the forms that a
 // Unicode string can take based on how it represents graphemes.
@@ -51,12 +55,6 @@
 // cluster are and correctly index by grapheme. This means it transparently
 // handles all ways that a single "human-readable" character could be
 // represented.
-//
-//	import (
-//	    "fmt"
-//
-//	    "github.com/dekarrin/rosed"
-//	)
 //
 //	wrapped1 := rosed.Edit("My fiancée and I went to the bistro").Wrap(10).String()
 //	wrapped2 := rosed.Edit("My fiance\u0301e and I went to the bistro").Wrap(10).String()
