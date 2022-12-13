@@ -1071,7 +1071,7 @@ func Test_JustifyOpts(t *testing.T) {
 			name: "multi-paragraph, preserved, custom parasep",
 			input: "a set of three lines" + DefaultLineSeparator +
 				"to justify in a" + DefaultLineSeparator +
-				"pleasing manner" +
+				"good way" +
 				"<P> <P>" +
 				"a second paragraph" + DefaultLineSeparator +
 				"which should also be" + DefaultLineSeparator +
@@ -1083,7 +1083,7 @@ func Test_JustifyOpts(t *testing.T) {
 			},
 			expect: "a  set of three  lines" + DefaultLineSeparator +
 				"to    justify   in   a" + DefaultLineSeparator +
-				"pleasing        manner" +
+				"good        way" + // not taking up full length to acct for strange parasep
 				"<P> <P>" +
 				"a   second   paragraph" + DefaultLineSeparator +
 				"which  should  also be" + DefaultLineSeparator +
