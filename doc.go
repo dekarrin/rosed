@@ -24,26 +24,26 @@
 // both iteration over the string and [unicode/utf8.RuneCountInString] would
 // return a higher number of runes than perhaps would be expected.
 //
-//  package main
-// 
-//  import (
-//  	"fmt"
-//  	"unicode/utf8"
-//  )
-//  
-//  func main() {
-//  	// This word appears to be 7 characters long:
-//  	precomposed := "fiancée"
-//  	decomposed := "fiance\u0301e"
-//  
-//  	// and in fact, if printed, both show the same sequence to a human
-//  	// user:
-//  	fmt.Println(precomposed)  // shows "fiancée"
-//  	fmt.Println(decomposed)   // ALSO shows "fiancée"
-//  
-//  	fmt.Println(utf8.RuneCountInString(precomposed))  // prints 7
-//  	fmt.Println(utf8.RuneCountInString(decomposed))   // prints 8 (?!)
-//  }
+//	package main
+//
+//	import (
+//		"fmt"
+//		"unicode/utf8"
+//	)
+//
+//	func main() {
+//		// This word appears to be 7 characters long:
+//		precomposed := "fiancée"
+//		decomposed := "fiance\u0301e"
+//
+//		// and in fact, if printed, both show the same sequence to a human
+//		// user:
+//		fmt.Println(precomposed)  // shows "fiancée"
+//		fmt.Println(decomposed)   // ALSO shows "fiancée"
+//
+//		fmt.Println(utf8.RuneCountInString(precomposed))  // prints 7
+//		fmt.Println(utf8.RuneCountInString(decomposed))   // prints 8 (?!)
+//	}
 //
 // Try it on the Go Playground: https://go.dev/play/p/UiyXIHhWn_0
 //
