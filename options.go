@@ -17,8 +17,8 @@ const (
 	DefaultParagraphSeparator = "\n\n"
 )
 
-// Options control the behavior of an Editor. The Zero-value is an Options with
-// all members set to defaults.
+// Options control the behavior of an [Editor]. The zero-value is an Options
+// with all members set to defaults.
 //
 // IndentStr, LineSeparator, and ParagraphSeparator have special behavior if not
 // set manually. In a zero-valued Options, each one will be the empty string.
@@ -67,6 +67,7 @@ type Options struct {
 	PreserveParagraphs bool
 }
 
+// String gets the string representation of the Options.
 func (opts Options) String() string {
 	fmtStr := "Options{ParagraphSeparator: %q,"
 	fmtStr += " LineSeparator: %q,"

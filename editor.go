@@ -59,13 +59,19 @@ func Edit(text string) Editor {
 	}
 }
 
-// LineCount returns the number of lines in the Text. Lines are split by the currently
-// set LineSeparator in the Editor's Options property; if one has not yet been set,
-// DefaultLineSeparator is used.
+// LineCount returns the number of lines in the Editor's text. Lines are
+// considered to be split by the currently set LineSeparator in the Editor's
+// Options property; if one has not yet been set, DefaultLineSeparator is used.
 //
-// Note that this will return the number of actual lines. If the Editor has
-// NoTrailingLineSeparators set to true in its options, it will consider the empty string
-// to in fact be a non-terminated line as opposed to 0 lines.
+// By default, an Editor whose text is set to the empty string will cause this
+// function to return 0. This can be altered with the options set on the Editor.
+//
+// This function is affected by the following [Options]:
+//
+//   - LineSeparator is used to determine what splits lines to be counted.
+//   - NoTrailingLineSeparators sets whether a trailing LineSeparator should be
+//     expected in a full line. If set to true, it will consider the empty
+//     string to be a non-terminated line as opposed to 0 lines.
 func (ed Editor) LineCount() int {
 	return len(ed.lines())
 }
@@ -77,13 +83,9 @@ func (ed Editor) LineCount() int {
 // This function has the same effect as manually setting Editor.Options but
 // provides a way to do so in a fluent convention.
 //
-// To get a set of Options that are identical to the current but with a single
-// item changed, get the Editor's current options and call one of its WithX
-// functions.
-//
-// Example:
-//
-// ed = ed.WithOptions(ed.Options.WithIndentStr(" ")))
+// To get a set of Options that are identical to the current ones but with a
+// single item changed, get the Editor's current Options value and call one of
+// the Options.WithX functions.
 func (ed Editor) WithOptions(opts Options) Editor {
 	ed.Options = opts
 	return ed

@@ -84,7 +84,7 @@
 // may be covered at a later time but for now it was deemed too much to
 // implement for version 1.0, given the large amount of data from Unicode that
 // must be added to the program for it to function and possible dependence on
-// local-specific settings.
+// locale-specific settings.
 //
 // # Basic Usage
 //
@@ -245,7 +245,7 @@
 // [Editor.Apply] and [Editor.ApplyParagraphs]. These allow the user to provide
 // a custom function to operate on text on a per-line or per-paragraph basis.
 //
-//	textBody := `John\nRose\nDave\nJade`
+//	textBody := "John\nRose\nDave\nJade"
 //
 //	namerFunc := func(lineIdx int, line string) []string {
 //	    newStr := fmt.Sprintf("Beta Kid #%d: %s", lineIdx + 1, line)
