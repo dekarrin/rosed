@@ -515,8 +515,8 @@ func ExampleEditor_IsSubEditor() {
 	notASubEd := Edit("Hello, world!")
 	subEd := Edit("Sub, Sburb?").CharsFrom(5)
 
-	fmt.Printf("%t\n", notASubEd.IsSubEditor())
-	fmt.Printf("%t\n", subEd.IsSubEditor())
+	fmt.Println(notASubEd.IsSubEditor())
+	fmt.Println(subEd.IsSubEditor())
 	// Output:
 	// false
 	// true
