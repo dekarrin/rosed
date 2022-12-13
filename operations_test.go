@@ -1083,7 +1083,7 @@ func Test_JustifyOpts(t *testing.T) {
 			},
 			expect: "a  set of three  lines" + DefaultLineSeparator +
 				"to    justify   in   a" + DefaultLineSeparator +
-				"good        way" + // not taking up full length to acct for strange parasep
+				"good        way" + // not taking up full length to acct for parasep that takes space
 				"<P> <P>" +
 				"a   second   paragraph" + DefaultLineSeparator +
 				"which  should  also be" + DefaultLineSeparator +
