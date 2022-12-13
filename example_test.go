@@ -578,7 +578,6 @@ func ExampleEditor_LineCount() {
 
 	twoLinesEd := Edit("Line 1\nLine 2")
 	fmt.Println(twoLinesEd.LineCount())
-
 	// Output:
 	// 0
 	// 1
@@ -597,7 +596,6 @@ func ExampleEditor_LineCount_options() {
 	customLineOpts := Options{LineSeparator: "<br/>"}
 	customLineEndEd := Edit("Line 1<br/>Line 2").WithOptions(customLineOpts)
 	fmt.Println(customLineEndEd.LineCount())
-
 	// Output:
 	// 1
 	// 2
@@ -753,4 +751,80 @@ func ExampleEditor_WrapOpts() {
 	// You are something of an APOCALYPSE BUFF, which is<br/>
 	// something you can be on Alternia. You are<br/>
 	// fascinated by end of the world scenarios.
+}
+
+func ExampleOptions_String() {
+	opts := Options{IndentStr: "-->"}
+	
+	str := opts.String()
+	
+	fmt.Println(str)
+	// Output:
+	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false}
+}
+
+// This example shows how WithDefaults can be called to set all currently unset
+// properties to their default values while leaving the set values alone.
+func ExampleOptions_WithDefaults() {
+	opts := Options{
+		LineSeparator: "<br/>",
+		PreserveParagraphs: true,
+	}
+	fmt.Println(opts)
+	
+	optsDefault := opts.WithDefaults()
+	fmt.Println(optsDefault)
+	// Output:
+	// Options{ParagraphSeparator: "", LineSeparator: "<br/>", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: true}
+	// Options{ParagraphSeparator: "\n\n", LineSeparator: "<br/>", IndentStr: "\t", NoTrailingLineSeparators: false, PreserveParagraphs: true}
+}
+
+func ExampleOptions_WithIndentStr() {
+	opts := Options{}
+	
+	opts = opts.WithIndentStr("-->")
+	
+	fmt.Println(opts.String())
+	// Output:
+	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false}
+}
+
+func ExampleOptions_WithLineSeparator() {
+	opts := Options{}
+	
+	opts = opts.WithLineSeparator("<br/>")
+	
+	fmt.Println(opts.String())
+	// Output:
+	// Options{ParagraphSeparator: "", LineSeparator: "<br/>", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false}
+}
+
+func ExampleOptions_WithNoTrailingLineSeparators() {
+	opts := Options{}
+	
+	opts = opts.WithNoTrailingLineSeparators(true)
+	
+	fmt.Println(opts.String())
+	// Output:
+	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: true, PreserveParagraphs: false}
+}
+
+func ExampleOptions_WithParagraphSeparator() {
+	opts := Options{}
+	
+	opts = opts.WithParagraphSeparator("<P>")
+	
+	fmt.Println(opts.String())
+	// Output:
+	// Options{ParagraphSeparator: "<P>", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false}
+}
+
+func ExampleOptions_WithPreserveParagraphs() {
+	opts := Options{}
+	
+	opts = opts.WithPreserveParagraphs(true)
+	
+	fmt.Println(opts.String())
+	// Output:
+	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: true}
 }

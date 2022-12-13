@@ -24,10 +24,10 @@ var (
 // proper position relative to the old line in the slice, and to delete the
 // original line, a slice with len < 1 can be returned.
 //
-// `idx` will always be the index of the line before any transformations were
-// applied; e.g. if used in [Editor.Apply], a call to a LineOperation with
-// idx = 4 will always be after a call with idx = 3, regardless of the size of
-// the returned slice in the prior call.
+// The parameter idx will always be the index of the line before any
+// transformations were applied; e.g. if used in [Editor.Apply], a call to a
+// LineOperation with idx = 4 will always be after a call with idx = 3,
+// regardless of the size of the returned slice in the prior call.
 type LineOperation func(idx int, line string) []string
 
 // ParagraphOperation is a function that accepts a zero-indexed paragraph number
@@ -41,10 +41,10 @@ type LineOperation func(idx int, line string) []string
 // slice; to delete the original paragraph, a slice with len < 1 can be
 // returned.
 //
-// `idx` will always be the index of the paragraph before any transformations
-// were applied; e.g. if used in [Editor.ApplyParagraphs], a call to a
-// ParagraphOperation with idx = 4 will always be after a call with idx = 3,
-// regardless of the size of the returned slice in the prior call.
+// The parameter idx will always be the index of the paragraph before any
+// transformations were applied; e.g. if used in [Editor.ApplyParagraphs], a
+// call to a ParagraphOperation with idx = 4 will always be after a call with
+// idx = 3, regardless of the size of the returned slice in the prior call.
 //
 // The paragraphs may have additional contents at the beginning and end as part
 // of the currently defined ParagraphSeparator. In this case, such content that
@@ -614,7 +614,7 @@ func (ed Editor) Wrap(width int) Editor {
 	return ed.WrapOpts(width, ed.Options)
 }
 
-// WrapOpts wraps the Editor Text to the given width using the supplied options.
+// WrapOpts wraps the Editor text to the given width using the supplied options.
 //
 // This is identical to [Editor.Wrap] but provides the ability to set Options
 // for the invocation.
