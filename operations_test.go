@@ -10,13 +10,13 @@ import (
 
 func Test_Wrap(t *testing.T) {
 	testCases := []struct {
-		name     string
-		input    string
-		width    int
+		name   string
+		input  string
+		width  int
 		expect []string
 	}{
 		{
-			name: "empty string",
+			name:  "empty string",
 			input: "",
 			width: 20,
 			expect: []string{
@@ -24,7 +24,7 @@ func Test_Wrap(t *testing.T) {
 			},
 		},
 		{
-			name: "1 line",
+			name:  "1 line",
 			input: "Things will never stop from keep happening constantly.",
 			width: 20,
 			expect: []string{
@@ -35,9 +35,9 @@ func Test_Wrap(t *testing.T) {
 			},
 		},
 		{
-			name:    "2 paragraphs are joined into one",
-			input:   "this is a line that is split by paragraph in the input.\n\nThis is the second paragraph",
-			width:   20,
+			name:  "2 paragraphs are joined into one",
+			input: "this is a line that is split by paragraph in the input.\n\nThis is the second paragraph",
+			width: 20,
 			expect: []string{
 				"this is a line that",
 				"is split by",
@@ -64,11 +64,11 @@ func Test_Wrap(t *testing.T) {
 
 func Test_WrapOpts(t *testing.T) {
 	testCases := []struct {
-		name     string
-		input    string
-		width    int
-		options  Options
-		expect []string
+		name    string
+		input   string
+		width   int
+		options Options
+		expect  []string
 	}{
 		{
 			name:    "2 paragraphs, not preserved",
@@ -136,7 +136,7 @@ func Test_WrapOpts(t *testing.T) {
 
 			actualDirectText := Edit(tc.input).WrapOpts(tc.width, tc.options).String()
 			actualPreOptsText := Edit(tc.input).WithOptions(tc.options).Wrap(tc.width).String()
-			
+
 			actualDirect := strings.Split(actualDirectText, tc.options.WithDefaults().LineSeparator)
 			actualPreOpts := strings.Split(actualPreOptsText, tc.options.WithDefaults().LineSeparator)
 
