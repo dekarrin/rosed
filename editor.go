@@ -83,13 +83,9 @@ func (ed Editor) LineCount() int {
 // This function has the same effect as manually setting Editor.Options but
 // provides a way to do so in a fluent convention.
 //
-// To get a set of Options that are identical to the current but with a single
-// item changed, get the Editor's current options and call one of its WithX
-// functions.
-//
-// Example:
-//
-// ed = ed.WithOptions(ed.Options.WithIndentStr(" ")))
+// To get a set of Options that are identical to the current ones but with a
+// single item changed, get the Editor's current Options value and call one of
+// the Options.WithX functions.
 func (ed Editor) WithOptions(opts Options) Editor {
 	ed.Options = opts
 	return ed

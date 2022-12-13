@@ -675,7 +675,7 @@ func ExampleEditor_String() {
 // This example uses String on a sub-editor to avoid having to explicitly call
 // [Editor.Commit] or [Editor.CommitAll] after performing an operation on the
 // sub-editor.
-func ExampleEditor_String_subeditor() {
+func ExampleEditor_String_subEditor() {
 	ed := Edit("Act 1\nAct 2\nAct BLAH\nAct 4\nAct 5")
 	subEd := ed.Lines(2, 3)
 	
@@ -689,4 +689,13 @@ func ExampleEditor_String_subeditor() {
 	// Act 3
 	// Act 4
 	// Act 5
+}
+
+func ExampleEditor_WithOptions() {
+	ed := Edit("Vriska Serket")
+	
+	ed = ed.WithOptions(ed.Options.WithIndentStr("-->"))
+	
+	fmt.Println(ed.Options.IndentStr)
+	// Output: -->
 }
