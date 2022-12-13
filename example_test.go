@@ -602,3 +602,33 @@ func ExampleEditor_LineCount_options() {
 	// 1
 	// 2
 }
+
+// This example gets a subeditor on the middle three lines of a five-line
+// string.
+func ExampleEditor_Lines() {
+	ed := Edit("Act 1\nAct 2\nAct 3\nAct 4\nAct 5")
+	
+	ed = ed.Lines(1, 4)
+	
+	// Not doing Editor.String for the example because that would call Commit
+	// and get back the starting string.
+	fmt.Println(ed.Text)
+	// Output:
+	// Act 2
+	// Act 3
+	// Act 4
+}
+
+// This example gets a subeditor on the last two lines of a five-line string.
+func ExampleEditor_LinesFrom() {
+	ed := Edit("Act 1\nAct 2\nAct 3\nAct 4\nAct 5")
+	ed = ed.LinesFrom(3)
+	
+	// Not doing Editor.String for the example because that would call Commit
+	// and get back the starting string.
+	fmt.Printf("%v\n", ed.Text)
+	
+	// Output:
+	// Act 4
+	// Act 5
+}

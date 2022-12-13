@@ -164,9 +164,8 @@ func (ed Editor) ApplyParagraphsOpts(op ParagraphOperation, opts Options) Editor
 //
 // This function is affected by the following [Options]:
 //
-//   - LineSeparator is always considered whitespace, and will be collapsed
-//     into a space regardless of the classification of the characters within
-//     it.
+//   - LineSeparator is always considered whitespace, and will be collapsed into
+//     a space regardless of the classification of the characters within it.
 func (ed Editor) CollapseSpace() Editor {
 	return ed.CollapseSpaceOpts(ed.Options)
 }
@@ -337,13 +336,6 @@ func (ed Editor) InsertDefinitionsTable(pos int, definitions [][2]string, width 
 //
 // This is identical to [Editor.InsertDefinitionsTable] but provides the ability
 // to set Options for the invocation.
-//
-// This function is grapheme-aware and indexes text by human-readable
-// characters, not by the bytes or runes that make it up. See the note on
-// Grapheme-Awareness in the [rosed] package docs for more info.
-//
-// This function is affected by the same [Options] as
-// [Editor.InsertDefinitionsTable].
 func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, width int, opts Options) Editor {
 	opts = opts.WithDefaults()
 
@@ -457,12 +449,6 @@ func (ed Editor) InsertTwoColumns(pos int, leftText string, rightText string, mi
 //
 // This is identical to [Editor.InsertTwoColumns] but provides the ability to
 // set Options for the invocation.
-//
-// This function is grapheme-aware and indexes text by human-readable
-// characters, not by the bytes or runes that make it up. See the note on
-// Grapheme-Awareness in the [rosed] package docs for more info.
-//
-// This function is affected by the same [Options] as [Editor.InsertTwoColumns].
 func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string, minSpaceBetween int, width int, leftColPercent float64, opts Options) Editor {
 	if leftText == "" && rightText == "" {
 		return ed
@@ -554,12 +540,6 @@ func (ed Editor) Justify(width int) Editor {
 //
 // This is identical to [Editor.Justify] but provides the ability to set Options
 // for the invocation.
-//
-// This function is grapheme-aware and indexes text by human-readable
-// characters, not by the bytes or runes that make it up. See the note on
-// Grapheme-Awareness in the [rosed] package docs for more info.
-//
-// This function is affected by the same [Options] as [Editor.Justify].
 func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 	opts = opts.WithDefaults()
 
@@ -580,6 +560,7 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 			} else {
 				para = text.Sub(sepStart.Len(), text.Len())
 			}
+			
 			return []gem.String{para}
 		}, opts)
 	}

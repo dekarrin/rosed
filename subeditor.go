@@ -36,7 +36,7 @@ type parentRef struct {
 //
 // If the one of the parameters specifies an index that is past the end of the
 // string, that index is assumed to be the end of the string. If either specify
-// an index that is before the start of a string, it is assumed to be 0.
+// an index that is before the start of the string, it is assumed to be 0.
 //
 // If end is less than start, it is assumed to be equal to start.
 //
@@ -99,12 +99,6 @@ func (ed Editor) Chars(start, end int) Editor {
 //
 // Calling this function is identical to calling [Editor.Chars] with the given
 // start and with end set to the end of the string.
-//
-// This function is grapheme-aware and indexes text by human-readable
-// characters, not by the bytes or runes that make it up. See the note on
-// Grapheme-Awareness in the [rosed] package docs for more info.
-//
-// This is a Sub-Editor function. See the note on [Editor] for more info.
 func (ed Editor) CharsFrom(start int) Editor {
 	return ed.Chars(start, len(ed.Text))
 }
@@ -115,12 +109,6 @@ func (ed Editor) CharsFrom(start int) Editor {
 //
 // Calling this function is identical to calling [Editor.Chars] with the given
 // end and with start set to the start of the string.
-//
-// This function is grapheme-aware and indexes text by human-readable
-// characters, not by the bytes or runes that make it up. See the note on
-// Grapheme-Awareness in the [rosed] package docs for more info.
-//
-// This is a Sub-Editor function. See the note on [Editor] for more info.
 func (ed Editor) CharsTo(end int) Editor {
 	return ed.Chars(0, end)
 }
@@ -181,39 +169,33 @@ func (ed Editor) IsSubEditor() bool {
 	return ed.ref != nil
 }
 
-// Lines produces an Editor to operate on a subset of the lines in the Text. The
-// lines are 0-indexed and the `start` and `end` are the same as in slice
-// notation. The returned Editor operates on lines from the nth line up to (but
-// not including) the ith line, where n is `start` and i is `end`.
+// Lines produces an Editor to operate on a subset of the lines in the Editor's
+// text. The returned Editor operates on text from the nth line up to (but not
+// including) the ith line, where n is start and i is end.
 //
-// For instance, to get the middle two lines of a four-line string:
+// The start or end parameter may be negative, in which case it will be relative
+// to the end of the text; -1 would be the index of the last line, -2 would be
+// the index of the second-to-last line, etc.
 //
-//	ed := Edit("Line #1\nLine #2\nLine #3\nLine #4")
-//	ed = ed.Lines(1, 3)
+// If the one of the parameters specifies an index that is past the end of the
+// string, that index is assumed to be the end of the string. If either specify
+// an index that is before the start of the string, it is assumed to be 0.
 //
-//	fmt.Printf("%v\n", ed.Text)  // will be "Line #2\nLine #3\n".
+// If end is less than start, it is assumed to be equal to start.
 //
-// The `start` or `end` may be negative, in which case it will be relative to
-// the end of the text; -1 would be the index of the last line, -2 would be the
-// index of the second-to-last line, etc.
-//
-// If `start` or `end` specifies an index that is past the end of the text, that
-// index is assumed to be the end of the text (i.e. 1 greater than the index of
-// the final line). If either specify an index that is before the start of a
-// string, it is assumed to be 0.
-//
-// If `end` is less than `start`, it is assumed to be equal to `start`.
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
 //
 // This is a Sub-Editor function. See the note on [Editor] for more info.
 //
-// This function is affected by the following options of the Editor it is called
-// on:
+// This function is affected by the following [Options]:
 //
-//   - `LineSeparator` specifies what string should be used to delimit lines.
-//   - `NoTrailingLineSeparators` specifies whether it should consider a final
-//     instance of `LineSeparator` to be ending the prior line, or giving the
-//     start of a new line. If NoTrailingLineSeparators is true, a trailing
-//     LineSeparator is considered to start a new (empty) line.
+//   - LineSeparator specifies what string should be used to delimit lines.
+//   - NoTrailingLineSeparators specifies whether the function should consider a
+//     trailing instance of LineSeparator to end the prior line, or to start a
+//     new line. If NoTrailingLineSeparators is true, a trailing LineSeparator
+//     is considered to start a new (empty) line.
 func (ed Editor) Lines(start, end int) Editor {
 	if ed.Text == "" {
 		return ed.subEd(0, 0)
@@ -269,37 +251,12 @@ func (ed Editor) Lines(start, end int) Editor {
 
 	return ed.subEd(byteStart, byteEnd)
 }
-
-// LinesFrom produces an Editor to operate on a subset of the lines in the Text.
-// The returned Editor operates on lines from the nth line up to the end of the
-// text, where n is `start`.
+// LinesFrom produces an Editor to operate on a subset of the lines in the
+// Editor's text. The returned Editor operates on text from the nth line up to
+// the end of the string, where n is start.
 //
-// For instance, to get the last two lines of a four-line string:
-//
-//	ed := Edit("Line #1\nLine #2\nLine #3\nLine #4")
-//	ed = ed.LinesFrom(2)
-//
-//	fmt.Printf("%v\n", ed.Text)  // will be "Line #3\nLine #4".
-//
-// The `start` may be negative, in which case it will be relative to the end of
-// the text; -1 would be the index of the last line, -2 would be the index of
-// the second-to-last line, etc.
-//
-// If `start` specifies an index that is past the end of the text, that index is
-// assumed to be the end of the text (i.e. 1 greater than the index of the final
-// line). If it specifies an index that is before the start of a string, it is
-// assumed to be 0.
-//
-// This is a Sub-Editor function. See the note on [Editor] for more info.
-//
-// This function is affected by the following options of the Editor it is called
-// on:
-//
-//   - `LineSeparator` specifies what string should be used to delimit lines.
-//   - `NoTrailingLineSeparators` specifies whether it should consider a final
-//     instance of `LineSeparator` to be ending the prior line, or giving the
-//     start of a new line. If NoTrailingLineSeparators is true, a trailing
-//     LineSeparator is considered to start a new (empty) line.
+// Calling this function is identical to calling [Editor.Lines] with the given
+// start and with end set to the end of the string.
 func (ed Editor) LinesFrom(start int) Editor {
 	return ed.Lines(start, ed.LineCount())
 }
