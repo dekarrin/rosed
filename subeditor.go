@@ -65,9 +65,6 @@ func (ed Editor) Chars(start, end int) Editor {
 		runeEnd = indexes[end][0]
 	} else {
 		runeEnd = len(ed.Text)
-		// TODO: in this case the below search will go until end of string
-		// could make this a bit betta by marking this case and skipping the
-		// search for runeEnd
 	}
 
 	// now that we have rune indexes we do string analysis to find the byte

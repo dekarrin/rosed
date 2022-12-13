@@ -56,9 +56,8 @@ func (tb *block) AppendEmpty(count int) {
 // once with an empty string as its argument, allowing a caller to use the
 // LineOperation to produce initial text.
 //
-// All lines received by `transform` should be assumed to not have line
-// terminators, and none should be added by the `transform` function.
-// TODO: put above note on LineOperation
+// All lines received by transform should be assumed to not have line
+// terminators, and none should be added by it.
 func (tb *block) Apply(transform LineOperation) {
 	var applied []gem.String
 
@@ -76,7 +75,7 @@ func (tb block) CharCount(linePos int) int {
 }
 
 // Equal checks whether this Block is equal to another object. Returns whether
-// `other` is also a block with the same contents as tb.
+// other is also a block with the same contents as tb.
 func (tb block) Equal(other interface{}) bool {
 	b2, ok := other.(block)
 	if !ok {
@@ -141,7 +140,7 @@ func (tb block) Less(i, j int) bool {
 	return tb.Line(i).Less(tb.Line(j))
 }
 
-// Line returns the line at the given position. `pos` is not checked for validity before
+// Line returns the line at the given position. pos is not checked for validity before
 // accessing; callers must do so.
 func (tb block) Line(pos int) gem.String {
 	return tb.Lines[pos]
@@ -175,8 +174,8 @@ func (tb block) Swap(i, j int) {
 
 // newBlock creates a block of text.
 //
-// `text` is split into lines using the provided lineSep. If any
-// trailing line separator is present, it will be removed prior to split.
+// The text is split into lines using the provided lineSep. If any trailing line
+// separator is present, it will be removed prior to split.
 //
 // The returned Block will contain the lines that were obtained from text. If
 // text was empty, it will have no lines. If text consisted only of lineSep,
