@@ -622,6 +622,7 @@ func ExampleEditor_Lines() {
 // This example gets a subeditor on the last two lines of a five-line string.
 func ExampleEditor_LinesFrom() {
 	ed := Edit("Act 1\nAct 2\nAct 3\nAct 4\nAct 5")
+	
 	ed = ed.LinesFrom(3)
 	
 	// Not doing Editor.String for the example because that would call Commit
@@ -635,12 +636,28 @@ func ExampleEditor_LinesFrom() {
 // This example gets a subeditor on the first three lines of a five-line string.
 func ExampleEditor_LinesTo() {
 	ed := Edit("Act 1\nAct 2\nAct 3\nAct 4\nAct 5")
+	
 	ed = ed.LinesTo(3)
 	
+	// Not doing Editor.String for the example because that would call Commit
+	// and get back the starting string.
 	fmt.Println(ed.Text)
 	// Output:
 	// Act 1
 	// Act 2
 	// Act 3
 }
+
+// This example uses Overtype to replace a part of a greeting message. This
+// works so nicely in the example because the replacement is the exact same
+// length as the replaced text. If it were of a longer length, it would end up
+// overwriting the text that comes after the replaced text; if it were shorter,
+// it would end up not replacing the entire intended section.
+func ExampleEditor_Overtype() {
+	ed := Edit("How are you, Miss Lalonde?")
 	
+	ed = ed.Overtype(4, "goes it")
+	
+	fmt.Println(ed.String())
+	// Output: How goes it, Miss Lalonde?
+}

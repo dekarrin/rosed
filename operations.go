@@ -571,8 +571,8 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 }
 
 // Overtype adds characters at the given position, writing over any that already
-// exist. If the overtyped text would make the string longer than it is, it is
-// extended to make room.
+// exist. If the added text would extend beyond the current end of the Editor
+// text, the Editor text is extended to the new size.
 //
 // This function is grapheme-aware and indexes text by human-readable
 // characters, not by the bytes or runes that make it up. See the note on
