@@ -87,7 +87,7 @@
 // # Basic Usage
 //
 // All editing starts with an [Editor]. The zero-value can be used to start with
-// blank text, otherwise Edit() can be called to give the text to work with.
+// blank text, otherwise [Edit] can be called to give the text to work with.
 // Additionally, if desired, the Editor can have its Text property set to the
 // text to operate on.
 //
