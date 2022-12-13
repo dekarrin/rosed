@@ -691,6 +691,7 @@ func ExampleEditor_String_subEditor() {
 	// Act 5
 }
 
+// This example sets the IndentStr property of the Options on the Editor.
 func ExampleEditor_WithOptions() {
 	ed := Edit("Vriska Serket")
 	
@@ -698,4 +699,58 @@ func ExampleEditor_WithOptions() {
 	
 	fmt.Println(ed.Options.IndentStr)
 	// Output: -->
+}
+
+// This example shows wrapping applied to a long string.
+func ExampleEditor_Wrap() {
+	ed := Edit("Your name is VRISKA SERKET. You are a master of EXTREME ROLEPLAYING.")
+	
+	ed = ed.Wrap(25)
+	
+	fmt.Println(ed.String())
+	// Output:
+	// Your name is VRISKA
+	// SERKET. You are a master
+	// of EXTREME ROLEPLAYING.
+}
+
+// This example uses options to tell the wrap to use a line ending consisting of
+// the HTML tag "<br/>" followed by a new-line, and to respect paragraphs
+// separated by a double "<br/>\n". It also shows how pre-wrapped text will have
+// the hard wraps removed prior to the new wrap.
+func ExampleEditor_WrapOpts() {
+	text := "Your name is VRISKA SERKET.<br/>\n"
+	text += "<br/>\n"
+	text += "You are a master of EXTREME ROLEPLAYING. You can't get enough<br/>\n"
+	text += "of it, or really any game of high stakes and chance. You have<br/>\n"
+	text += "persisted with the habit even in spite of your ACCIDENT. But<br/>\n"
+	text += "then again, you don't have much choice.<br/>\n"
+	text += "<br/>\n"
+	text += "You are something of an APOCALYPSE BUFF, which is something you<br/>\n"
+	text += "can be on Alternia. You are fascinated by end of the world<br/>\n"
+	text += "scenarios."
+	
+	opts := Options{
+		LineSeparator: "<br/>\n",
+		ParagraphSeparator: "<br/>\n<br/>\n",
+		PreserveParagraphs: true,
+	}
+	
+	ed := Edit(text)
+	
+	ed = ed.WrapOpts(50, opts)
+	
+	fmt.Println(ed.String())
+	// Output:
+	// Your name is VRISKA SERKET.<br/>
+	// <br/>
+	// You are a master of EXTREME ROLEPLAYING. You can't<br/>
+	// get enough of it, or really any game of high<br/>
+	// stakes and chance. You have persisted with the<br/>
+	// habit even in spite of your ACCIDENT. But then<br/>
+	// again, you don't have much choice.<br/>
+	// <br/>
+	// You are something of an APOCALYPSE BUFF, which is<br/>
+	// something you can be on Alternia. You are<br/>
+	// fascinated by end of the world scenarios.
 }

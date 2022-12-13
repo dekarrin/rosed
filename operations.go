@@ -526,7 +526,7 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 //   - LineSeparator is what sequence separates lines of input.
 //   - ParagraphSeparator is the separator used to split paragraphs. It will
 //     only have effect if PreserveParagraphs is set to true.
-//   - PreserveParagraphs gives whether to respect paragraphs instead of simply
+//   - PreserveParagraphs gives whether to respect paragraphs instead of
 //     considering them text to be justified. If set to true, the text is split
 //     into paragraphs by ParagraphSeparator, then the justify is applied to
 //     each paragraph.
@@ -588,8 +588,8 @@ func (ed Editor) Overtype(charPos int, text string) Editor {
 	return ed
 }
 
-// Wrap wraps the Editor Text to the given width. The text will have whitespace
-// collapsed prior to being wrapped.
+// Wrap wraps the Editor text to the given width. All runs of whitespace are
+// collapsed automatically prior to the wrap.
 //
 // If width is less than 2, it is assumed to be 2 because no meaningful wrap
 // algorithm can be applied to anything smaller.
@@ -598,44 +598,26 @@ func (ed Editor) Overtype(charPos int, text string) Editor {
 // characters, not by the bytes or runes that make it up. See the note on
 // Grapheme-Awareness in the [rosed] package docs for more info.
 //
-// This function is affected by the following options:
+// This function is affected by the following [Options]:
 //
-//   - `LineSeparator` is placed at the end of each line. If any sequence of
-//     LineSeparator exists in the Text prior to calling this function, it will
-//     first be collapsed into a single space character as part of whitespace
-//     collapsing.
-//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
+//   - LineSeparator is placed at the end of each wrapped line. In addition, any
+//     sequence of LineSeparator that exists in the text prior to calling this
+//     function will be treated as whitespace and collapsed into a single space
+//     character as part of the initial wrap.
+//   - ParagraphSeparator is the separator used to split paragraphs. It will
 //     only have effect if PreserveParagraphs is set to true.
-//   - `PreserveParagraphs` gives whether to respect paragraphs instead of
-//     simply considering them text to be wrapped. If set to true, the Text is
-//     first split into paragraphs by ParagraphSeparator, then the wrap is
-//     applied to each paragraph.
+//   - PreserveParagraphs gives whether to respect paragraphs instead of
+//     considering them text to be wrapped. If set to true, the text is first
+//     split into paragraphs by ParagraphSeparator, then the wrap is applied to
+//     each paragraph.
 func (ed Editor) Wrap(width int) Editor {
 	return ed.WrapOpts(width, ed.Options)
 }
 
 // WrapOpts wraps the Editor Text to the given width using the supplied options.
-// The text will have whitespace collapsed prior to being wrapped.
 //
-// If width is less than 2, it is assumed to be 2 because no meaningful wrap
-// algorithm can be applied to anything smaller.
-//
-// This function is grapheme-aware and indexes text by human-readable
-// characters, not by the bytes or runes that make it up. See the note on
-// Grapheme-Awareness in the [rosed] package docs for more info.
-//
-// This function is affected by the following options:
-//
-//   - `LineSeparator` is placed at the end of each line. If any sequence of
-//     LineSeparator exists in the Text prior to calling this function, it will
-//     first be collapsed into a single space character as part of whitespace
-//     collapsing.
-//   - `ParagraphSeparator` is the separator used to split paragraphs. It will
-//     only have effect if PreserveParagraphs is set to true.
-//   - `PreserveParagraphs` gives whether to respect paragraphs instead of
-//     simply considering them text to be wrapped. If set to true, the Text is
-//     first split into paragraphs by ParagraphSeparator, then the wrap is
-//     applied to each paragraph.
+// This is identical to [Editor.Wrap] but provides the ability to set Options
+// for the invocation.
 func (ed Editor) WrapOpts(width int, opts Options) Editor {
 	opts = opts.WithDefaults()
 
