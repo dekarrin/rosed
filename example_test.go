@@ -626,9 +626,21 @@ func ExampleEditor_LinesFrom() {
 	
 	// Not doing Editor.String for the example because that would call Commit
 	// and get back the starting string.
-	fmt.Printf("%v\n", ed.Text)
-	
+	fmt.Println(ed.Text)
 	// Output:
 	// Act 4
 	// Act 5
 }
+
+// This example gets a subeditor on the first three lines of a five-line string.
+func ExampleEditor_LinesTo() {
+	ed := Edit("Act 1\nAct 2\nAct 3\nAct 4\nAct 5")
+	ed = ed.LinesTo(3)
+	
+	fmt.Println(ed.Text)
+	// Output:
+	// Act 1
+	// Act 2
+	// Act 3
+}
+	

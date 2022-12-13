@@ -95,10 +95,10 @@ func (ed Editor) Chars(start, end int) Editor {
 
 // CharsFrom produces an Editor to operate on a subset of the characters in the
 // Editor's text. The returned Editor operates on text from the nth character up
-// to the end of the string, where n is start.
+// to the end of the text, where n is start.
 //
 // Calling this function is identical to calling [Editor.Chars] with the given
-// start and with end set to the end of the string.
+// start and with end set to the end of the text.
 func (ed Editor) CharsFrom(start int) Editor {
 	return ed.Chars(start, len(ed.Text))
 }
@@ -108,7 +108,7 @@ func (ed Editor) CharsFrom(start int) Editor {
 // up to but not including the nth character, where n is end.
 //
 // Calling this function is identical to calling [Editor.Chars] with the given
-// end and with start set to the start of the string.
+// end and with start set to the start of the text.
 func (ed Editor) CharsTo(end int) Editor {
 	return ed.Chars(0, end)
 }
@@ -253,51 +253,27 @@ func (ed Editor) Lines(start, end int) Editor {
 }
 // LinesFrom produces an Editor to operate on a subset of the lines in the
 // Editor's text. The returned Editor operates on text from the nth line up to
-// the end of the string, where n is start.
+// the end of the text, where n is start.
 //
 // Calling this function is identical to calling [Editor.Lines] with the given
-// start and with end set to the end of the string.
+// start and with end set to the end of the text.
 func (ed Editor) LinesFrom(start int) Editor {
 	return ed.Lines(start, ed.LineCount())
 }
 
-// LinesTo produces an Editor to operate on a subset of the lines in the Text.
-// The returned Editor operates on lines from the first line up to but not
-// including the nth line, where n is `end`.
+// LinesTo produces an Editor to operate on a subset of the characters in the
+// Editor's text. The returned Editor operates on text from the first line up to
+// but not including the nth line, where n is end.
 //
-// For instance, to get the first two lines of a four-line string:
-//
-//	ed := Edit("Line #1\nLine #2\nLine #3\nLine #4")
-//	ed = ed.LinesFrom(2)
-//
-//	fmt.Printf("%v\n", ed.Text)  // will be "Line #3\nLine #4".
-//
-// The `start` may be negative, in which case it will be relative to the end of
-// the text; -1 would be the index of the last line, -2 would be the index of
-// the second-to-last line, etc.
-//
-// If `end` specifies an index that is past the end of the text, that index is
-// assumed to be the end of the text (i.e. 1 greater than the index of the final
-// line). If it specifies an index that is before the start of a string, it is
-// assumed to be 0.
-//
-// This is a Sub-Editor function. See the note on [Editor] for more info.
-//
-// This function is affected by the following options of the Editor it is called
-// on:
-//
-//   - `LineSeparator` specifies what string should be used to delimit lines.
-//   - `NoTrailingLineSeparators` specifies whether it should consider a final
-//     instance of `LineSeparator` to be ending the prior line, or giving the
-//     start of a new line. If NoTrailingLineSeparators is true, a trailing
-//     LineSeparator is considered to start a new (empty) line.
+// Calling this function is identical to calling [Editor.Lines] with the given
+// end and with start set to the start of the text.
 func (ed Editor) LinesTo(end int) Editor {
 	return ed.Lines(0, end)
 }
 
 // String returns the finished, fully edited string. If the Editor is a
-// sub-editor, CommitAll() is called first and the Text from the resulting
-// editor is returned, else Text is returned.
+// sub-editor, CommitAll() is called first and Editor.Text from the resulting
+// editor is returned; otherwise, the current Editor's Text is returned.
 func (ed Editor) String() string {
 	if ed.IsSubEditor() {
 		ed = ed.CommitAll()
