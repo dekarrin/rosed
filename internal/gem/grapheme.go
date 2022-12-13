@@ -21,7 +21,7 @@ import (
 // If such guarantees are needed, raw strings can be used primarily with
 // conversion to and from gem.String as needed.
 //
-// The zero value is an empty String.
+// The zero-value is an empty String.
 //
 // String.Equal can be used to test against raw strings.
 //
