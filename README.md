@@ -145,17 +145,25 @@ func main() {
 	wrappedAndJustified := rosed.Edit(text).Wrap(30).Justify(30).String()
 	
 	fmt.Println(wrappedAndJustified)
-	// Your  name is  KANAYA  MARYAM.
-	// You are one of the few of your
-	// kind  who  can  withstand  the
-	// BLISTERING  ALTERNIAN SUN, and
-	// perhaps  the only  who  enjoys
-	// the feel of its rays. As such,
-	// you are one of the few of your
-	// kind  who has taken  a shining
-	// to   LANDSCAPING.   You   have
-	// cultivated   a   lush   oasis.
 }
+```
+
+TODO: before 1.0, make all output like this (? after checking the output!!!!!!!!).
+This also means that we need to upd8 the Playground links 8ecause their code
+won't be right.
+
+Output:
+```
+Your  name is  KANAYA  MARYAM.
+You are one of the few of your
+kind  who  can  withstand  the
+BLISTERING  ALTERNIAN SUN, and
+perhaps  the only  who  enjoys
+the feel of its rays. As such,
+you are one of the few of your
+kind  who has taken  a shining
+to   LANDSCAPING.   You   have
+cultivated   a   lush   oasis.
 ```
 
 ### Definitions Table
