@@ -189,7 +189,7 @@ fmt.Println(defTable)
             this passion.
 
   Tavros  - Known to be heavily arrested by FAIRY TALES AND FANTASY STORIES. Has
-            an acute ability to COMMUNIE WITH THE MANY CREATURES OF ALTERNIA.
+            an acute ability to COMMUNE WITH THE MANY CREATURES OF ALTERNIA.
 
   Sollux  - Is good at computers, and knows ALL THE CODES. All of them.
 

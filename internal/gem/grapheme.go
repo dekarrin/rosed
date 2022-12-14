@@ -157,6 +157,10 @@ func (str String) Len() int {
 		gc = Split(str.r)
 		str.gc = gc
 	}
+	
+	if len(str.r) > 0 && str.r[0] == '\U0001F926' {
+		fmt.Printf("INDEXES: %v\n", str.GraphemeIndexes())
+	}
 	return len(gc)
 }
 
@@ -391,13 +395,18 @@ func shouldBreakAfter(r rune, chars []rune, i int) bool {
 	}
 
 	// GB11 - Do not break within emoji modifier sequences or emoji ZWJ sequnces
-	if i-2 >= 0 {
-		if isCbZWJ(chars[i-1]) {
-			for j := i - 2; j >= 0; j-- {
+	// only need to loop through if we know the nextR is an extpicto AND we are
+	// currently on a ZWJ and there is at least one prior rune.
+	if isCbZWJ(r) && isExtPicto(nextR) && i-1 >= 0 {
+		for j := i - 1; j >= 0; j-- {
+			if !isCbExtend(chars[j]) {
 				if isExtPicto(chars[j]) {
+					// we are on the ZWJ of a \p{Extended_Pictographic} Extend* ZWJ sequence.
+					// we also only enter loop if on the ZWJ of a ZWJ \p{Extended_Pictographic} seq.
+					// so we know for sure that we are on a GB11 case.
+					// do not break.
 					return false
-				}
-				if !isCbExtend(chars[j]) {
+				} else {
 					break
 				}
 			}

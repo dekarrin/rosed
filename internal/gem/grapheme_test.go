@@ -199,6 +199,7 @@ func Test_String_Len(t *testing.T) {
 		{"three-char string", New("123"), 3},
 		{"c-with-cedilla is 1 char", New("Ç"), 1},
 		{"c followed by combining-char-cedilla is 1 char (UAX29 analysis)", New("C\u0327"), 1},
+		{"zwj emoji sequence with several modifiers is 1 char (UAX29 GB11)", New("\U0001F926\U0001F3FC\u200D\u2642\uFE0F"), 1},
 	}
 
 	for _, tc := range testCases {
