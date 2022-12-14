@@ -14,7 +14,7 @@ var (
 	spaceCollapser = regexp.MustCompile(" +")
 )
 
-// LineOperation is a function that accpets a zero-indexed line number and the
+// LineOperation is a function that accepts a zero-indexed line number and the
 // contents of that line and performs some operation to produce zero or more new
 // lines to replace the contents of the line with.
 //
@@ -118,7 +118,7 @@ func (ed Editor) ApplyOpts(op LineOperation, opts Options) Editor {
 // re-adding the separator to it handled by the caller.
 //
 // When the ParagraphSeparator of the Editor's options is set to a sequence that
-// includes visible characters that take up horizontal space, the
+// includes non-whitespace characters that take up horizontal space, the
 // ParagraphOperation will receive the prefix and suffix of the paragraph that
 // would be in the joined string due to the separator, with variables sepPrefix
 // and sepSuffix. This is not intended to allow the operation to add them back
@@ -140,7 +140,7 @@ func (ed Editor) ApplyOpts(op LineOperation, opts Options) Editor {
 // means that the ParagraphOperation is always called at least once, even for an
 // empty editor.
 //
-// This function is affected by the following options:
+// This function is affected by the following [Options]:
 //
 //   - ParagraphSeparator specifies the string that paragraphs are split by.
 func (ed Editor) ApplyParagraphs(op ParagraphOperation) Editor {
@@ -209,7 +209,7 @@ func (ed Editor) Delete(start, end int) Editor {
 // This function is affected by the following [Options]:
 //
 //   - IndentStr is the sequence to use to indent a single level.
-//   - LineSeparator is the separator that determines what each line is.
+//   - LineSeparator is the string that delimits lines.
 //   - NoTrailingLineSeparators alters whether LineSeparator is expected to be
 //     at the end of a complete line. If this is set to true, then a
 //     LineSeparator does not need to be present at the end of a complete line.
@@ -325,8 +325,8 @@ func (ed Editor) Insert(charPos int, text string) Editor {
 //   - ParagraphSeparator is used to separate each term/definition pair from the
 //     other definitions.
 //   - NoTrailingLineSeparators sets whether to include a trailing
-//     LineSeparator at the end of the table. If set to true, it will be omited,
-//     otherwise the table will end with a LineSeparator.
+//     LineSeparator at the end of the table. If set to true, it will be
+//     omitted, otherwise the table will end with a LineSeparator.
 func (ed Editor) InsertDefinitionsTable(pos int, definitions [][2]string, width int) Editor {
 	return ed.InsertDefinitionsTableOpts(pos, definitions, width, ed.Options)
 }
@@ -437,7 +437,7 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 //
 //   - LineSeparator is used to separate each line of the output.
 //   - NoTrailingLineSeparators sets whether to include a trailing LineSeparator
-//     at the end of the generated columns. If set to true, it will be omited,
+//     at the end of the generated columns. If set to true, it will be omitted,
 //     otherwise the columns will end with a LineSeparator.
 func (ed Editor) InsertTwoColumns(pos int, leftText string, rightText string, minSpaceBetween int, width int, leftColPercent float64) Editor {
 	return ed.InsertTwoColumnsOpts(pos, leftText, rightText, minSpaceBetween, width, leftColPercent, ed.Options)
@@ -523,7 +523,7 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 //
 // This function is affected by the following [Options]:
 //
-//   - LineSeparator is what sequence separates lines of input.
+//   - LineSeparator is used to separate lines of input.
 //   - ParagraphSeparator is the separator used to split paragraphs. It will
 //     only have effect if PreserveParagraphs is set to true.
 //   - PreserveParagraphs gives whether to respect paragraphs instead of
@@ -572,7 +572,7 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 
 // Overtype adds characters at the given position, writing over any that already
 // exist. If the added text would extend beyond the current end of the Editor
-// text, the Editor text is extended to the new size.
+// text, the Editor text is extended to make room for it.
 //
 // This function is grapheme-aware and indexes text by human-readable
 // characters, not by the bytes or runes that make it up. See the note on
@@ -603,7 +603,7 @@ func (ed Editor) Overtype(charPos int, text string) Editor {
 //   - LineSeparator is placed at the end of each wrapped line. In addition, any
 //     sequence of LineSeparator that exists in the text prior to calling this
 //     function will be treated as whitespace and collapsed into a single space
-//     character as part of the initial wrap.
+//     character.
 //   - ParagraphSeparator is the separator used to split paragraphs. It will
 //     only have effect if PreserveParagraphs is set to true.
 //   - PreserveParagraphs gives whether to respect paragraphs instead of
