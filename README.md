@@ -10,7 +10,7 @@ This library treats text as a sequence of "grapheme clusters" (user-visible
 characters) as opposed to actual runes or bytes. This allows wrapping and other
 character-counting/index operations to function in an expected way regardless of
 whether visible characters are made up of Unicode decomposed sequences or
-pre-composed characters.
+pre-composed sequences.
 
 ### Graphemes? What Are Those?
 
@@ -20,9 +20,9 @@ compose into a single apparent character using Unicode combining marks, such as
 the Unicode codepoint for uppercase "Y" (U+0079) followed by the codepoint for
 the combining acute accent (U+0301) (not to be confused with the *non-combining*
 codepoint for the acute accent symbol by itself, U+00B4. Naturally. Isn't
-Unicode **fun?**).
+Unicode *fun?*).
 
-Regardless of its representation in runes, we as humans see the Y with an accute
+Regardless of its representation in runes, we as humans see the Y with an acute
 accent and will usually say "ah, that is one character", and that is a grapheme
 cluster (or just grapheme for short when referring to the thing being displayed
 as opposed to the runes that make up that thing). This library takes that
@@ -32,9 +32,9 @@ each grapheme is represented.
 You can find out more information on the Unicode definition of "grapheme
 cluster" under [Chapter 2 of the Unicode Standard](https://www.unicode.org/versions/Unicode15.0.0/ch02.pdf),
 in particular see the heading '"Characters" and Grapheme Clusters" at the end of
-section. 2.11, "Combining Characters". If you want, you can also dig into
-section 2.12, "Equivalant Sequences", to see how different grapheme clusters
-(codepoint sequences) can translate into the same visual grapheme.
+section 2.11, "Combining Characters". If you want, you can also dig into section
+2.12, "Equivalant Sequences", to see how different grapheme clusters (codepoint
+sequences) can translate into the same visual grapheme.
 
 ### What This Library Is Not
 
@@ -52,7 +52,7 @@ things you can do with `rosed`, but by no means is it all of it. Check the
 [Full Reference Docs](https://pkg.go.dev/github.com/dekarrin/rosed) for a
 listing of all available functions as well as examples of use.
 
-In general, to use rosed, first create an Editor, use it to modify text, the
+In general, to use rosed, first create an Editor, use it to modify text, then
 get it back by converting it to a string. As easy as plucking a rose from the
 bed of thorns that grows in the midst of the most eldritch of gardens. Perhaps
 easier, in fact.
@@ -81,7 +81,7 @@ nobody understands.
 
 You can do this even if it's already been hard-wrapped:
 
-*Try it on the [Go Playground](https://go.dev/play/p/NsyWZLiXuU0)*
+*[Try it on the Go Playground](https://go.dev/play/p/NsyWZLiXuU0)*
 
 ```golang
 text := "It's hard, being\na kid and growing up.\nIt's hard and nobody\nunderstands."
@@ -93,11 +93,11 @@ fmt.Println(wrapped)
 
 ### Justify Text
 
-You can use rosed to ensure that all text takes up the same width of lines, and
-add spacing equally to ensure this is the case, also known as justifying the
-block of text:
+You can use rosed to ensure that all lines in the text take up the same width,
+and add spacing equally between words on each line to ensure this is the case.
+This is also known as justifying a block of text:
 
-*Try it on the [Go Playground](https://go.dev/play/p/pcI7hQIJH_R)*
+*[Try it on the Go Playground](https://go.dev/play/p/pcI7hQIJH_R)*
 
 ```golang
 text := "I WARNED YOU ABOUT STAIRS\n"
@@ -120,7 +120,7 @@ I      TOLD      YOU      MAN!
 You could combine this with wrapping to account for the lines that didn't quite
 end up the same length as the others:
 
-*Try it on the [Go Playground](https://go.dev/play/p/PCW9dcubxSX)*
+*[Try it on the Go Playground](https://go.dev/play/p/PCW9dcubxSX)*
 
 ```golang
 text := "Your name is KANAYA MARYAM. You are one of the few of your "
@@ -149,14 +149,14 @@ LANDSCAPING.  You have  cultivated  a lush  oasis.
 
 You can use this library to build a table of terms and their definitions:
 
-*Try it on the [Go Playground](https://go.dev/play/p/iqR6WDKQx8Y)*
+*[Try it on the Go Playground](https://go.dev/play/p/A8lHKVDDv2Q)*
 
 ```golang
 aradiaDef := "Once had a fondness for ARCHEOLOGY, though now has trouble "
 aradiaDef += "recalling this passion."
 
 tavDef := "Known to be heavily arrested by FAIRY TALES AND FANTASY STORIES. "
-tavDef += "Has an acute ability to COMMUNIE WITH THE MANY CREATURES OF "
+tavDef += "Has an acute ability to COMMUNE WITH THE MANY CREATURES OF "
 tavDef += "ALTERNIA."
 
 solluxDef := "Is good at computers, and knows ALL THE CODES. All of them."
@@ -200,9 +200,9 @@ fmt.Println(defTable)
 
 ### Two-Column Layout
 
-You can create two columns of text:
+You can use this library to create two columns of text:
 
-*Try it on the [Go Playround](https://go.dev/play/p/uITIF04nz22)*
+*[Try it on the Go Playround](https://go.dev/play/p/uITIF04nz22)*
 
 ```golang
 left := "You have a feeling it's going to be a long day."
@@ -233,9 +233,9 @@ long day.            instrument in tune.
 ```
 
 ### Custom Functionality
-Like the idea of operating on lines with customizability but rosed's built-in
-Editor functions aren't enough for you? Use Apply to give your own function to
-run on each line, or ApplyParagraphs to run it on each paragraph.
+Do you like the idea of operating on lines with customizability but rosed's
+built-in Editor functions aren't enough for you? Use Apply to give your own
+function to run on each line, or ApplyParagraphs to run it on each paragraph.
 
 For instance, to upper-case every line while giving each a line number:
 
@@ -304,24 +304,20 @@ Your name is NEPETA LEIJON.
 ## Contributing
 This library uses its [GitHub Issues Page](https://github.com/dekarrin/rosed/issues)
 for coordination of work. If you'd like to assist with an open issue, feel free
-to drop a comment on the issue mentioning it. Fork the repo into your own, make
-the changes, then raise a PR to bring them in.
+to drop a comment on the issue mentioning your interest. Then, fork the repo
+into your own copy, make the changes, then raise a PR to bring them in.
 
 If there's a bug you'd like to report or new feature you'd like to see in this
-library, feel free to open a new issue on its [GitHub Issues Page](https://github.com/dekarrin/rosed/issues).
+library, feel free to [open a new issue for it](https://github.com/dekarrin/rosed/issues/new).
 
 ## Example Text Source
-In case you didn't quite comprehend the refrance [sic], most of the samples,
+This explains the refrance [sic] of the sample text, most of the samples,
 test cases, and example texts used in this library's documentation have been
 sampled from the text of [Homestuck](https://www.homestuck.com/story/1), a
 primarily text-based web comic with occasional animations whose topic matter
 ranges from data-structure jokes to an analysis of the self and how our past
-makes us.
+makes us. Sadly due to Flash dying a lot of the site is non-functional.
 
-The name of the library also happens to be a reference to one of the characters,
-Rose Lalonde, as part of the never-ending drive to name things after entities
-from favored media.
-
-The comic is okay. If you want to read it, due to its reliance on Flash, the
-best way to do so at the time of this writing is by using [The Unofficial
+May it live on in our hearts and naming conventions longer than the darkness of
+the furthest ring. Or, you know, just generally exist in [The Unofficial
 Homestuck Collection](https://bambosh.dev/unofficial-homestuck-collection/).

@@ -42,7 +42,7 @@ type Options struct {
 	// does not include a line separator at the end even if it is the last line.
 	//
 	// This has a variety of effects depending on the function that is being
-	// called by an Editor; functions that are affected will call it out in
+	// called on an Editor; functions that are affected will call it out in
 	// their documentation.
 	//
 	// If this is set to false (the default), line separator chars are assumed
@@ -79,7 +79,7 @@ func (opts Options) String() string {
 
 // WithDefaults returns a copy of the options with all blank members filled with
 // their defaults. Internally, this function is used on user-provided Options
-// objects in order to get ready-to-use copies.
+// structs in order to get ready-to-use copies.
 //
 // This function does not modify the Options it is called on.
 func (opts Options) WithDefaults() Options {
@@ -125,7 +125,7 @@ func (opts Options) WithNoTrailingLineSeparators(noTrailingLineSeps bool) Option
 }
 
 // WithParagraphSeparator returns a new Options identical to this one but with
-// the ParagraphSeparator set to sep. If sep is the empty string, the paragraph
+// ParagraphSeparator set to sep. If sep is the empty string, the paragraph
 // separator is interpreted as [DefaultParagraphSeparator].
 //
 // This function does not modify the Options it is called on.

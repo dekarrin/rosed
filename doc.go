@@ -1,6 +1,6 @@
 // Package rosed is a library for manipulating and laying out fixed-width text.
 // It assumes that all text is encoded in UTF-8, the default encoding of source
-// code string literals in golang.
+// code string literals in Go.
 //
 // "rosed" is pronounced as "Rose-Edd" but any pronunciation that can be
 // understood to mean this library is accepted.
@@ -19,31 +19,22 @@
 // case of "é", it may be represented in Unicode either by the single codepoint
 // U+00E9 ("Latin Small Letter E With Acute"), or by the codepoint sequence
 // U+0065, U+0301 ("Latin Small Letter E" followed by "Combining Acute Accent").
-// In golang source code, the later would be represented in UTF-8 strings as two
+// In Go source code, the later would be represented in UTF-8 strings as two
 // runes (and whatever bytes it would take to make up those runes), meaning that
 // both iteration over the string and [unicode/utf8.RuneCountInString] would
 // return a higher number of runes than perhaps would be expected.
 //
-//	package main
+//	// This word appears to be 7 characters long:
+//	precomposed := "fiancée"
+//	decomposed := "fiance\u0301e"
 //
-//	import (
-//		"fmt"
-//		"unicode/utf8"
-//	)
+//	// and in fact, if printed, both show the same sequence to a human
+//	// user:
+//	fmt.Println(precomposed)  // shows "fiancée"
+//	fmt.Println(decomposed)   // ALSO shows "fiancée"
 //
-//	func main() {
-//		// This word appears to be 7 characters long:
-//		precomposed := "fiancée"
-//		decomposed := "fiance\u0301e"
-//
-//		// and in fact, if printed, both show the same sequence to a human
-//		// user:
-//		fmt.Println(precomposed)  // shows "fiancée"
-//		fmt.Println(decomposed)   // ALSO shows "fiancée"
-//
-//		fmt.Println(utf8.RuneCountInString(precomposed))  // prints 7
-//		fmt.Println(utf8.RuneCountInString(decomposed))   // prints 8 (?!)
-//	}
+//	fmt.Println(utf8.RuneCountInString(precomposed))  // prints 7
+//	fmt.Println(utf8.RuneCountInString(decomposed))   // prints 8 (?!)
 //
 // Try it on the Go Playground: https://go.dev/play/p/UiyXIHhWn_0
 //
@@ -60,23 +51,20 @@
 //	wrapped2 := rosed.Edit("My fiance\u0301e and I went to the bistro").Wrap(10).String()
 //
 //	// because rosed is grapheme aware, both representations are wrapped the
-//	// same way:
+//	// same way
 //
 //	fmt.Println(wrapped1)
-//	// Prints out:
+//	fmt.Println("")
+//	fmt.Println(wrapped2)
+//
+//	// Both of the above print out:
 //	//
 //	// My fiancée
 //	// and I went
 //	// to the
 //	// bistro.
 //
-//	fmt.Println(wrapped2)
-//	// Prints out:
-//	//
-//	// My fiancée
-//	// and I went
-//	// to the
-//	// bistro.
+// Try it on the Go Playground: https://go.dev/play/p/3CNStlPoWmE
 //
 // Note that this library does not handle Unicode-normalized collation; that
 // may be covered at a later time but for now it was deemed too much to
@@ -134,22 +122,11 @@
 //	// can create Options struct with members set directly:
 //	opts1 := rosed.Options{PreserveParagraphs: true}
 //
-//	// or by taking the zero-value and calling WithX functions:
+//	// or by taking an existing Options and calling WithX functions on it:
 //	opts2 := rosed.Options{}.WithPreserveParagraphs(true)
 //
 // Editor operations will mention which options they are affected by and how in
-// their documentation comments. Alternatively, to set the options specifically
-// for a particular call of an Editor operation, call the XOpts version of it.
-//
-//	input := "More then ever, you feel, what's the word you're looking for? Of course. Housetrapped."
-//	opts := rosed.Options{PreserveParagraphs: true}
-//	ed := rosed.Edit(input)
-//
-//	// Options can be set by giving them to the Editor prior to calling an operation:
-//	output := ed.WithOptions(opts).Wrap(10).String()
-//
-//	// ...or by calling the Opts version of the operation:
-//	output := ed.WrapOpts(10, opts).String()
+// their documentation comments.
 //
 // Note that Editor.WithOptions, like all other Editor functions, treats the
 // Editor it operates on as immutable. It returns an Editor that has those
@@ -164,16 +141,30 @@
 //	    },
 //	}
 //
+// If you want to avoid setting the options on the Editor and thus affecting all
+// further operations, you can give the options for a particular call of an
+// Editor function by calling the Opts version of it. If there is no Opts
+// version, then that function is not affected by any options.
+//
+//	input := "More then ever, you feel, what's the word you're looking for? Of course. Housetrapped."
+//	opts := rosed.Options{PreserveParagraphs: true}
+//	ed := rosed.Edit(input)
+//
+//	// Options can be set by giving them to the Editor prior to calling a function:
+//	output := ed.WithOptions(opts).Wrap(10).String()
+//
+//	// ...or by calling the Opts version of the function:
+//	output := ed.WrapOpts(10, opts).String()
+//
 // # Editing Partial Sections
 //
 // To edit only a portion of the text in an Editor, a sub-editor can be created
 // using [Editor.Chars], [Editor.CharsFrom], [Editor.CharsTo], [Editor.Lines],
 // [Editor.LinesFrom], or [Editor.LinesTo]. The Editor retured from these
-// operations will perform operations only on the section specified, and any
-// positions or lengths in operations called on it will be relative to that
-// sub-section's start and ends. Writing past the end of the sub-editor's text
-// is allowed and does not affect the text outside of the subsection, nor does
-// the writing before the start of the text.
+// functions will perform operations only on the section specified, and any
+// positions or lengths used in it will be relative to that sub-section's start
+// and end. Writing past the end of the sub-editor's text is allowed and does
+// not affect the text outside of the subsection.
 //
 // These changes can be rolled up to the parent text by calling [Editor.Commit].
 // This will produce an Editor that consists of the full text prior to selecting
@@ -200,7 +191,7 @@
 // apply all changes recursively and return an Editor operating on the full
 // text. Calling [Editor.String] on a sub-editor will also cause CommitAll to be
 // called, making it an excellent choice to get Editor.Text without needing to
-// be concerned with whether they are operating on a sub-editor.
+// be concerned with whether it is a sub-editor.
 //
 //	// Commit() or CommitAll() is not needed before string:
 //	output := rosed.Edit("Hello, World!").Chars(5, 7).Indent(1).String()

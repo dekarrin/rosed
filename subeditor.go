@@ -34,7 +34,7 @@ type parentRef struct {
 // to the end of the string; -1 would be the index of the last character, -2
 // would be the index of the second-to-last character, etc.
 //
-// If the one of the parameters specifies an index that is past the end of the
+// If one of the parameters specifies an index that is past the end of the
 // string, that index is assumed to be the end of the string. If either specify
 // an index that is before the start of the string, it is assumed to be 0.
 //
@@ -174,7 +174,7 @@ func (ed Editor) IsSubEditor() bool {
 // to the end of the text; -1 would be the index of the last line, -2 would be
 // the index of the second-to-last line, etc.
 //
-// If the one of the parameters specifies an index that is past the end of the
+// If one of the parameters specifies an index that is past the end of the
 // string, that index is assumed to be the end of the string. If either specify
 // an index that is before the start of the string, it is assumed to be 0.
 //
