@@ -157,7 +157,7 @@ func (str String) Len() int {
 		gc = Split(str.r)
 		str.gc = gc
 	}
-	
+
 	if len(str.r) > 0 && str.r[0] == '\U0001F926' {
 		fmt.Printf("INDEXES: %v\n", str.GraphemeIndexes())
 	}
