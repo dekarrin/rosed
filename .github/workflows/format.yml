@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-and-test:
+  check-code-format:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,12 +20,13 @@ jobs:
         run: gofmt -l . > gofmt_report.txt
       - name: Check gofmt output
         run: |
-          cat gofmt_report.txt
           report="$(head -n 1 gofmt_report.txt)"
           if [ -n "$report" ]; then
-            echo "FAILED: gofmt would cause changes" 1>&2
-            echo "run gofmt on codebase and try again" 1>&2
+            echo "gofmt -l ." 1>&2
+            cat gofmt_report.txt
+            echo "FAILED: gofmt would cause changes." 1>&2
+            echo "Run gofmt on codebase and try again." 1>&2
             exit 1
           else
-            echo "PASS: Code conforms to gofmt formatting conventions"
+            echo "PASS: Code conforms to gofmt formatting conventions."
           fi
