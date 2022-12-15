@@ -1,6 +1,10 @@
 package rosed
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/dekarrin/rosed/internal/gem"
+)
 
 // This file contains basic structural elements of Editor as well as functions
 // on it that are neither text operations nor sub-editor splitting operations.
@@ -49,6 +53,10 @@ type Editor struct {
 	// string being edited (since sub-editor's own Text will only have a subset
 	// of the original).
 	ref *parentRef
+
+	// This is a cache of the Text as a gem.String; it may be used for
+	// comparison operations or length checking.
+	cache *gem.String
 }
 
 // Edit creates an Editor with its Text property set to the given string and
@@ -57,6 +65,22 @@ func Edit(text string) Editor {
 	return Editor{
 		Text: text,
 	}
+}
+
+// CharCount returns the number of grapheme clusters in the Editor's text. This
+// is the number of characters a human viewer would count if the text were
+// displayed or printed.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+func (ed Editor) CharCount() int {
+	if ed.cache == nil || !ed.cache.Equal(ed.Text) {
+		gemText := gem.New(ed.Text)
+		ed.cache = &gemText
+	}
+
+	return ed.cache.Len()
 }
 
 // LineCount returns the number of lines in the Editor's text. Lines are

@@ -136,6 +136,23 @@ func ExampleEditor_ApplyParagraphsOpts() {
 	// <P2>(PREFIX=<P2>,PARA=para4,SUFFIX=)
 }
 
+// This example gets the length of several different strings.
+func ExampleEditor_CharCount() {
+	emptyCount := Edit("").CharCount()
+	fmt.Println(emptyCount)
+
+	testCount := Edit("test").CharCount()
+	fmt.Println(testCount)
+
+	emojiCount := Edit("👩‍❤️‍💋‍👩").CharCount()
+	fmt.Println(emojiCount)
+
+	// Output:
+	// 0
+	// 4
+	// 1
+}
+
 // This example gets a sub-Editor for the the "ell" part of "Hello!".
 func ExampleEditor_Chars() {
 	ed := Edit("Hello!")

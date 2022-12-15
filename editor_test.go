@@ -28,6 +28,31 @@ func Test_Edit(t *testing.T) {
 	}
 }
 
+func Test_Editor_CharCount(t *testing.T) {
+	testCases := []struct {
+		name   string
+		input  string
+		expect int
+	}{
+		{"empty string", "", 0},
+		{"1-char", "1", 1},
+		{"multi-char", "test", 4},
+		{"decomposed sequence", "C\u0327", 1},
+		{"one emoji with two codepoints: ❤️", "\u2764\uFE0F", 1},
+		{"several codepoint emoji woman kiss woman 👩‍❤️‍💋‍👩", "\U0001F469\u200D\u2764\uFE0F\u200D\U0001F48B\u200D\U0001F469", 1},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := Edit(tc.input).CharCount()
+
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
 func Test_Editor_WithOptions(t *testing.T) {
 	testCases := []struct {
 		name   string
