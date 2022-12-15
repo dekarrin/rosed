@@ -25,7 +25,7 @@ jobs:
             echo "gofmt -l ." 1>&2
             cat gofmt_report.txt
             echo "FAILED: gofmt would cause changes." 1>&2
-            echo "Run gofmt on codebase and try again." 1>&2
+            echo "Run 'gofmt -w .' on codebase and try again." 1>&2
             exit 1
           else
             echo "PASS: Code conforms to gofmt formatting conventions."
