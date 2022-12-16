@@ -8,7 +8,12 @@ import (
 	"github.com/dekarrin/rosed/internal/gem"
 )
 
-// contains functions for manipulation of text. Used by Editor.
+// contains manipulation primitives used by Editor functions to manipulate text.
+// This is to split the operation on Editor itself from the actual manipulation.
+
+var (
+	spaceCollapser = regexp.MustCompile(" +")
+)
 
 // lines will be modified to add the appended line if curLine is full.
 func appendWordToLine(lines *block, curWord gem.String, curLine gem.String, width int) (newCurLine gem.String) {
@@ -62,7 +67,7 @@ func collapseSpace(text gem.String, lineSep gem.String) gem.String {
 			text = text.SetCharAt(i, []rune{' '}) // set it to actual space char
 		}
 	}
-	collapsed := spaceCollapser.ReplaceAllString(text.String(), " ")
+	collapsed := spaceCollapser.ReplaceAllString(converted.String(), " ")
 	//collapsed = strings.TrimSpace(collapsed)
 	return _g(collapsed)
 }
@@ -222,4 +227,126 @@ func wrap(text gem.String, width int, lineSep gem.String) block {
 	}
 
 	return lines
+}
+
+func alignLineLeft(text gem.String, width int) gem.String {
+	if text.String() == "" {
+		return text
+	}
+	
+	// find first instance of non-space grapheme at start.
+	nonSpaceIdx := -1
+	for i := 0; i < text.Len(); i++ {
+		if !unicode.IsSpace(text.CharAt(i)[0]) {
+			nonSpaceIdx = i
+			break
+		}
+	}
+	
+	// if we didn't find any non-space grapheme, its *all* spaces and thus will
+	// be completely trimmed so return empty
+	if nonSpaceIdx < 0 {
+		return gem.Zero
+	}
+	
+	// otherwise, split the string about the index.
+	endingText = text.Sub(nonSpaceIdx, gem.Len())
+	
+	// and add filler space, including the extra space needed for full width
+	spaceLen := nonSpaceIdx
+	extraNeeded := width - spaceLen
+	if extraNeeded > 0 {
+		spaceLen += extraNeeded
+	}
+	trailingSpace := gem.New(strings.Repeat(" ", spaceLen))
+	text = endingText.Add(trailingSpace)
+	
+	return text
+}
+
+func alignLineRight(text gem.String, width int) gem.String {
+	if text.String() == "" {
+		return text
+	}
+	
+	// find first instance of non-space grapheme at end.
+	nonSpaceIdx := -1
+	for i := text.Len()-1; i >= 0; i-- {
+		if !unicode.IsSpace(text.CharAt(i)[0]) {
+			nonSpaceIdx = i
+			break
+		}
+	}
+	
+	// if we didn't find any non-space grapheme, its *all* spaces and thus will
+	// be completely trimmed so return empty
+	if nonSpaceIdx < 0 {
+		return gem.Zero
+	}
+	
+	// otherwise, split the string about the index.
+	startingText = text.Sub(0, nonSpaceIdx+1)
+	
+	// and add filler space, including the extra space needed for full width
+	spaceLen := str.Len() - (nonSpaceIdx + 1)
+	extraNeeded := width - spaceLen
+	if extraNeeded > 0 {
+		spaceLen += extraNeeded
+	}
+	leadingSpace := gem.New(strings.Repeat(" ", spaceLen))
+	text = leadingSpace.Add(startingText)
+	
+	return text
+}
+
+func alignLineCenter(text gem.String, width int) gem.String {
+	if text.String() == "" {
+		return text
+	}
+	
+	// find first instance of non-space grapheme at start.
+	startSpaces := 0
+	for i := 0; i < text.Len(); i++ {
+		if !unicode.IsSpace(text.CharAt(i)[0]) {
+			startSpaces = i
+			break
+		}
+	}
+	
+	// find first instance of non-space grapheme at end.
+	// "hello ", so nsi = 4
+	// numSpace = str.Len() - (nsi+1) = 1
+	endSpaces := -1
+	for i := text.Len()-1; i >= 0; i-- {
+		if !unicode.IsSpace(text.CharAt(i)[0]) {
+			endSpaces = str.Len() - (i+1)
+			break
+		}
+	}
+	
+	// get the text to be centered
+	var midText gem.String
+	if endSpaces > 0 {
+		midText = text.Sub(startSpaces, -endSpaces)
+	} else {
+		midText = text.Sub(startSpaces, text.Len())
+	}
+	
+	spaceNeeded := width - midText.Len()
+	
+	if spaceNeeded <= 0 {
+		// string is already at the length or too long to do further centering
+		// so just return it
+		return midText
+	}
+	
+	leftSpaceNeeded := spaceNeeded / 2
+	rightSpaceNeeded := spaceNeeded - leftSpaceNeeded
+	
+	leftSpace := gem.New(strings.Repeat(" ", leftSpaceNeeded)
+	rightSpace := gem.New(strings.Repeat(" ", rightSpaceNeeded)
+	
+	text = leftSpace.Add(startingText).Add(rightSpace)
+	
+	return text
 }

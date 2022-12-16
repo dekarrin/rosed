@@ -10,8 +10,22 @@ import (
 	"github.com/dekarrin/rosed/internal/gem"
 )
 
-var (
-	spaceCollapser = regexp.MustCompile(" +")
+// Alignment is the type of alignment to apply to text. It is used in the
+// [Editor.Align] function.
+type Alignment int
+
+const (
+	// None is no alignment and is the zero value of an Alignment.
+	None Alignment = iota
+	
+	// Left is alignment to the left side of the text.
+	Left
+	
+	// Right is alignment to the right side of the text.
+	Right
+	
+	// Center is alignment to the center of the text.
+	Center
 )
 
 // LineOperation is a function that accepts a zero-indexed line number and the
@@ -57,6 +71,37 @@ type LineOperation func(idx int, line string) []string
 type ParagraphOperation func(idx int, para, sepPrefix, sepSuffix string) []string
 
 type gParagraphOperation func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String
+
+// Align makes each line follow the given alignment. If None is given for the
+// alignment, this operation has no effect.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This function is affected by the following [Options]:
+//
+//   - LineSeparator is used to separate lines of input.
+//   - ParagraphSeparator is the separator used to split paragraphs. It will
+//     only have effect if PreserveParagraphs is set to true.
+//   - PreserveParagraphs gives whether to respect paragraphs instead of
+//     considering them text to be aligned. If set to true, the text is split
+//     into paragraphs by ParagraphSeparator, then the align is applied to each
+//     paragraph.
+func (ed Editor) Align(align Alignment) Editor {
+	return ed.AlignOpts(align, ed.Options)
+}
+
+// AlignOpts makes each line follow the given alignment using the provided
+// options.
+//
+// This is identical to [Editor.Align] but provides the ability to set Options
+// for the invocation.
+func (ed Editor) AlignOpts(align Alignment, opts Options) Editor {
+	opts = opts.WithDefaults()
+
+	
+}
 
 // Apply applies the given LineOperation to each line in the text. Line
 // termination at the last line is transparently handled as per the options set
