@@ -327,8 +327,8 @@ func alignLineCenter(text gem.String, width int) gem.String {
 		return midText
 	}
 
-	rightSpaceNeeded := spaceNeeded / 2
-	leftSpaceNeeded := spaceNeeded - rightSpaceNeeded
+	leftSpaceNeeded := spaceNeeded / 2
+	rightSpaceNeeded := spaceNeeded - leftSpaceNeeded
 
 	leftSpace := gem.New(strings.Repeat(" ", leftSpaceNeeded))
 	rightSpace := gem.New(strings.Repeat(" ", rightSpaceNeeded))

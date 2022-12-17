@@ -111,7 +111,7 @@ func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
 	var alignOp func(gem.String, int) gem.String
 	
 	debug := opts.ParagraphSeparator == "<P>-\n-<P>"
-
+	
 	switch align {
 	case Left:
 		alignOp = alignLineLeft
@@ -147,33 +147,46 @@ func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
 			}
 
 			var bl block
-			if align == Left {
+			switch align {
+			case Left:
 				// need to get a block with suf at end of last line and pre
 				// at end of first line
-				bl = newBlock(para.Add(sepStart).Add(sepEnd), _g(opts.LineSeparator))
-			}
-			
-			if debug {
-				fmt.Printf("PARA BLOCK:\n%+v\n", bl)
-			}
-			bl.Apply(func(idx int, line string) []string {
-				return []string{alignOp(_g(line), width).String()}
-			})
-			if debug {
-				fmt.Printf("POST-OP PARA BLOCK:\n%+v\n", bl)
-			}
-			text := bl.Join()
-
-			// remove separator (if any)
-			if align == Left {
-				sepAdded := sepEnd.Len() + sepStart.Len()
-				if sepAdded > 0 {
-					para = text.Sub(0, -sepAdded)
-				} else {
-					para = text.Sub(sepStart.Len(), text.Len())
+				bl = newBlock(para.Add(sepEnd), _g(opts.LineSeparator))
+				endLineIdx := bl.Len()-1
+				bl.Set(0, bl.Line(0).Add(sepStart))
+				bl.Apply(func(idx int, line string) []string {
+					return []string{alignOp(_g(line), width).String()}
+				})
+				// remove separators (if any)
+				if sepStart.Len() > 0 {
+					bl.Set(0, bl.Line(0).Sub(0, -sepStart.Len()))
+				}
+				if sepEnd.Len() > 0 {
+					newEndLine := bl.Line(endLineIdx).Sub(0, -sepEnd.Len())
+					bl.Set(endLineIdx, newEndLine)
+				}
+			case Right:
+				// need to get a block with suf at start of last line and pre
+				// at start of first line
+				bl = newBlock(sepStart.Add(para), _g(opts.LineSeparator))
+				endLineIdx := bl.Len()-1
+				bl.Set(endLineIdx, sepEnd.Add(bl.Line(endLineIdx)))
+				bl.Apply(func(idx int, line string) []string {
+					return []string{alignOp(_g(line), width).String()}
+				})
+				// remove separators (if any)
+				if sepStart.Len() > 0 {
+					bl.Set(0, bl.Line(0).Sub(sepStart.Len(), bl.Line(0).Len()))
+				}
+				if sepEnd.Len() > 0 {
+					curEndLine := bl.Line(endLineIdx)
+					newEndLine := curEndLine.Sub(sepEnd.Len(), curEndLine.Len())
+					bl.Set(endLineIdx, newEndLine)
 				}
 			}
-
+			
+			para = bl.Join()
+			
 			return []gem.String{para}
 		}, opts)
 	}

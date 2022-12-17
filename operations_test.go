@@ -2060,8 +2060,7 @@ func Test_AlignOpts(t *testing.T) {
 				"quadrant together, they are     " + DefaultLineSeparator +
 				"said to be MATESPRITS.          ",
 		},
-		// TODO: we need to test this on a three paragraph set and also
-		// need to create ticket to check/fix the sep adding issue for justify
+		// TODO: need to create ticket to check/fix the sep adding issue for justify
 		{
 			name: "left: three-paragraph, preserved, custom parasep",
 			input: "Pale Quadrant:" + DefaultLineSeparator +
@@ -2088,14 +2087,218 @@ func Test_AlignOpts(t *testing.T) {
 				"MOIRALLEGIENCE, the other       " + DefaultLineSeparator +
 				"conciliatory relationship.  " +
 				"<P>-\n-<P>" +
-				"Flush Quadrant:                 " + DefaultLineSeparator +
+				"Flush Quadrant:             " + DefaultLineSeparator +
 				"When two individuals find       " + DefaultLineSeparator +
 				"themselves in the flushed       " + DefaultLineSeparator +
 				"quadrant together, they are     " + DefaultLineSeparator +
 				"said to be MATESPRITS.      " +
 				"<P>-\n-<P>" +
-				"Troll quadrants sure are        " + DefaultLineSeparator +
+				"Troll quadrants sure are    " + DefaultLineSeparator +
 				"weird!                          ",
+		},
+		{
+			name:  "right: empty line, noTrailing",
+			input: "",
+			align: Right,
+			width: 10,
+			options: Options{
+				NoTrailingLineSeparators: true,
+			},
+			expect: "          ",
+		},
+		{
+			name: "right: multi-line, noTrailing, with final lineSep",
+			input: "  This quadrant presides over" + DefaultLineSeparator +
+				" MOIRALLEGIENCE, the other" + DefaultLineSeparator +
+				" conciliatory relationship. " + DefaultLineSeparator,
+			align: Right,
+			width: 32,
+			options: Options{
+				NoTrailingLineSeparators: true,
+			},
+			expect: "     This quadrant presides over" + DefaultLineSeparator +
+				"       MOIRALLEGIENCE, the other" + DefaultLineSeparator +
+				"      conciliatory relationship." + DefaultLineSeparator +
+				"                                ",
+		},
+		{
+			name: "right: multi-line, noTrailing, without final lineSep",
+			input: "  This quadrant presides over" + DefaultLineSeparator +
+				" MOIRALLEGIENCE, the other" + DefaultLineSeparator +
+				" conciliatory relationship. ",
+			align: Right,
+			width: 32,
+			options: Options{
+				NoTrailingLineSeparators: true,
+			},
+			expect: "     This quadrant presides over" + DefaultLineSeparator +
+				"       MOIRALLEGIENCE, the other" + DefaultLineSeparator +
+				"      conciliatory relationship.",
+		},
+		{
+			name: "right: multi-paragraph, preserved, default parasep",
+			input: "Pale Quadrant:" + DefaultLineSeparator +
+				"  This quadrant presides over" + DefaultLineSeparator +
+				" MOIRALLEGIENCE, the other  " + DefaultLineSeparator +
+				" conciliatory relationship. " +
+				DefaultParagraphSeparator +
+				"  Flush Quadrant: " + DefaultLineSeparator +
+				"   When two individuals find" + DefaultLineSeparator +
+				"themselves in the flushed  " + DefaultLineSeparator +
+				"  quadrant together, they are" + DefaultLineSeparator +
+				"said to be MATESPRITS.",
+			align: Right,
+			width: 32,
+			options: Options{
+				PreserveParagraphs: true,
+			},
+			expect: "                  Pale Quadrant:" + DefaultLineSeparator +
+				"     This quadrant presides over" + DefaultLineSeparator +
+				"       MOIRALLEGIENCE, the other" + DefaultLineSeparator +
+				"      conciliatory relationship." +
+				DefaultParagraphSeparator +
+				"                 Flush Quadrant:" + DefaultLineSeparator +
+				"       When two individuals find" + DefaultLineSeparator +
+				"       themselves in the flushed" + DefaultLineSeparator +
+				"     quadrant together, they are" + DefaultLineSeparator +
+				"          said to be MATESPRITS.",
+		},
+		{
+			name: "right: three-paragraph, preserved, custom parasep",
+			input: "Pale Quadrant:" + DefaultLineSeparator +
+				"  This quadrant presides over" + DefaultLineSeparator +
+				" MOIRALLEGIENCE, the other  " + DefaultLineSeparator +
+				" conciliatory relationship. " +
+				"<P>-\n-<P>" +
+				"  Flush Quadrant: " + DefaultLineSeparator +
+				"   When two individuals find" + DefaultLineSeparator +
+				"themselves in the flushed  " + DefaultLineSeparator +
+				"  quadrant together, they are" + DefaultLineSeparator +
+				"said to be MATESPRITS." +
+				"<P>-\n-<P>" +
+				"  Troll quadrants sure are " + DefaultLineSeparator +
+				" weird!",
+			align: Right,
+			width: 32,
+			options: Options{
+				PreserveParagraphs: true,
+				ParagraphSeparator: "<P>-\n-<P>",
+			},
+			expect: "                  Pale Quadrant:" + DefaultLineSeparator +
+				"     This quadrant presides over" + DefaultLineSeparator +
+				"       MOIRALLEGIENCE, the other" + DefaultLineSeparator +
+				"  conciliatory relationship." +
+				"<P>-\n-<P>" +
+				"             Flush Quadrant:" + DefaultLineSeparator +
+				"       When two individuals find" + DefaultLineSeparator +
+				"       themselves in the flushed" + DefaultLineSeparator +
+				"     quadrant together, they are" + DefaultLineSeparator +
+				"      said to be MATESPRITS." +
+				"<P>-\n-<P>" +
+				"    Troll quadrants sure are" + DefaultLineSeparator +
+				"                          weird!",
+		},
+		{
+			name:  "center: empty line, noTrailing",
+			input: "",
+			align: Center,
+			width: 10,
+			options: Options{
+				NoTrailingLineSeparators: true,
+			},
+			expect: "          ",
+		},
+		{
+			name: "center: multi-line, noTrailing, with final lineSep",
+			input: "  This quadrant presides over" + DefaultLineSeparator +
+				" MOIRALLEGIENCE, the other" + DefaultLineSeparator +
+				" conciliatory relationship. " + DefaultLineSeparator,
+			align: Center,
+			width: 32,
+			options: Options{
+				NoTrailingLineSeparators: true,
+			},
+			expect: "  This quadrant presides over   " + DefaultLineSeparator +
+				"   MOIRALLEGIENCE, the other    " + DefaultLineSeparator +
+				"   conciliatory relationship.   " + DefaultLineSeparator +
+				"                                ",
+		},
+		{
+			name: "center: multi-line, noTrailing, without final lineSep",
+			input: "  This quadrant presides over" + DefaultLineSeparator +
+				" MOIRALLEGIENCE, the other" + DefaultLineSeparator +
+				" conciliatory relationship. ",
+			align: Center,
+			width: 32,
+			options: Options{
+				NoTrailingLineSeparators: true,
+			},
+			expect: "  This quadrant presides over   " + DefaultLineSeparator +
+				"   MOIRALLEGIENCE, the other    " + DefaultLineSeparator +
+				"   conciliatory relationship.   ",
+		},
+		{
+			name: "center: multi-paragraph, preserved, default parasep",
+			input: "Pale Quadrant:" + DefaultLineSeparator +
+				"  This quadrant presides over" + DefaultLineSeparator +
+				" MOIRALLEGIENCE, the other  " + DefaultLineSeparator +
+				" conciliatory relationship. " +
+				DefaultParagraphSeparator +
+				"  Flush Quadrant: " + DefaultLineSeparator +
+				"   When two individuals find" + DefaultLineSeparator +
+				"themselves in the flushed  " + DefaultLineSeparator +
+				"  quadrant together, they are" + DefaultLineSeparator +
+				"said to be MATESPRITS.",
+			align: Center,
+			width: 32,
+			options: Options{
+				PreserveParagraphs: true,
+			},
+			expect: "         Pale Quadrant:         " + DefaultLineSeparator +
+				"  This quadrant presides over   " + DefaultLineSeparator +
+				"   MOIRALLEGIENCE, the other    " + DefaultLineSeparator +
+				"   conciliatory relationship.   " +
+				DefaultParagraphSeparator +
+				"        Flush Quadrant:         " + DefaultLineSeparator +
+				"   When two individuals find    " + DefaultLineSeparator +
+				"   themselves in the flushed    " + DefaultLineSeparator +
+				"  quadrant together, they are   " + DefaultLineSeparator +
+				"     said to be MATESPRITS.     ",
+		},
+		{
+			name: "center: three-paragraph, preserved, custom parasep",
+			input: "Pale Quadrant:" + DefaultLineSeparator +
+				"  This quadrant presides over" + DefaultLineSeparator +
+				" MOIRALLEGIENCE, the other  " + DefaultLineSeparator +
+				" conciliatory relationship. " +
+				"<P>-\n-<P>" +
+				"  Flush Quadrant: " + DefaultLineSeparator +
+				"   When two individuals find" + DefaultLineSeparator +
+				"themselves in the flushed  " + DefaultLineSeparator +
+				"  quadrant together, they are" + DefaultLineSeparator +
+				"said to be MATESPRITS." +
+				"<P>-\n-<P>" +
+				"  Troll quadrants sure are " + DefaultLineSeparator +
+				" weird!",
+			align: Center,
+			width: 32,
+			options: Options{
+				PreserveParagraphs: true,
+				ParagraphSeparator: "<P>-\n-<P>",
+			},
+			expect: "         Pale Quadrant:         " + DefaultLineSeparator +
+				"  This quadrant presides over   " + DefaultLineSeparator +
+				"   MOIRALLEGIENCE, the other    " + DefaultLineSeparator +
+				" conciliatory relationship." +
+				"<P>-\n-<P>" +
+				"     Flush Quadrant:        " + DefaultLineSeparator +
+				"   When two individuals find    " + DefaultLineSeparator +
+				"   themselves in the flushed    " + DefaultLineSeparator +
+				"  quadrant together, they are   " + DefaultLineSeparator +
+				"   said to be MATESPRITS." +
+				"<P>-\n-<P>" +
+				"Troll quadrants sure are    " + DefaultLineSeparator +
+				"             weird!             ",
 		},
 	}
 

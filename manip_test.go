@@ -400,7 +400,7 @@ func Test_Manip_alignLineCenter(t *testing.T) {
 		{"empty string to 10", gem.Zero, 10, gem.New("          ")},
 		{"empty string to -1", gem.Zero, 0, gem.Zero},
 		{"non-empty, normal", gem.New("john egbert"), 17, gem.New("   john egbert   ")},
-		{"non-empty, normal, not even", gem.New("john egbert"), 18, gem.New("    john egbert   ")},
+		{"non-empty, normal, not even", gem.New("john egbert"), 18, gem.New("   john egbert    ")},
 		{"non-empty, already big", gem.New("john egbert"), 2, gem.New("john egbert")},
 		{"non-empty, to -1", gem.New("john"), -1, gem.New("john")},
 		{"non-empty, space on left", gem.New("  john"), 12, gem.New("    john    ")},
