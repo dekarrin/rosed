@@ -1558,7 +1558,7 @@ func Test_InsertDefinitionsTableOpts(t *testing.T) {
 	}
 }
 
-func Test_Editor_Delete(t *testing.T) {
+func Test_Delete(t *testing.T) {
 	testCases := []struct {
 		name   string
 		input  string
@@ -1712,7 +1712,7 @@ func Test_Editor_Delete(t *testing.T) {
 	}
 }
 
-func Test_Editor_Overtype(t *testing.T) {
+func Test_Overtype(t *testing.T) {
 	testCases := []struct {
 		name   string
 		input  string
@@ -1820,6 +1820,287 @@ func Test_Editor_Overtype(t *testing.T) {
 			actual := Edit(tc.input).Overtype(tc.pos, tc.text).String()
 
 			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
+func Test_Align(t *testing.T) {
+	testCases := []struct {
+		name   string
+		input  string
+		align  Alignment
+		width  int
+		expect string
+	}{
+		{
+			name:   "left: empty string",
+			input:  "",
+			align:  Left,
+			width:  10,
+			expect: "",
+		},
+		{
+			name:   "left: 1 word line",
+			input:  "bluh",
+			align:  Left,
+			width:  10,
+			expect: "bluh      ",
+		},
+		{
+			name:   "left: multi word line",
+			input:  "john egbert",
+			align:  Left,
+			width:  15,
+			expect: "john egbert    ",
+		},
+		{
+			name: "left: multiple lines, no trailing lineSep",
+			input: "  john egbert" + DefaultLineSeparator +
+				"        rose lalonde" + DefaultLineSeparator +
+				"jade harley    " + DefaultLineSeparator +
+				"     dave strider",
+			align: Left,
+			width: 15,
+			expect: "john egbert    " + DefaultLineSeparator +
+				"rose lalonde   " + DefaultLineSeparator +
+				"jade harley    " + DefaultLineSeparator +
+				"dave strider   ",
+		},
+		{
+			name: "left: multiple lines, with trailing lineSep",
+			input: "  john egbert" + DefaultLineSeparator +
+				"        rose lalonde" + DefaultLineSeparator +
+				"jade harley    " + DefaultLineSeparator +
+				"     dave strider" + DefaultLineSeparator,
+			align: Left,
+			width: 15,
+			expect: "john egbert    " + DefaultLineSeparator +
+				"rose lalonde   " + DefaultLineSeparator +
+				"jade harley    " + DefaultLineSeparator +
+				"dave strider   " + DefaultLineSeparator,
+		},
+		{
+			name:   "right: empty string",
+			input:  "",
+			align:  Right,
+			width:  10,
+			expect: "",
+		},
+		{
+			name:   "right: 1 word line",
+			input:  "bluh",
+			align:  Right,
+			width:  10,
+			expect: "      bluh",
+		},
+		{
+			name:   "right: multi word line",
+			input:  "john egbert",
+			align:  Right,
+			width:  15,
+			expect: "    john egbert",
+		},
+		{
+			name: "right: multiple lines, no trailing lineSep",
+			input: "  john egbert" + DefaultLineSeparator +
+				"   rose lalonde  " + DefaultLineSeparator +
+				"jade harley    " + DefaultLineSeparator +
+				" dave strider ",
+			align: Right,
+			width: 15,
+			expect: "    john egbert" + DefaultLineSeparator +
+				"   rose lalonde" + DefaultLineSeparator +
+				"    jade harley" + DefaultLineSeparator +
+				"   dave strider",
+		},
+		{
+			name: "right: multiple lines, with trailing lineSep",
+			input: "  john egbert" + DefaultLineSeparator +
+				"   rose lalonde  " + DefaultLineSeparator +
+				"jade harley    " + DefaultLineSeparator +
+				" dave strider " + DefaultLineSeparator,
+			align: Right,
+			width: 15,
+			expect: "    john egbert" + DefaultLineSeparator +
+				"   rose lalonde" + DefaultLineSeparator +
+				"    jade harley" + DefaultLineSeparator +
+				"   dave strider" + DefaultLineSeparator,
+		},
+		{
+			name:   "center: empty string",
+			input:  "",
+			align:  Center,
+			width:  10,
+			expect: "",
+		},
+		{
+			name:   "center: 1 word line",
+			input:  "bluh",
+			align:  Center,
+			width:  10,
+			expect: "   bluh   ",
+		},
+		{
+			name:   "center: multi word line",
+			input:  "john egbert",
+			align:  Center,
+			width:  15,
+			expect: "  john egbert  ",
+		},
+		{
+			name: "center: multiple lines, no trailing lineSep",
+			input: "  john egbert" + DefaultLineSeparator +
+				"   rose lalonde  " + DefaultLineSeparator +
+				"jade harley    " + DefaultLineSeparator +
+				" dave strider ",
+			align: Center,
+			width: 15,
+			expect: "  john egbert  " + DefaultLineSeparator +
+				"  rose lalonde " + DefaultLineSeparator +
+				"  jade harley  " + DefaultLineSeparator +
+				"  dave strider ",
+		},
+		{
+			name: "center: multiple lines, with trailing lineSep",
+			input: "  john egbert" + DefaultLineSeparator +
+				"   rose lalonde  " + DefaultLineSeparator +
+				"jade harley    " + DefaultLineSeparator +
+				" dave strider " + DefaultLineSeparator,
+			align: Center,
+			width: 15,
+			expect: "  john egbert  " + DefaultLineSeparator +
+				"  rose lalonde " + DefaultLineSeparator +
+				"  jade harley  " + DefaultLineSeparator +
+				"  dave strider " + DefaultLineSeparator,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+			actual := Edit(tc.input).Align(tc.align, tc.width).String()
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
+func Test_AlignOpts(t *testing.T) {
+	testCases := []struct {
+		name    string
+		input   string
+		align   Alignment
+		width   int
+		options Options
+		expect  string
+	}{
+		{
+			name:  "left: empty line, noTrailing",
+			input: "",
+			align: Left,
+			width: 10,
+			options: Options{
+				NoTrailingLineSeparators: true,
+			},
+			expect: "          ",
+		},
+		{
+			name: "left: multi-line, noTrailing, with final lineSep",
+			input: "  This quadrant presides over" + DefaultLineSeparator +
+				" MOIRALLEGIENCE, the other" + DefaultLineSeparator +
+				" conciliatory relationship. " + DefaultLineSeparator,
+			align: Left,
+			width: 32,
+			options: Options{
+				NoTrailingLineSeparators: true,
+			},
+			expect: "This quadrant presides over     " + DefaultLineSeparator +
+				"MOIRALLEGIENCE, the other       " + DefaultLineSeparator +
+				"conciliatory relationship.      " + DefaultLineSeparator +
+				"                                ",
+		},
+		{
+			name: "left: multi-line, noTrailing, without final lineSep",
+			input: "  This quadrant presides over" + DefaultLineSeparator +
+				" MOIRALLEGIENCE, the other" + DefaultLineSeparator +
+				" conciliatory relationship. ",
+			align: Left,
+			width: 32,
+			options: Options{
+				NoTrailingLineSeparators: true,
+			},
+			expect: "This quadrant presides over     " + DefaultLineSeparator +
+				"MOIRALLEGIENCE, the other       " + DefaultLineSeparator +
+				"conciliatory relationship.      ",
+		},
+		{
+			name: "left: multi-paragraph, preserved, default parasep",
+			input: "Pale Quadrant:" + DefaultLineSeparator +
+				"  This quadrant presides over" + DefaultLineSeparator +
+				" MOIRALLEGIENCE, the other  " + DefaultLineSeparator +
+				" conciliatory relationship. " +
+				DefaultParagraphSeparator +
+				"  Flush Quadrant: " + DefaultLineSeparator +
+				"   When two individuals find" + DefaultLineSeparator +
+				"themselves in the flushed  " + DefaultLineSeparator +
+				"  quadrant together, they are" + DefaultLineSeparator +
+				"said to be MATESPRITS.",
+			align: Left,
+			width: 32,
+			options: Options{
+				PreserveParagraphs: true,
+			},
+			expect: "Pale Quadrant:                  " + DefaultLineSeparator +
+				"This quadrant presides over     " + DefaultLineSeparator +
+				"MOIRALLEGIENCE, the other       " + DefaultLineSeparator +
+				"conciliatory relationship.      " +
+				DefaultParagraphSeparator +
+				"Flush Quadrant:                 " + DefaultLineSeparator +
+				"When two individuals find       " + DefaultLineSeparator +
+				"themselves in the flushed       " + DefaultLineSeparator +
+				"quandrant together, they are    " + DefaultLineSeparator +
+				"said to be MATESPRITS.",
+		},
+		{
+			name: "left: multi-paragraph, preserved, custom parasep",
+			input: "Pale Quadrant:" + DefaultLineSeparator +
+				"  This quadrant presides over" + DefaultLineSeparator +
+				" MOIRALLEGIENCE, the other  " + DefaultLineSeparator +
+				" conciliatory relationship. " +
+				"<P>---<P>\n" +
+				"  Flush Quadrant: " + DefaultLineSeparator +
+				"   When two individuals find" + DefaultLineSeparator +
+				"themselves in the flushed  " + DefaultLineSeparator +
+				"  quadrant together, they are" + DefaultLineSeparator +
+				"said to be MATESPRITS.",
+			align: Left,
+			width: 32,
+			options: Options{
+				PreserveParagraphs: true,
+				ParagraphSeparator: "<P>-\n-<P>",
+			},
+			expect: "Pale Quadrant:                  " + DefaultLineSeparator +
+				"This quadrant presides over     " + DefaultLineSeparator +
+				"MOIRALLEGIENCE, the other       " + DefaultLineSeparator +
+				"conciliatory relationship.      " +
+				"<P>-\n-<P>" +
+				"Flush Quadrant:                 " + DefaultLineSeparator +
+				"When two individuals find       " + DefaultLineSeparator +
+				"themselves in the flushed       " + DefaultLineSeparator +
+				"quandrant together, they are    " + DefaultLineSeparator +
+				"said to be MATESPRITS.",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actualDirect := Edit(tc.input).AlignOpts(tc.align, tc.width, tc.options).String()
+			actualPreOpts := Edit(tc.input).WithOptions(tc.options).Align(tc.align, tc.width).String()
+
+			assert.Equal(tc.expect, actualDirect, "AlignOpts(opts) check failed")
+			assert.Equal(tc.expect, actualPreOpts, "WithOptions(opts).Align() check failed")
+
 		})
 	}
 }

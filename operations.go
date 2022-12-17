@@ -72,7 +72,10 @@ type ParagraphOperation func(idx int, para, sepPrefix, sepSuffix string) []strin
 type gParagraphOperation func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String
 
 // Align makes each line follow the given alignment. If None is given for the
-// alignment, this operation has no effect.
+// alignment, this operation has no effect. If a line is not the given width,
+// spaces are added to make it be that length with the given alignment. If a
+// line (minus any leading/trailing space being removed by the alignment) is
+// already more than the given width, it will not be affected.
 //
 // This function is grapheme-aware and indexes text by human-readable
 // characters, not by the bytes or runes that make it up. See the note on
@@ -87,8 +90,15 @@ type gParagraphOperation func(idx int, para, sepPrefix, sepSuffix gem.String) []
 //     considering them text to be aligned. If set to true, the text is split
 //     into paragraphs by ParagraphSeparator, then the align is applied to each
 //     paragraph.
-func (ed Editor) Align(align Alignment) Editor {
-	return ed.AlignOpts(align, ed.Options)
+//   - NoTrailingLineSeparators specifies whether the function should consider a
+//     final instance of LineSeparator to be ending the prior line or giving the
+//     start of a new line. If NoTrailingLineSeparators is true, a trailing
+//     LineSeparator is considered to start a new (empty) line; additionally,
+//     the align will be called at least once for an empty string. If
+//     NoTrailingLineSeparators is set to false and the Editor text is set to an
+//     empty string, the align will not be called even once.
+func (ed Editor) Align(align Alignment, width int) Editor {
+	return ed.AlignOpts(align, width, ed.Options)
 }
 
 // AlignOpts makes each line follow the given alignment using the provided
@@ -96,10 +106,48 @@ func (ed Editor) Align(align Alignment) Editor {
 //
 // This is identical to [Editor.Align] but provides the ability to set Options
 // for the invocation.
-func (ed Editor) AlignOpts(align Alignment, opts Options) Editor {
+func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
 	opts = opts.WithDefaults()
+	var alignOp func(gem.String, int) gem.String
 
-	return ed
+	switch align {
+	case Left:
+		alignOp = alignLineLeft
+	case Right:
+		alignOp = alignLineRight
+	case Center:
+		alignOp = alignLineCenter
+	case None:
+		fallthrough
+	default:
+		return ed
+	}
+
+	if opts.PreserveParagraphs {
+		return ed.applyGParagraphsOpts(func(idx int, para, pre, suf gem.String) []gem.String {
+			sepStart := _g(strings.Repeat("A", pre.Len()))
+			sepEnd := _g(strings.Repeat("A", suf.Len()))
+
+			bl := newBlock(sepStart.Add(para).Add(sepEnd), _g(opts.LineSeparator))
+			bl.Apply(func(idx int, line string) []string {
+				return []string{alignOp(_g(line), width).String()}
+			})
+			text := bl.Join()
+
+			// remove separator (if any)
+			if sepEnd.Len() > 0 {
+				para = text.Sub(sepStart.Len(), -sepEnd.Len())
+			} else {
+				para = text.Sub(sepStart.Len(), text.Len())
+			}
+
+			return []gem.String{para}
+		}, opts)
+	}
+
+	return ed.ApplyOpts(func(idx int, line string) []string {
+		return []string{alignOp(_g(line), width).String()}
+	}, opts)
 }
 
 // Apply applies the given LineOperation to each line in the text. Line
@@ -574,6 +622,13 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 //     considering them text to be justified. If set to true, the text is split
 //     into paragraphs by ParagraphSeparator, then the justify is applied to
 //     each paragraph.
+//   - NoTrailingLineSeparators specifies whether the function should consider a
+//     final instance of LineSeparator to be ending the prior line or giving the
+//     start of a new line. If NoTrailingLineSeparators is true, a trailing
+//     LineSeparator is considered to start a new (empty) line; additionally,
+//     the justify will be called at least once for an empty string. If
+//     NoTrailingLineSeparators is set to false and the Editor text is set to an
+//     empty string, the justify will not be called even once.
 func (ed Editor) Justify(width int) Editor {
 	return ed.JustifyOpts(width, ed.Options)
 }
