@@ -2057,21 +2057,26 @@ func Test_AlignOpts(t *testing.T) {
 				"Flush Quadrant:                 " + DefaultLineSeparator +
 				"When two individuals find       " + DefaultLineSeparator +
 				"themselves in the flushed       " + DefaultLineSeparator +
-				"quandrant together, they are    " + DefaultLineSeparator +
-				"said to be MATESPRITS.",
+				"quadrant together, they are     " + DefaultLineSeparator +
+				"said to be MATESPRITS.          ",
 		},
+		// TODO: we need to test this on a three paragraph set and also
+		// need to create ticket to check/fix the sep adding issue for justify
 		{
-			name: "left: multi-paragraph, preserved, custom parasep",
+			name: "left: three-paragraph, preserved, custom parasep",
 			input: "Pale Quadrant:" + DefaultLineSeparator +
 				"  This quadrant presides over" + DefaultLineSeparator +
 				" MOIRALLEGIENCE, the other  " + DefaultLineSeparator +
 				" conciliatory relationship. " +
-				"<P>---<P>\n" +
+				"<P>-\n-<P>" +
 				"  Flush Quadrant: " + DefaultLineSeparator +
 				"   When two individuals find" + DefaultLineSeparator +
 				"themselves in the flushed  " + DefaultLineSeparator +
 				"  quadrant together, they are" + DefaultLineSeparator +
-				"said to be MATESPRITS.",
+				"said to be MATESPRITS." +
+				"<P>-\n-<P>" +
+				"  Troll quadrants sure are " + DefaultLineSeparator +
+				" weird!",
 			align: Left,
 			width: 32,
 			options: Options{
@@ -2081,13 +2086,16 @@ func Test_AlignOpts(t *testing.T) {
 			expect: "Pale Quadrant:                  " + DefaultLineSeparator +
 				"This quadrant presides over     " + DefaultLineSeparator +
 				"MOIRALLEGIENCE, the other       " + DefaultLineSeparator +
-				"conciliatory relationship.      " +
+				"conciliatory relationship.  " +
 				"<P>-\n-<P>" +
 				"Flush Quadrant:                 " + DefaultLineSeparator +
 				"When two individuals find       " + DefaultLineSeparator +
 				"themselves in the flushed       " + DefaultLineSeparator +
-				"quandrant together, they are    " + DefaultLineSeparator +
-				"said to be MATESPRITS.",
+				"quadrant together, they are     " + DefaultLineSeparator +
+				"said to be MATESPRITS.      " +
+				"<P>-\n-<P>" +
+				"Troll quadrants sure are        " + DefaultLineSeparator +
+				"weird!                          ",
 		},
 	}
 

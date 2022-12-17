@@ -109,6 +109,8 @@ func (ed Editor) Align(align Alignment, width int) Editor {
 func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
 	opts = opts.WithDefaults()
 	var alignOp func(gem.String, int) gem.String
+	
+	debug := opts.ParagraphSeparator == "<P>-\n-<P>"
 
 	switch align {
 	case Left:
@@ -122,23 +124,54 @@ func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
 	default:
 		return ed
 	}
+	
+	// if doing a left-align, suf should be added to the end of the last line
+	// and pre should be added to the end of first line.
+	// if doing a right-align, pre should added to start of first line and
+	// suf should be added to start of last line
 
 	if opts.PreserveParagraphs {
+		if debug {
+			fmt.Printf("--------------\n")
+		}
 		return ed.applyGParagraphsOpts(func(idx int, para, pre, suf gem.String) []gem.String {
-			sepStart := _g(strings.Repeat("A", pre.Len()))
-			sepEnd := _g(strings.Repeat("A", suf.Len()))
+			if debug {
+				fmt.Printf("PRE: %q\n", pre)
+				fmt.Printf("SUF: %q\n", suf)
+			}
+			sepStart := _g(strings.Repeat(" ", pre.Len()))
+			sepEnd := _g(strings.Repeat(" ", suf.Len()))
+			
+			if debug {
+				fmt.Printf("PARA:\n%q\n", para)
+			}
 
-			bl := newBlock(sepStart.Add(para).Add(sepEnd), _g(opts.LineSeparator))
+			var bl block
+			if align == Left {
+				// need to get a block with suf at end of last line and pre
+				// at end of first line
+				bl = newBlock(para.Add(sepStart).Add(sepEnd), _g(opts.LineSeparator))
+			}
+			
+			if debug {
+				fmt.Printf("PARA BLOCK:\n%+v\n", bl)
+			}
 			bl.Apply(func(idx int, line string) []string {
 				return []string{alignOp(_g(line), width).String()}
 			})
+			if debug {
+				fmt.Printf("POST-OP PARA BLOCK:\n%+v\n", bl)
+			}
 			text := bl.Join()
 
 			// remove separator (if any)
-			if sepEnd.Len() > 0 {
-				para = text.Sub(sepStart.Len(), -sepEnd.Len())
-			} else {
-				para = text.Sub(sepStart.Len(), text.Len())
+			if align == Left {
+				sepAdded := sepEnd.Len() + sepStart.Len()
+				if sepAdded > 0 {
+					para = text.Sub(0, -sepAdded)
+				} else {
+					para = text.Sub(sepStart.Len(), text.Len())
+				}
 			}
 
 			return []gem.String{para}
