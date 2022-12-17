@@ -4,7 +4,6 @@ package rosed
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/dekarrin/rosed/internal/gem"
@@ -17,13 +16,13 @@ type Alignment int
 const (
 	// None is no alignment and is the zero value of an Alignment.
 	None Alignment = iota
-	
+
 	// Left is alignment to the left side of the text.
 	Left
-	
+
 	// Right is alignment to the right side of the text.
 	Right
-	
+
 	// Center is alignment to the center of the text.
 	Center
 )
@@ -100,7 +99,7 @@ func (ed Editor) Align(align Alignment) Editor {
 func (ed Editor) AlignOpts(align Alignment, opts Options) Editor {
 	opts = opts.WithDefaults()
 
-	
+	return ed
 }
 
 // Apply applies the given LineOperation to each line in the text. Line

@@ -328,3 +328,94 @@ func Test_Manip_combineColumnBlocks(t *testing.T) {
 		})
 	}
 }
+
+func Test_Manip_alignLineLeft(t *testing.T) {
+	testCases := []struct {
+		name   string
+		input  gem.String
+		width  int
+		expect gem.String
+	}{
+		{"empty string to 0", gem.Zero, 0, gem.Zero},
+		{"empty string to 10", gem.Zero, 10, gem.New("          ")},
+		{"empty string to -1", gem.Zero, 0, gem.Zero},
+		{"non-empty, normal", gem.New("rose"), 10, gem.New("rose      ")},
+		{"non-empty, already big", gem.New("rose"), 2, gem.New("rose")},
+		{"non-empty, to -1", gem.New("rose"), -1, gem.New("rose")},
+		{"non-empty, space on left", gem.New(" rose"), 10, gem.New("rose      ")},
+		{"non-empty, space on right", gem.New("rose  "), 10, gem.New("rose      ")},
+		{"non-empty, space on both sides", gem.New(" rose  "), 10, gem.New("rose      ")},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := alignLineLeft(tc.input, tc.width)
+
+			assert.True(tc.expect.Equal(actual))
+			assert.Equal(tc.expect.String(), actual.String())
+		})
+	}
+}
+
+func Test_Manip_alignLineRight(t *testing.T) {
+	testCases := []struct {
+		name   string
+		input  gem.String
+		width  int
+		expect gem.String
+	}{
+		{"empty string to 0", gem.Zero, 0, gem.Zero},
+		{"empty string to 10", gem.Zero, 10, gem.New("          ")},
+		{"empty string to -1", gem.Zero, 0, gem.Zero},
+		{"non-empty, normal", gem.New("rose  lalonde"), 20, gem.New("       rose  lalonde")},
+		{"non-empty, already big", gem.New("rose"), 2, gem.New("rose")},
+		{"non-empty, to -1", gem.New("rose"), -1, gem.New("rose")},
+		{"non-empty, space on left", gem.New("  rose"), 10, gem.New("      rose")},
+		{"non-empty, space on right", gem.New("rose  lalonde  "), 20, gem.New("       rose  lalonde")},
+		{"non-empty, space on both sides", gem.New("   rose  "), 10, gem.New("      rose")},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := alignLineRight(tc.input, tc.width)
+
+			assert.True(tc.expect.Equal(actual))
+			assert.Equal(tc.expect.String(), actual.String())
+		})
+	}
+}
+
+func Test_Manip_alignLineCenter(t *testing.T) {
+	testCases := []struct {
+		name   string
+		input  gem.String
+		width  int
+		expect gem.String
+	}{
+		{"empty string to 0", gem.Zero, 0, gem.Zero},
+		{"empty string to 10", gem.Zero, 10, gem.New("          ")},
+		{"empty string to -1", gem.Zero, 0, gem.Zero},
+		{"non-empty, normal", gem.New("john egbert"), 17, gem.New("   john egbert   ")},
+		{"non-empty, normal, not even", gem.New("john egbert"), 18, gem.New("    john egbert   ")},
+		{"non-empty, already big", gem.New("john egbert"), 2, gem.New("john egbert")},
+		{"non-empty, to -1", gem.New("john"), -1, gem.New("john")},
+		{"non-empty, space on left", gem.New("  john"), 12, gem.New("    john    ")},
+		{"non-empty, space on right", gem.New("john  "), 12, gem.New("    john    ")},
+		{"non-empty, space on both sides", gem.New("   john  "), 12, gem.New("    john    ")},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := alignLineCenter(tc.input, tc.width)
+
+			assert.True(tc.expect.Equal(actual))
+			assert.Equal(tc.expect.String(), actual.String())
+		})
+	}
+}
