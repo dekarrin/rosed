@@ -107,44 +107,16 @@ func (ed Editor) Align(align Alignment, width int) Editor {
 // This is identical to [Editor.Align] but provides the ability to set Options
 // for the invocation.
 func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
-	opts = opts.WithDefaults()
-	var alignOp func(gem.String, int) gem.String
-	
-	debug := opts.ParagraphSeparator == "<P>-\n-<P>"
-	
-	switch align {
-	case Left:
-		alignOp = alignLineLeft
-	case Right:
-		alignOp = alignLineRight
-	case Center:
-		alignOp = alignLineCenter
-	case None:
-		fallthrough
-	default:
+	if align == None || (align != Left && align != Right && align != Center) {
 		return ed
 	}
-	
-	// if doing a left-align, suf should be added to the end of the last line
-	// and pre should be added to the end of first line.
-	// if doing a right-align, pre should added to start of first line and
-	// suf should be added to start of last line
+
+	opts = opts.WithDefaults()
 
 	if opts.PreserveParagraphs {
-		if debug {
-			fmt.Printf("--------------\n")
-		}
 		return ed.applyGParagraphsOpts(func(idx int, para, pre, suf gem.String) []gem.String {
-			if debug {
-				fmt.Printf("PRE: %q\n", pre)
-				fmt.Printf("SUF: %q\n", suf)
-			}
 			sepStart := _g(strings.Repeat(" ", pre.Len()))
 			sepEnd := _g(strings.Repeat(" ", suf.Len()))
-			
-			if debug {
-				fmt.Printf("PARA:\n%q\n", para)
-			}
 
 			var bl block
 			switch align {
@@ -152,10 +124,10 @@ func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
 				// need to get a block with suf at end of last line and pre
 				// at end of first line
 				bl = newBlock(para.Add(sepEnd), _g(opts.LineSeparator))
-				endLineIdx := bl.Len()-1
+				endLineIdx := bl.Len() - 1
 				bl.Set(0, bl.Line(0).Add(sepStart))
 				bl.Apply(func(idx int, line string) []string {
-					return []string{alignOp(_g(line), width).String()}
+					return []string{alignLineLeft(_g(line), width).String()}
 				})
 				// remove separators (if any)
 				if sepStart.Len() > 0 {
@@ -169,10 +141,10 @@ func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
 				// need to get a block with suf at start of last line and pre
 				// at start of first line
 				bl = newBlock(sepStart.Add(para), _g(opts.LineSeparator))
-				endLineIdx := bl.Len()-1
+				endLineIdx := bl.Len() - 1
 				bl.Set(endLineIdx, sepEnd.Add(bl.Line(endLineIdx)))
 				bl.Apply(func(idx int, line string) []string {
-					return []string{alignOp(_g(line), width).String()}
+					return []string{alignLineRight(_g(line), width).String()}
 				})
 				// remove separators (if any)
 				if sepStart.Len() > 0 {
@@ -183,16 +155,71 @@ func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
 					newEndLine := curEndLine.Sub(sepEnd.Len(), curEndLine.Len())
 					bl.Set(endLineIdx, newEndLine)
 				}
+			case Center:
+				// dont pre-add anyfin so center can work its magic
+				bl = newBlock(para, _g(opts.LineSeparator))
+				bl.Apply(func(idx int, line string) []string {
+					return []string{alignLineCenter(_g(line), width).String()}
+				})
+
+				// now work out how much needs to be removed from the start:
+				if sepStart.Len() > 0 {
+					firstLine := bl.Line(0)
+					leftSpace := countLeadingWhitespace(firstLine)
+
+					if leftSpace >= sepStart.Len() {
+						// happy path: just chop off that much from the start
+						firstLine = firstLine.Sub(sepStart.Len(), firstLine.Len())
+					} else {
+						rightSpace := countTrailingWhitespace(firstLine)
+						rightRemoveSpace := sepStart.Len() - leftSpace
+						if rightRemoveSpace > rightSpace {
+							rightRemoveSpace = rightSpace
+						}
+						firstLine = firstLine.Sub(leftSpace, -rightRemoveSpace)
+					}
+
+					bl.Set(0, firstLine)
+				}
+
+				// work how how much needs to be removed from end:
+				if sepEnd.Len() > 0 {
+					lastLine := bl.Line(bl.Len() - 1)
+					rightSpace := countTrailingWhitespace(lastLine)
+
+					if rightSpace >= sepEnd.Len() {
+						// happy path: just chop off that much from end
+						lastLine = lastLine.Sub(0, -sepEnd.Len())
+					} else {
+						leftSpace := countLeadingWhitespace(lastLine)
+						leftRemoveSpace := sepEnd.Len() - rightSpace
+						if leftRemoveSpace > leftSpace {
+							leftRemoveSpace = leftSpace
+						}
+						lastLine = lastLine.Sub(leftRemoveSpace, -rightSpace)
+					}
+
+					bl.Set(bl.Len()-1, lastLine)
+				}
 			}
-			
+
 			para = bl.Join()
-			
+
 			return []gem.String{para}
 		}, opts)
 	}
 
 	return ed.ApplyOpts(func(idx int, line string) []string {
-		return []string{alignOp(_g(line), width).String()}
+		switch align {
+		case Left:
+			return []string{alignLineLeft(_g(line), width).String()}
+		case Right:
+			return []string{alignLineRight(_g(line), width).String()}
+		case Center:
+			return []string{alignLineCenter(_g(line), width).String()}
+		default:
+			return []string{line}
+		}
 	}, opts)
 }
 

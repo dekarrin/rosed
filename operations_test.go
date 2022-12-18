@@ -2218,8 +2218,8 @@ func Test_AlignOpts(t *testing.T) {
 			options: Options{
 				NoTrailingLineSeparators: true,
 			},
-			expect: "  This quadrant presides over   " + DefaultLineSeparator +
-				"   MOIRALLEGIENCE, the other    " + DefaultLineSeparator +
+			expect: "   This quadrant presides over  " + DefaultLineSeparator +
+				"    MOIRALLEGIENCE, the other   " + DefaultLineSeparator +
 				"   conciliatory relationship.   " + DefaultLineSeparator +
 				"                                ",
 		},
@@ -2233,8 +2233,8 @@ func Test_AlignOpts(t *testing.T) {
 			options: Options{
 				NoTrailingLineSeparators: true,
 			},
-			expect: "  This quadrant presides over   " + DefaultLineSeparator +
-				"   MOIRALLEGIENCE, the other    " + DefaultLineSeparator +
+			expect: "   This quadrant presides over  " + DefaultLineSeparator +
+				"    MOIRALLEGIENCE, the other   " + DefaultLineSeparator +
 				"   conciliatory relationship.   ",
 		},
 		{
@@ -2255,14 +2255,14 @@ func Test_AlignOpts(t *testing.T) {
 				PreserveParagraphs: true,
 			},
 			expect: "         Pale Quadrant:         " + DefaultLineSeparator +
-				"  This quadrant presides over   " + DefaultLineSeparator +
-				"   MOIRALLEGIENCE, the other    " + DefaultLineSeparator +
+				"   This quadrant presides over  " + DefaultLineSeparator +
+				"    MOIRALLEGIENCE, the other   " + DefaultLineSeparator +
 				"   conciliatory relationship.   " +
 				DefaultParagraphSeparator +
-				"        Flush Quadrant:         " + DefaultLineSeparator +
-				"   When two individuals find    " + DefaultLineSeparator +
-				"   themselves in the flushed    " + DefaultLineSeparator +
-				"  quadrant together, they are   " + DefaultLineSeparator +
+				"         Flush Quadrant:        " + DefaultLineSeparator +
+				"    When two individuals find   " + DefaultLineSeparator +
+				"    themselves in the flushed   " + DefaultLineSeparator +
+				"   quadrant together, they are  " + DefaultLineSeparator +
 				"     said to be MATESPRITS.     ",
 		},
 		{
@@ -2287,15 +2287,15 @@ func Test_AlignOpts(t *testing.T) {
 				ParagraphSeparator: "<P>-\n-<P>",
 			},
 			expect: "         Pale Quadrant:         " + DefaultLineSeparator +
-				"  This quadrant presides over   " + DefaultLineSeparator +
-				"   MOIRALLEGIENCE, the other    " + DefaultLineSeparator +
-				" conciliatory relationship." +
+				"   This quadrant presides over  " + DefaultLineSeparator +
+				"    MOIRALLEGIENCE, the other   " + DefaultLineSeparator +
+				"  conciliatory relationship." +
 				"<P>-\n-<P>" +
 				"     Flush Quadrant:        " + DefaultLineSeparator +
-				"   When two individuals find    " + DefaultLineSeparator +
-				"   themselves in the flushed    " + DefaultLineSeparator +
-				"  quadrant together, they are   " + DefaultLineSeparator +
-				"   said to be MATESPRITS." +
+				"    When two individuals find   " + DefaultLineSeparator +
+				"    themselves in the flushed   " + DefaultLineSeparator +
+				"   quadrant together, they are  " + DefaultLineSeparator +
+				"     said to be MATESPRITS. " +
 				"<P>-\n-<P>" +
 				"Troll quadrants sure are    " + DefaultLineSeparator +
 				"             weird!             ",

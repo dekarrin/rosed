@@ -232,18 +232,12 @@ func wrap(text gem.String, width int, lineSep gem.String) block {
 
 func alignLineLeft(text gem.String, width int) gem.String {
 	// find first instance of non-space grapheme at start.
-	nonSpaceIdx := -1
-	for i := 0; i < text.Len(); i++ {
-		if !unicode.IsSpace(text.CharAt(i)[0]) {
-			nonSpaceIdx = i
-			break
-		}
-	}
+	startSpaces := countLeadingWhitespace(text)
 
 	// if there are leading spaces, split the string there
 	var endingText gem.String
-	if nonSpaceIdx > -1 {
-		endingText = text.Sub(nonSpaceIdx, text.Len())
+	if startSpaces > 0 {
+		endingText = text.Sub(startSpaces, text.Len())
 	} else {
 		endingText = text
 	}
@@ -262,18 +256,15 @@ func alignLineLeft(text gem.String, width int) gem.String {
 
 func alignLineRight(text gem.String, width int) gem.String {
 	// find first instance of non-space grapheme at end.
-	nonSpaceIdx := -1
-	for i := text.Len() - 1; i >= 0; i-- {
-		if !unicode.IsSpace(text.CharAt(i)[0]) {
-			nonSpaceIdx = i
-			break
-		}
-	}
+	endSpaces := countTrailingWhitespace(text)
 
 	// if there are trailing spaces, split the string there
 	var startingText gem.String
-	if nonSpaceIdx > -1 {
-		startingText = text.Sub(0, nonSpaceIdx+1)
+	//
+	// 0 -> sub(0, 1)
+	// 1 -> sub(
+	if endSpaces > 0 {
+		startingText = text.Sub(0, -endSpaces)
 	} else {
 		startingText = text
 	}
@@ -292,24 +283,8 @@ func alignLineRight(text gem.String, width int) gem.String {
 
 func alignLineCenter(text gem.String, width int) gem.String {
 	// find first instance of non-space grapheme at start.
-	startSpaces := 0
-	for i := 0; i < text.Len(); i++ {
-		if !unicode.IsSpace(text.CharAt(i)[0]) {
-			startSpaces = i
-			break
-		}
-	}
-
-	// find first instance of non-space grapheme at end.
-	// "hello ", so nsi = 4
-	// numSpace = str.Len() - (nsi+1) = 1
-	endSpaces := 0
-	for i := text.Len() - 1; i >= 0; i-- {
-		if !unicode.IsSpace(text.CharAt(i)[0]) {
-			endSpaces = text.Len() - (i + 1)
-			break
-		}
-	}
+	startSpaces := countLeadingWhitespace(text)
+	endSpaces := countTrailingWhitespace(text)
 
 	// get the text to be centered
 	var midText gem.String
@@ -327,8 +302,8 @@ func alignLineCenter(text gem.String, width int) gem.String {
 		return midText
 	}
 
-	leftSpaceNeeded := spaceNeeded / 2
-	rightSpaceNeeded := spaceNeeded - leftSpaceNeeded
+	rightSpaceNeeded := spaceNeeded / 2
+	leftSpaceNeeded := spaceNeeded - rightSpaceNeeded
 
 	leftSpace := gem.New(strings.Repeat(" ", leftSpaceNeeded))
 	rightSpace := gem.New(strings.Repeat(" ", rightSpaceNeeded))
@@ -336,4 +311,22 @@ func alignLineCenter(text gem.String, width int) gem.String {
 	text = leftSpace.Add(midText).Add(rightSpace)
 
 	return text
+}
+
+func countLeadingWhitespace(text gem.String) int {
+	for i := 0; i < text.Len(); i++ {
+		if !unicode.IsSpace(text.CharAt(i)[0]) {
+			return i
+		}
+	}
+	return 0
+}
+
+func countTrailingWhitespace(text gem.String) int {
+	for i := text.Len() - 1; i >= 0; i-- {
+		if !unicode.IsSpace(text.CharAt(i)[0]) {
+			return text.Len() - (i + 1)
+		}
+	}
+	return 0
 }
