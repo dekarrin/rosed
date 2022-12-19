@@ -65,6 +65,13 @@ type Options struct {
 	// separators. If not set, certain operations may modify paragraph
 	// separators.
 	PreserveParagraphs bool
+
+	// JustifyLastLine gives whether text justify operations should apply to
+	// the last line of a block of text (or paragraph if PreserveParagraphs is
+	// set to true and is respected). Conventionally, justifications are not
+	// applied to the last line of a block of text and this is the default
+	// behavior.
+	JustifyLastLine bool
 }
 
 // String gets the string representation of the Options.
@@ -73,8 +80,13 @@ func (opts Options) String() string {
 	fmtStr += " LineSeparator: %q,"
 	fmtStr += " IndentStr: %q,"
 	fmtStr += " NoTrailingLineSeparators: %v,"
-	fmtStr += " PreserveParagraphs: %v}"
-	return fmt.Sprintf(fmtStr, opts.ParagraphSeparator, opts.LineSeparator, opts.IndentStr, opts.NoTrailingLineSeparators, opts.PreserveParagraphs)
+	fmtStr += " PreserveParagraphs: %v,"
+	fmtStr += " JustifyLastLine: %v}"
+	return fmt.Sprintf(
+		fmtStr, opts.ParagraphSeparator, opts.LineSeparator, opts.IndentStr,
+		opts.NoTrailingLineSeparators, opts.PreserveParagraphs,
+		opts.JustifyLastLine,
+	)
 }
 
 // WithDefaults returns a copy of the options with all blank members filled with

@@ -899,7 +899,7 @@ func ExampleOptions_String() {
 
 	fmt.Println(str)
 	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false}
+	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false}
 }
 
 // This example shows how WithDefaults can be called to set all currently unset
@@ -914,8 +914,8 @@ func ExampleOptions_WithDefaults() {
 	optsDefault := opts.WithDefaults()
 	fmt.Println(optsDefault)
 	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "<br/>", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: true}
-	// Options{ParagraphSeparator: "\n\n", LineSeparator: "<br/>", IndentStr: "\t", NoTrailingLineSeparators: false, PreserveParagraphs: true}
+	// Options{ParagraphSeparator: "", LineSeparator: "<br/>", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: true, JustifyLastLine: false}
+	// Options{ParagraphSeparator: "\n\n", LineSeparator: "<br/>", IndentStr: "\t", NoTrailingLineSeparators: false, PreserveParagraphs: true, JustifyLastLine: false}
 }
 
 func ExampleOptions_WithIndentStr() {
@@ -925,7 +925,7 @@ func ExampleOptions_WithIndentStr() {
 
 	fmt.Println(opts.String())
 	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false}
+	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false}
 }
 
 func ExampleOptions_WithLineSeparator() {
@@ -935,7 +935,7 @@ func ExampleOptions_WithLineSeparator() {
 
 	fmt.Println(opts.String())
 	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "<br/>", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false}
+	// Options{ParagraphSeparator: "", LineSeparator: "<br/>", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false}
 }
 
 func ExampleOptions_WithNoTrailingLineSeparators() {
@@ -945,7 +945,7 @@ func ExampleOptions_WithNoTrailingLineSeparators() {
 
 	fmt.Println(opts.String())
 	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: true, PreserveParagraphs: false}
+	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: true, PreserveParagraphs: false, JustifyLastLine: false}
 }
 
 func ExampleOptions_WithParagraphSeparator() {
@@ -955,7 +955,7 @@ func ExampleOptions_WithParagraphSeparator() {
 
 	fmt.Println(opts.String())
 	// Output:
-	// Options{ParagraphSeparator: "<P>", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false}
+	// Options{ParagraphSeparator: "<P>", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false}
 }
 
 func ExampleOptions_WithPreserveParagraphs() {
@@ -965,5 +965,5 @@ func ExampleOptions_WithPreserveParagraphs() {
 
 	fmt.Println(opts.String())
 	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: true}
+	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: true, JustifyLastLine: false}
 }
