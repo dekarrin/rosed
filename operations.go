@@ -73,7 +73,7 @@ type gParagraphOperation func(idx int, para, sepPrefix, sepSuffix gem.String) []
 
 // Align makes each line follow the given alignment. If None is given for the
 // alignment, this operation has no effect. If a line is not the given width,
-// spaces are added to make it be that length with the given alignment. If a
+// spaces are added to the unaligned-to end until the line is that width. If a
 // line (minus any leading/trailing space being removed by the alignment) is
 // already more than the given width, it will not be affected.
 //

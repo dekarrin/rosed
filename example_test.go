@@ -12,6 +12,128 @@ func ExampleEdit() {
 	// Output: sample text
 }
 
+// This example shows use of Align to take inconsistently tabbed input and
+// normalize each line to no indent before doing further operations.
+func ExampleEditor_Align_left() {
+	text := "\t\t\tYour name is TEREZI PYROPE.\n"
+	text += "\n"
+	text += "\t  You are pretty enthusiastic about dragons.\n"
+	text += "     But you have a PARTICULAR AFFECTION\n"
+	text += "\t for their COLORFUL SCALES, which you gather\n"
+	text += "\t\tand use to decorate your hive.\n"
+	
+	ed := Edit(text)
+	
+	ed = ed.Align(Left, 45)
+	
+	// also add a pipe char at start and end of each line to show that space is
+	// added to fill out each line to the specified width:
+	ed = ed.Apply(func(idx int, line string) []string {
+		return []string{"|" + line + "|"}
+	})
+	
+	fmt.Println(ed.String())
+	// Output:
+	// |Your name is TEREZI PYROPE.                  |
+	// |                                             |
+	// |You are pretty enthusiastic about dragons.   |
+	// |But you have a PARTICULAR AFFECTION          |
+	// |for their COLORFUL SCALES, which you gather  |
+	// |and use to decorate your hive.               |
+}
+
+// This example shows use of Align to make every line align to the right side.
+func ExampleEditor_Align_right() {
+	text := "Your name is TEREZI PYROPE.\n"
+	text += "\n"
+	text += "You are pretty enthusiastic about dragons.\n"
+	text += "But you have a PARTICULAR AFFECTION\n"
+	text += "for their COLORFUL SCALES, which you gather\n"
+	text += "and use to decorate your hive.\n"
+	
+	ed := Edit(text)
+	
+	ed = ed.Align(Right, 45)
+	
+	// also add a pipe char at start and end of each line to show that space is
+	// added to fill out each line to the specified width:
+	ed = ed.Apply(func(idx int, line string) []string {
+		return []string{"|" + line + "|"}
+	})
+	
+	fmt.Println(ed.String())
+	// Output:
+	// |                  Your name is TEREZI PYROPE.|
+	// |                                             |
+	// |   You are pretty enthusiastic about dragons.|
+	// |          But you have a PARTICULAR AFFECTION|
+	// |  for their COLORFUL SCALES, which you gather|
+	// |               and use to decorate your hive.|
+}
+
+// This example shows use of Align to center each line of text.
+func ExampleEditor_Align_center() {
+	text := "Your name is TEREZI PYROPE.\n"
+	text += "\n"
+	text += "You are pretty enthusiastic about dragons.\n"
+	text += "But you have a PARTICULAR AFFECTION\n"
+	text += "for their COLORFUL SCALES, which you gather\n"
+	text += "and use to decorate your hive.\n"
+	
+	ed := Edit(text)
+	
+	ed = ed.Align(Center, 45)
+	
+	// also add a pipe char at start and end of each line to show that space is
+	// added to fill out each line to the specified width:
+	ed = ed.Apply(func(idx int, line string) []string {
+		return []string{"|" + line + "|"}
+	})
+	
+	fmt.Println(ed.String())
+	// Output:
+	// |         Your name is TEREZI PYROPE.         |
+	// |                                             |
+	// |  You are pretty enthusiastic about dragons. |
+	// |     But you have a PARTICULAR AFFECTION     |
+	// | for their COLORFUL SCALES, which you gather |
+	// |        and use to decorate your hive.       |
+}
+
+// This example shows use of a custom line separator with Align to respect text
+// that uses the HTML tag "<br/>\n" to separate lines.
+func ExampleEditor_AlignOpts() {
+	text := "Your name is TEREZI PYROPE.<br/>\n"
+	text += "<br/>\n"
+	text += "You are pretty enthusiastic about dragons.<br/>\n"
+	text += "But you have a PARTICULAR AFFECTION<br/>\n"
+	text += "for their COLORFUL SCALES, which you gather<br/>\n"
+	text += "and use to decorate your hive.<br/>\n"
+	
+	opts := Options{
+		LineSeparator: "<br/>\n",
+	}
+	
+	ed := Edit(text)
+	
+	ed = ed.AlignOpts(Center, 45, opts)
+	
+	// also add a pipe char at start and end of each line to show that space is
+	// added to fill out each line to the specified width:
+	/*ed = ed.Apply(func(idx int, line string) []string {
+		return []string{"|" + line + "|"}
+	})*/
+	
+	fmt.Println(ed.String())
+	// Output:
+	//          Your name is TEREZI PYROPE.         <br/>
+	//                                              <br/>
+	//   You are pretty enthusiastic about dragons. <br/>
+	//      But you have a PARTICULAR AFFECTION     <br/>
+	//  for their COLORFUL SCALES, which you gather <br/>
+	//         and use to decorate your hive.       <br/>
+}
+
 // This example shows the use of Apply to add a numbered prefix to every line.
 func ExampleEditor_Apply() {
 	namerFunc := func(lineIdx int, line string) []string {
