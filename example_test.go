@@ -21,17 +21,17 @@ func ExampleEditor_Align_left() {
 	text += "     But you have a PARTICULAR AFFECTION\n"
 	text += "\t for their COLORFUL SCALES, which you gather\n"
 	text += "\t\tand use to decorate your hive.\n"
-	
+
 	ed := Edit(text)
-	
+
 	ed = ed.Align(Left, 45)
-	
+
 	// also add a pipe char at start and end of each line to show that space is
 	// added to fill out each line to the specified width:
 	ed = ed.Apply(func(idx int, line string) []string {
 		return []string{"|" + line + "|"}
 	})
-	
+
 	fmt.Println(ed.String())
 	// Output:
 	// |Your name is TEREZI PYROPE.                  |
@@ -50,17 +50,17 @@ func ExampleEditor_Align_right() {
 	text += "But you have a PARTICULAR AFFECTION\n"
 	text += "for their COLORFUL SCALES, which you gather\n"
 	text += "and use to decorate your hive.\n"
-	
+
 	ed := Edit(text)
-	
+
 	ed = ed.Align(Right, 45)
-	
+
 	// also add a pipe char at start and end of each line to show that space is
 	// added to fill out each line to the specified width:
 	ed = ed.Apply(func(idx int, line string) []string {
 		return []string{"|" + line + "|"}
 	})
-	
+
 	fmt.Println(ed.String())
 	// Output:
 	// |                  Your name is TEREZI PYROPE.|
@@ -79,17 +79,17 @@ func ExampleEditor_Align_center() {
 	text += "But you have a PARTICULAR AFFECTION\n"
 	text += "for their COLORFUL SCALES, which you gather\n"
 	text += "and use to decorate your hive.\n"
-	
+
 	ed := Edit(text)
-	
+
 	ed = ed.Align(Center, 45)
-	
+
 	// also add a pipe char at start and end of each line to show that space is
 	// added to fill out each line to the specified width:
 	ed = ed.Apply(func(idx int, line string) []string {
 		return []string{"|" + line + "|"}
 	})
-	
+
 	fmt.Println(ed.String())
 	// Output:
 	// |         Your name is TEREZI PYROPE.         |
@@ -109,21 +109,21 @@ func ExampleEditor_AlignOpts() {
 	text += "But you have a PARTICULAR AFFECTION<br/>\n"
 	text += "for their COLORFUL SCALES, which you gather<br/>\n"
 	text += "and use to decorate your hive.<br/>\n"
-	
+
 	opts := Options{
 		LineSeparator: "<br/>\n",
 	}
-	
+
 	ed := Edit(text)
-	
+
 	ed = ed.AlignOpts(Center, 45, opts)
-	
+
 	// also add a pipe char at start and end of each line to show that space is
 	// added to fill out each line to the specified width:
 	/*ed = ed.Apply(func(idx int, line string) []string {
 		return []string{"|" + line + "|"}
 	})*/
-	
+
 	fmt.Println(ed.String())
 	// Output:
 	//          Your name is TEREZI PYROPE.         <br/>
