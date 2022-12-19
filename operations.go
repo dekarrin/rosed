@@ -4,14 +4,27 @@ package rosed
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/dekarrin/rosed/internal/gem"
 )
 
-var (
-	spaceCollapser = regexp.MustCompile(" +")
+// Alignment is the type of alignment to apply to text. It is used in the
+// [Editor.Align] function.
+type Alignment int
+
+const (
+	// None is no alignment and is the zero value of an Alignment.
+	None Alignment = iota
+
+	// Left is alignment to the left side of the text.
+	Left
+
+	// Right is alignment to the right side of the text.
+	Right
+
+	// Center is alignment to the center of the text.
+	Center
 )
 
 // LineOperation is a function that accepts a zero-indexed line number and the
@@ -57,6 +70,158 @@ type LineOperation func(idx int, line string) []string
 type ParagraphOperation func(idx int, para, sepPrefix, sepSuffix string) []string
 
 type gParagraphOperation func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String
+
+// Align makes each line follow the given alignment. If None is given for the
+// alignment, this operation has no effect. If a line is not the given width,
+// spaces are added to the unaligned-to end until the line is that width. If a
+// line (minus any leading/trailing space being removed by the alignment) is
+// already more than the given width, it will not be affected.
+//
+// This function is grapheme-aware and indexes text by human-readable
+// characters, not by the bytes or runes that make it up. See the note on
+// Grapheme-Awareness in the [rosed] package docs for more info.
+//
+// This function is affected by the following [Options]:
+//
+//   - LineSeparator is used to separate lines of input.
+//   - ParagraphSeparator is the separator used to split paragraphs. It will
+//     only have effect if PreserveParagraphs is set to true.
+//   - PreserveParagraphs gives whether to respect paragraphs instead of
+//     considering them text to be aligned. If set to true, the text is split
+//     into paragraphs by ParagraphSeparator, then the align is applied to each
+//     paragraph.
+//   - NoTrailingLineSeparators specifies whether the function should consider a
+//     final instance of LineSeparator to be ending the prior line or giving the
+//     start of a new line. If NoTrailingLineSeparators is true, a trailing
+//     LineSeparator is considered to start a new (empty) line; additionally,
+//     the align will be called at least once for an empty string. If
+//     NoTrailingLineSeparators is set to false and the Editor text is set to an
+//     empty string, the align will not be called even once.
+func (ed Editor) Align(align Alignment, width int) Editor {
+	return ed.AlignOpts(align, width, ed.Options)
+}
+
+// AlignOpts makes each line follow the given alignment using the provided
+// options.
+//
+// This is identical to [Editor.Align] but provides the ability to set Options
+// for the invocation.
+func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
+	if align == None || (align != Left && align != Right && align != Center) {
+		return ed
+	}
+
+	opts = opts.WithDefaults()
+
+	if opts.PreserveParagraphs {
+		return ed.applyGParagraphsOpts(func(idx int, para, pre, suf gem.String) []gem.String {
+			sepStart := _g(strings.Repeat(" ", pre.Len()))
+			sepEnd := _g(strings.Repeat(" ", suf.Len()))
+
+			var bl block
+			switch align {
+			case Left:
+				// need to get a block with suf at end of last line and pre
+				// at end of first line
+				bl = newBlock(para.Add(sepEnd), _g(opts.LineSeparator))
+				endLineIdx := bl.Len() - 1
+				bl.Set(0, bl.Line(0).Add(sepStart))
+				bl.Apply(func(idx int, line string) []string {
+					return []string{alignLineLeft(_g(line), width).String()}
+				})
+				// remove separators (if any)
+				if sepStart.Len() > 0 {
+					bl.Set(0, bl.Line(0).Sub(0, -sepStart.Len()))
+				}
+				if sepEnd.Len() > 0 {
+					newEndLine := bl.Line(endLineIdx).Sub(0, -sepEnd.Len())
+					bl.Set(endLineIdx, newEndLine)
+				}
+			case Right:
+				// need to get a block with suf at start of last line and pre
+				// at start of first line
+				bl = newBlock(sepStart.Add(para), _g(opts.LineSeparator))
+				endLineIdx := bl.Len() - 1
+				bl.Set(endLineIdx, sepEnd.Add(bl.Line(endLineIdx)))
+				bl.Apply(func(idx int, line string) []string {
+					return []string{alignLineRight(_g(line), width).String()}
+				})
+				// remove separators (if any)
+				if sepStart.Len() > 0 {
+					bl.Set(0, bl.Line(0).Sub(sepStart.Len(), bl.Line(0).Len()))
+				}
+				if sepEnd.Len() > 0 {
+					curEndLine := bl.Line(endLineIdx)
+					newEndLine := curEndLine.Sub(sepEnd.Len(), curEndLine.Len())
+					bl.Set(endLineIdx, newEndLine)
+				}
+			case Center:
+				// dont pre-add anyfin so center can work its magic
+				bl = newBlock(para, _g(opts.LineSeparator))
+				bl.Apply(func(idx int, line string) []string {
+					return []string{alignLineCenter(_g(line), width).String()}
+				})
+
+				// now work out how much needs to be removed from the start:
+				if sepStart.Len() > 0 {
+					firstLine := bl.Line(0)
+					leftSpace := countLeadingWhitespace(firstLine)
+
+					if leftSpace >= sepStart.Len() {
+						// happy path: just chop off that much from the start
+						firstLine = firstLine.Sub(sepStart.Len(), firstLine.Len())
+					} else {
+						rightSpace := countTrailingWhitespace(firstLine)
+						rightRemoveSpace := sepStart.Len() - leftSpace
+						if rightRemoveSpace > rightSpace {
+							rightRemoveSpace = rightSpace
+						}
+						firstLine = firstLine.Sub(leftSpace, -rightRemoveSpace)
+					}
+
+					bl.Set(0, firstLine)
+				}
+
+				// work how how much needs to be removed from end:
+				if sepEnd.Len() > 0 {
+					lastLine := bl.Line(bl.Len() - 1)
+					rightSpace := countTrailingWhitespace(lastLine)
+
+					if rightSpace >= sepEnd.Len() {
+						// happy path: just chop off that much from end
+						lastLine = lastLine.Sub(0, -sepEnd.Len())
+					} else {
+						leftSpace := countLeadingWhitespace(lastLine)
+						leftRemoveSpace := sepEnd.Len() - rightSpace
+						if leftRemoveSpace > leftSpace {
+							leftRemoveSpace = leftSpace
+						}
+						lastLine = lastLine.Sub(leftRemoveSpace, -rightSpace)
+					}
+
+					bl.Set(bl.Len()-1, lastLine)
+				}
+			}
+
+			para = bl.Join()
+
+			return []gem.String{para}
+		}, opts)
+	}
+
+	return ed.ApplyOpts(func(idx int, line string) []string {
+		switch align {
+		case Left:
+			return []string{alignLineLeft(_g(line), width).String()}
+		case Right:
+			return []string{alignLineRight(_g(line), width).String()}
+		case Center:
+			return []string{alignLineCenter(_g(line), width).String()}
+		default:
+			return []string{line}
+		}
+	}, opts)
+}
 
 // Apply applies the given LineOperation to each line in the text. Line
 // termination at the last line is transparently handled as per the options set
@@ -530,6 +695,13 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 //     considering them text to be justified. If set to true, the text is split
 //     into paragraphs by ParagraphSeparator, then the justify is applied to
 //     each paragraph.
+//   - NoTrailingLineSeparators specifies whether the function should consider a
+//     final instance of LineSeparator to be ending the prior line or giving the
+//     start of a new line. If NoTrailingLineSeparators is true, a trailing
+//     LineSeparator is considered to start a new (empty) line; additionally,
+//     the justify will be called at least once for an empty string. If
+//     NoTrailingLineSeparators is set to false and the Editor text is set to an
+//     empty string, the justify will not be called even once.
 func (ed Editor) Justify(width int) Editor {
 	return ed.JustifyOpts(width, ed.Options)
 }
