@@ -928,6 +928,16 @@ func ExampleOptions_WithIndentStr() {
 	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false}
 }
 
+func ExampleOptions_WithJustifyLastLine() {
+	opts := Options{}
+
+	opts = opts.WithJustifyLastLine(true)
+
+	fmt.Println(opts.String())
+	// Output:
+	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: true}
+}
+
 func ExampleOptions_WithLineSeparator() {
 	opts := Options{}
 

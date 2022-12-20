@@ -107,9 +107,9 @@ func (opts Options) WithDefaults() Options {
 	return opts
 }
 
-// WithIndentStr returns a new Options identical to this one but with the
-// IndentStr set to str. If str is the empty string, the indent str is
-// interpreted as [DefaultIndentString].
+// WithIndentStr returns a new Options identical to this one but with IndentStr
+// set to str. If str is the empty string, the indent str is interpreted as
+// [DefaultIndentString].
 //
 // This function does not modify the Options it is called on.
 func (opts Options) WithIndentStr(str string) Options {
@@ -117,9 +117,18 @@ func (opts Options) WithIndentStr(str string) Options {
 	return opts
 }
 
+// WithJustifyLastLine returns a new Options identical to this one but with
+// JustifyLastLine set to justifyLastLine.
+//
+// This function does not modify the Options it is called on.
+func (opts Options) WithJustifyLastLine(justifyLastLine bool) Options {
+	opts.JustifyLastLine = justifyLastLine
+	return opts
+}
+
 // WithLineSeparator returns a new Options identical to this one but with the
-// LineSeparator set to sep. If sep is the empty string, the line separator is
-// interpreted as [DefaultLineSeparator].
+// LineSeparator member set to sep. If sep is the empty string, the line
+// separator is interpreted as [DefaultLineSeparator].
 //
 // This function does not modify the Options it is called on.
 func (opts Options) WithLineSeparator(sep string) Options {
