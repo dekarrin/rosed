@@ -715,8 +715,19 @@ func (ed Editor) Justify(width int) Editor {
 func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 	opts = opts.WithDefaults()
 
+	reassembleEditor := func(ed Editor) Editor {
+		return ed
+	}
+
+	if !opts.JustifyLastLine {
+		ed = ed.LinesTo(-1)
+		reassembleEditor = func(ed Editor) Editor {
+			return ed.Commit()
+		}
+	}
+
 	if opts.PreserveParagraphs {
-		return ed.applyGParagraphsOpts(func(idx int, para, pre, suf gem.String) []gem.String {
+		ed = ed.applyGParagraphsOpts(func(idx int, para, pre, suf gem.String) []gem.String {
 			sepStart := _g(strings.Repeat("A", pre.Len()))
 			sepEnd := _g(strings.Repeat("A", suf.Len()))
 
@@ -735,11 +746,15 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 
 			return []gem.String{para}
 		}, opts)
+		ed = reassembleEditor(ed)
+		return ed
 	}
 
-	return ed.ApplyOpts(func(idx int, line string) []string {
+	ed = ed.ApplyOpts(func(idx int, line string) []string {
 		return []string{justifyLine(_g(line), width).String()}
 	}, opts)
+	ed = reassembleEditor(ed)
+	return ed
 }
 
 // Overtype adds characters at the given position, writing over any that already
