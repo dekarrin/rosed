@@ -114,7 +114,7 @@ Output:
 ```
 I   WARNED  YOU  ABOUT  STAIRS
 BRO!    I   TOLD   YOU    DOG!
-I      TOLD      YOU      MAN!
+I TOLD YOU MAN!
 ```
 
 You could combine this with wrapping to account for the lines that didn't quite
@@ -142,7 +142,7 @@ of  your kind  who  can  withstand  the BLISTERING
 ALTERNIAN SUN, and perhaps the only who enjoys the
 feel  of its rays. As such, you are one of the few
 of   your  kind   who  has  taken  a  shining   to
-LANDSCAPING.  You have  cultivated  a lush  oasis.
+LANDSCAPING. You have cultivated a lush oasis.
 ```
 
 ### Definitions Table
