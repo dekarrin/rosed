@@ -939,46 +939,88 @@ func Test_Justify(t *testing.T) {
 		expect string
 	}{
 		{
-			name:   "empty string",
+			name:   "1-line, empty string",
 			input:  "",
 			width:  10,
 			expect: "",
 		},
 		{
-			name:   "no spaces",
+			name:   "2-line, 1st line is empty string",
+			input:  DefaultLineSeparator + "2nd line",
+			width:  10,
+			expect: DefaultLineSeparator + "2nd line",
+		},
+		{
+			name:   "1-line, no spaces",
 			input:  "bluh",
 			width:  10,
 			expect: "bluh",
 		},
 		{
-			name:   "2 words",
+			name:   "2-line, 1st line is no spaces",
+			input:  "bluh" + DefaultLineSeparator + "2nd line",
+			width:  10,
+			expect: "bluh" + DefaultLineSeparator + "2nd line",
+		},
+		{
+			name:   "1-line, 2 words",
 			input:  "word1 word2",
 			width:  20,
-			expect: "word1          word2",
+			expect: "word1 word2",
 		},
 		{
-			name:   "3 words",
+			name:   "2-line, 1st line is 2 words",
+			input:  "word1 word2" + DefaultLineSeparator + "2nd line",
+			width:  20,
+			expect: "word1          word2" + DefaultLineSeparator + "2nd line",
+		},
+		{
+			name:   "1-line, 3 words",
 			input:  "word1 word2 word3",
 			width:  20,
-			expect: "word1   word2  word3",
+			expect: "word1 word2 word3",
 		},
 		{
-			name:   "3 words with runs of spaces",
+			name:   "2-line, 1st line is 3 words",
+			input:  "word1 word2 word3" + DefaultLineSeparator + "2nd line",
+			width:  20,
+			expect: "word1   word2  word3" + DefaultLineSeparator + "2nd line",
+		},
+		{
+			name:   "1-line, 3 words with runs of spaces",
 			input:  "word1        word2  word3",
 			width:  20,
-			expect: "word1   word2  word3",
+			expect: "word1        word2  word3",
 		},
 		{
-			name:   "line longer than width",
+			name:   "2-line, 1st line is 3 words with runs of spaces",
+			input:  "word1        word2  word3" + DefaultLineSeparator + "2nd line",
+			width:  20,
+			expect: "word1   word2  word3" + DefaultLineSeparator + "2nd line",
+		},
+		{
+			name:   "1-line, line longer than width",
 			input:  "hello",
 			width:  3,
 			expect: "hello",
 		},
 		{
-			name:   "bad width",
+			name:   "2-line, 1st line longer than width",
+			input:  "hello" + DefaultLineSeparator + "2nd line",
+			width:  3,
+			expect: "hello" + DefaultLineSeparator + "2nd line",
+		},
+		{
+			name:   "1-line, bad width",
 			input:  "bluh",
 			width:  -1,
 			expect: "bluh",
+		},
+		{
+			name:   "2-line, bad width",
+			input:  "bluh" + DefaultLineSeparator + "2nd line",
+			width:  -1,
+			expect: "bluh" + DefaultLineSeparator + "2nd line",
 		},
 		{
 			name: "multi-line",
@@ -988,7 +1030,7 @@ func Test_Justify(t *testing.T) {
 			width: 22,
 			expect: "a  set of three  lines" + DefaultLineSeparator +
 				"to    justify   in   a" + DefaultLineSeparator +
-				"pleasing        manner",
+				"pleasing manner",
 		},
 	}
 
@@ -1023,6 +1065,28 @@ func Test_JustifyOpts(t *testing.T) {
 				"pleasing        manner" + DefaultLineSeparator,
 		},
 		{
+			name: "multi-paragraph, preserved, default parasep, justify last line",
+			input: "a set of three lines" + DefaultLineSeparator +
+				"to justify in a" + DefaultLineSeparator +
+				"pleasing manner" +
+				DefaultParagraphSeparator +
+				"a second paragraph" + DefaultLineSeparator +
+				"which should also be" + DefaultLineSeparator +
+				"respected",
+			width: 22,
+			options: Options{
+				PreserveParagraphs: true,
+				JustifyLastLine:    true,
+			},
+			expect: "a  set of three  lines" + DefaultLineSeparator +
+				"to    justify   in   a" + DefaultLineSeparator +
+				"pleasing        manner" +
+				DefaultParagraphSeparator +
+				"a   second   paragraph" + DefaultLineSeparator +
+				"which  should  also be" + DefaultLineSeparator +
+				"respected",
+		},
+		{
 			name: "multi-paragraph, preserved, default parasep",
 			input: "a set of three lines" + DefaultLineSeparator +
 				"to justify in a" + DefaultLineSeparator +
@@ -1037,8 +1101,31 @@ func Test_JustifyOpts(t *testing.T) {
 			},
 			expect: "a  set of three  lines" + DefaultLineSeparator +
 				"to    justify   in   a" + DefaultLineSeparator +
-				"pleasing        manner" +
+				"pleasing manner" +
 				DefaultParagraphSeparator +
+				"a   second   paragraph" + DefaultLineSeparator +
+				"which  should  also be" + DefaultLineSeparator +
+				"respected",
+		},
+		{
+			name: "multi-paragraph, preserved, custom parasep, justify last line",
+			input: "a set of three lines" + DefaultLineSeparator +
+				"to justify in a" + DefaultLineSeparator +
+				"good way" +
+				"<P> <P>" +
+				"a second paragraph" + DefaultLineSeparator +
+				"which should also be" + DefaultLineSeparator +
+				"respected",
+			width: 22,
+			options: Options{
+				ParagraphSeparator: "<P> <P>",
+				PreserveParagraphs: true,
+				JustifyLastLine:    true,
+			},
+			expect: "a  set of three  lines" + DefaultLineSeparator +
+				"to    justify   in   a" + DefaultLineSeparator +
+				"good        way" + // not taking up full length to acct for parasep that takes space
+				"<P> <P>" +
 				"a   second   paragraph" + DefaultLineSeparator +
 				"which  should  also be" + DefaultLineSeparator +
 				"respected",
@@ -1059,7 +1146,7 @@ func Test_JustifyOpts(t *testing.T) {
 			},
 			expect: "a  set of three  lines" + DefaultLineSeparator +
 				"to    justify   in   a" + DefaultLineSeparator +
-				"good        way" + // not taking up full length to acct for parasep that takes space
+				"good way" + // not taking up full length to acct for parasep that takes space
 				"<P> <P>" +
 				"a   second   paragraph" + DefaultLineSeparator +
 				"which  should  also be" + DefaultLineSeparator +
