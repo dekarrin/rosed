@@ -665,7 +665,8 @@ func ExampleEditor_IsSubEditor() {
 func ExampleEditor_Justify() {
 	input := "Some words that will have spacing justified.\n"
 	input += "This occurs on a per-line basis.\n"
-	input += "Lines closer to the justified length have less adjustment."
+	input += "Lines closer to the justified length have less adjustment.\n"
+	input += "By default the last line is unmodified."
 
 	ed := Edit(input)
 
@@ -676,6 +677,7 @@ func ExampleEditor_Justify() {
 	// Some    words   that    will    have   spacing    justified.
 	// This      occurs       on       a      per-line       basis.
 	// Lines  closer to the justified length have less  adjustment.
+	// By default the last line is unmodified.
 }
 
 // This example shows the use of options to make the justification respect a
@@ -684,9 +686,11 @@ func ExampleEditor_JustifyOpts() {
 	input := "Some words that will have spacing justified.\n"
 	input += "This occurs on a per-line basis.\n"
 	input += "Lines closer to the justified length have less adjustment.\n"
+	input += "By default the last line is unmodified.\n"
 	input += "PARA SPLIT\n"
 	input += "This is a second paragraph that is used to show how\n"
 	input += "paragraphs can be respected with options.\n"
+	input += "And the last paragraph line is still unmodified.\n"
 
 	opts := Options{
 		PreserveParagraphs: true,
@@ -702,9 +706,11 @@ func ExampleEditor_JustifyOpts() {
 	// Some    words   that    will    have   spacing    justified.
 	// This      occurs       on       a      per-line       basis.
 	// Lines  closer to the justified length have less  adjustment.
+	// By default the last line is unmodified.
 	// PARA SPLIT
 	// This  is a  second  paragraph  that  is  used  to  show  how
 	// paragraphs    can     be     respected     with     options.
+	// And the last paragraph line is still unmodified.
 }
 
 // This example shows querying the number of lines for a variety of text.
