@@ -747,7 +747,7 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 		return ed
 	} else {
 		if !opts.JustifyLastLine {
-			ed = ed.LinesTo(-1)
+			ed = ed.WithOptions(opts).LinesTo(-1)
 		}
 
 		ed = ed.ApplyOpts(func(idx int, line string) []string {
