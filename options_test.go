@@ -118,6 +118,66 @@ func Test_Options_WithIndentStr(t *testing.T) {
 	}
 }
 
+func Test_Options_WithJustifyLastLine(t *testing.T) {
+	testCases := []struct {
+		name       string
+		input      Options
+		newJustify bool
+		expected   Options
+	}{
+		{
+			name: "from defaults",
+			input: Options{
+				ParagraphSeparator:       DefaultParagraphSeparator,
+				LineSeparator:            DefaultLineSeparator,
+				IndentStr:                DefaultIndentString,
+				NoTrailingLineSeparators: false,
+				PreserveParagraphs:       false,
+				JustifyLastLine:          false,
+			},
+			newJustify: true,
+			expected: Options{
+				ParagraphSeparator:       DefaultParagraphSeparator,
+				LineSeparator:            DefaultLineSeparator,
+				IndentStr:                DefaultIndentString,
+				NoTrailingLineSeparators: false,
+				PreserveParagraphs:       false,
+				JustifyLastLine:          true,
+			},
+		},
+		{
+			name: "from empty",
+			input: Options{
+				ParagraphSeparator:       "",
+				LineSeparator:            "",
+				IndentStr:                "",
+				NoTrailingLineSeparators: false,
+				PreserveParagraphs:       false,
+				JustifyLastLine:          false,
+			},
+			newJustify: true,
+			expected: Options{
+				ParagraphSeparator:       "",
+				LineSeparator:            "",
+				IndentStr:                "",
+				NoTrailingLineSeparators: false,
+				PreserveParagraphs:       false,
+				JustifyLastLine:          true,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := tc.input.WithJustifyLastLine(tc.newJustify)
+
+			assert.Equal(tc.expected, actual)
+		})
+	}
+}
+
 func Test_Options_WithParagraphSeparator(t *testing.T) {
 	testCases := []struct {
 		name       string
@@ -350,6 +410,20 @@ func Test_Options_WithDefaults(t *testing.T) {
 				IndentStr:                DefaultIndentString,
 				NoTrailingLineSeparators: false,
 				PreserveParagraphs:       false,
+			},
+		},
+		{
+			name: "dont unset JustifyLastLine",
+			input: Options{
+				JustifyLastLine: true,
+			},
+			expected: Options{
+				ParagraphSeparator:       DefaultParagraphSeparator,
+				LineSeparator:            DefaultLineSeparator,
+				IndentStr:                DefaultIndentString,
+				NoTrailingLineSeparators: false,
+				PreserveParagraphs:       false,
+				JustifyLastLine:          true,
 			},
 		},
 	}

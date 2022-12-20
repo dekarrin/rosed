@@ -65,6 +65,13 @@ type Options struct {
 	// separators. If not set, certain operations may modify paragraph
 	// separators.
 	PreserveParagraphs bool
+
+	// JustifyLastLine gives whether text justify operations should apply to
+	// the last line of a block of text (or paragraph if PreserveParagraphs is
+	// set to true and is respected). Conventionally, justifications are not
+	// applied to the last line of a block of text and this is the default
+	// behavior.
+	JustifyLastLine bool
 }
 
 // String gets the string representation of the Options.
@@ -73,8 +80,13 @@ func (opts Options) String() string {
 	fmtStr += " LineSeparator: %q,"
 	fmtStr += " IndentStr: %q,"
 	fmtStr += " NoTrailingLineSeparators: %v,"
-	fmtStr += " PreserveParagraphs: %v}"
-	return fmt.Sprintf(fmtStr, opts.ParagraphSeparator, opts.LineSeparator, opts.IndentStr, opts.NoTrailingLineSeparators, opts.PreserveParagraphs)
+	fmtStr += " PreserveParagraphs: %v,"
+	fmtStr += " JustifyLastLine: %v}"
+	return fmt.Sprintf(
+		fmtStr, opts.ParagraphSeparator, opts.LineSeparator, opts.IndentStr,
+		opts.NoTrailingLineSeparators, opts.PreserveParagraphs,
+		opts.JustifyLastLine,
+	)
 }
 
 // WithDefaults returns a copy of the options with all blank members filled with
@@ -95,9 +107,9 @@ func (opts Options) WithDefaults() Options {
 	return opts
 }
 
-// WithIndentStr returns a new Options identical to this one but with the
-// IndentStr set to str. If str is the empty string, the indent str is
-// interpreted as [DefaultIndentString].
+// WithIndentStr returns a new Options identical to this one but with IndentStr
+// set to str. If str is the empty string, the indent str is interpreted as
+// [DefaultIndentString].
 //
 // This function does not modify the Options it is called on.
 func (opts Options) WithIndentStr(str string) Options {
@@ -105,9 +117,18 @@ func (opts Options) WithIndentStr(str string) Options {
 	return opts
 }
 
+// WithJustifyLastLine returns a new Options identical to this one but with
+// JustifyLastLine set to justifyLastLine.
+//
+// This function does not modify the Options it is called on.
+func (opts Options) WithJustifyLastLine(justifyLastLine bool) Options {
+	opts.JustifyLastLine = justifyLastLine
+	return opts
+}
+
 // WithLineSeparator returns a new Options identical to this one but with the
-// LineSeparator set to sep. If sep is the empty string, the line separator is
-// interpreted as [DefaultLineSeparator].
+// LineSeparator member set to sep. If sep is the empty string, the line
+// separator is interpreted as [DefaultLineSeparator].
 //
 // This function does not modify the Options it is called on.
 func (opts Options) WithLineSeparator(sep string) Options {

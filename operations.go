@@ -688,6 +688,12 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 //
 // This function is affected by the following [Options]:
 //
+//   - JustifyLastLine is used to determine whether the last line of input text
+//     will be justified. The default behavior with JustifyLastLine set to
+//     false is to leave the last line alone. If the option is set to true, the
+//     last line is justified the same way as every other line. Note that if
+//     JustifyLastLine is set to false, Justify will have no effect on an Editor
+//     with only 1 line of text.
 //   - LineSeparator is used to separate lines of input.
 //   - ParagraphSeparator is the separator used to split paragraphs. It will
 //     only have effect if PreserveParagraphs is set to true.
@@ -716,12 +722,15 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 	opts = opts.WithDefaults()
 
 	if opts.PreserveParagraphs {
-		return ed.applyGParagraphsOpts(func(idx int, para, pre, suf gem.String) []gem.String {
+		ed = ed.applyGParagraphsOpts(func(idx int, para, pre, suf gem.String) []gem.String {
 			sepStart := _g(strings.Repeat("A", pre.Len()))
 			sepEnd := _g(strings.Repeat("A", suf.Len()))
 
 			bl := newBlock(sepStart.Add(para).Add(sepEnd), _g(opts.LineSeparator))
 			bl.Apply(func(idx int, line string) []string {
+				if !opts.JustifyLastLine && idx == bl.Len()-1 {
+					return []string{line}
+				}
 				return []string{justifyLine(_g(line), width).String()}
 			})
 			text := bl.Join()
@@ -735,11 +744,22 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 
 			return []gem.String{para}
 		}, opts)
-	}
+		return ed
+	} else {
+		if !opts.JustifyLastLine {
+			ed = ed.WithOptions(opts).LinesTo(-1)
+		}
 
-	return ed.ApplyOpts(func(idx int, line string) []string {
-		return []string{justifyLine(_g(line), width).String()}
-	}, opts)
+		ed = ed.ApplyOpts(func(idx int, line string) []string {
+			return []string{justifyLine(_g(line), width).String()}
+		}, opts)
+
+		if !opts.JustifyLastLine {
+			ed = ed.Commit()
+		}
+
+		return ed
+	}
 }
 
 // Overtype adds characters at the given position, writing over any that already

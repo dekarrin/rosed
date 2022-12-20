@@ -665,7 +665,8 @@ func ExampleEditor_IsSubEditor() {
 func ExampleEditor_Justify() {
 	input := "Some words that will have spacing justified.\n"
 	input += "This occurs on a per-line basis.\n"
-	input += "Lines closer to the justified length have less adjustment."
+	input += "Lines closer to the justified length have less adjustment.\n"
+	input += "By default the last line is unmodified."
 
 	ed := Edit(input)
 
@@ -676,17 +677,20 @@ func ExampleEditor_Justify() {
 	// Some    words   that    will    have   spacing    justified.
 	// This      occurs       on       a      per-line       basis.
 	// Lines  closer to the justified length have less  adjustment.
+	// By default the last line is unmodified.
 }
 
 // This example shows the use of options to make the justification respect a
 // rather contrived paragraph splitter of "\nPARA SPLIT\n"
-func ExampleEditor_JustifyOpts() {
+func ExampleEditor_JustifyOpts_paragraphSeparator() {
 	input := "Some words that will have spacing justified.\n"
 	input += "This occurs on a per-line basis.\n"
 	input += "Lines closer to the justified length have less adjustment.\n"
+	input += "By default the last line is unmodified.\n"
 	input += "PARA SPLIT\n"
 	input += "This is a second paragraph that is used to show how\n"
 	input += "paragraphs can be respected with options.\n"
+	input += "And the last paragraph line is still unmodified.\n"
 
 	opts := Options{
 		PreserveParagraphs: true,
@@ -702,9 +706,40 @@ func ExampleEditor_JustifyOpts() {
 	// Some    words   that    will    have   spacing    justified.
 	// This      occurs       on       a      per-line       basis.
 	// Lines  closer to the justified length have less  adjustment.
+	// By default the last line is unmodified.
 	// PARA SPLIT
 	// This  is a  second  paragraph  that  is  used  to  show  how
 	// paragraphs    can     be     respected     with     options.
+	// And the last paragraph line is still unmodified.
+}
+
+// This example shows the use of options to force the last line to be justified.
+func ExampleEditor_JustifyOpts_justifyLastLine() {
+	input := "Your name is GAMZEE MAKARA. You get pretty\n"
+	input += "excited by CLOWNS OF A GRIM PERSUASION WHICH MAY\n"
+	input += "NOT BE IN FULL POSSESSION OF THEIR MENTAL\n"
+	input += "FACULTIES. You belong to a RATHER OBSCURE CULT,\n"
+	input += "which foretells of a BAND OF ROWDY AND CAPRICIOUS\n"
+	input += "MINSTRELS which will rise one day on a MYTHICAL\n"
+	input += "PARADISE PLANET that does not exist yet."
+
+	opts := Options{
+		JustifyLastLine: true,
+	}
+
+	ed := Edit(input)
+
+	ed = ed.JustifyOpts(50, opts)
+
+	fmt.Println(ed.String())
+	// Output:
+	// Your  name  is  GAMZEE  MAKARA.  You  get   pretty
+	// excited  by CLOWNS OF A GRIM PERSUASION WHICH  MAY
+	// NOT  BE   IN  FULL  POSSESSION  OF  THEIR   MENTAL
+	// FACULTIES.  You belong  to a RATHER  OBSCURE CULT,
+	// which  foretells of a BAND OF ROWDY AND CAPRICIOUS
+	// MINSTRELS  which will  rise one day on a  MYTHICAL
+	// PARADISE   PLANET  that   does   not  exist   yet.
 }
 
 // This example shows querying the number of lines for a variety of text.
@@ -899,7 +934,7 @@ func ExampleOptions_String() {
 
 	fmt.Println(str)
 	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false}
+	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false}
 }
 
 // This example shows how WithDefaults can be called to set all currently unset
@@ -914,8 +949,8 @@ func ExampleOptions_WithDefaults() {
 	optsDefault := opts.WithDefaults()
 	fmt.Println(optsDefault)
 	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "<br/>", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: true}
-	// Options{ParagraphSeparator: "\n\n", LineSeparator: "<br/>", IndentStr: "\t", NoTrailingLineSeparators: false, PreserveParagraphs: true}
+	// Options{ParagraphSeparator: "", LineSeparator: "<br/>", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: true, JustifyLastLine: false}
+	// Options{ParagraphSeparator: "\n\n", LineSeparator: "<br/>", IndentStr: "\t", NoTrailingLineSeparators: false, PreserveParagraphs: true, JustifyLastLine: false}
 }
 
 func ExampleOptions_WithIndentStr() {
@@ -925,7 +960,17 @@ func ExampleOptions_WithIndentStr() {
 
 	fmt.Println(opts.String())
 	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false}
+	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false}
+}
+
+func ExampleOptions_WithJustifyLastLine() {
+	opts := Options{}
+
+	opts = opts.WithJustifyLastLine(true)
+
+	fmt.Println(opts.String())
+	// Output:
+	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: true}
 }
 
 func ExampleOptions_WithLineSeparator() {
@@ -935,7 +980,7 @@ func ExampleOptions_WithLineSeparator() {
 
 	fmt.Println(opts.String())
 	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "<br/>", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false}
+	// Options{ParagraphSeparator: "", LineSeparator: "<br/>", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false}
 }
 
 func ExampleOptions_WithNoTrailingLineSeparators() {
@@ -945,7 +990,7 @@ func ExampleOptions_WithNoTrailingLineSeparators() {
 
 	fmt.Println(opts.String())
 	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: true, PreserveParagraphs: false}
+	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: true, PreserveParagraphs: false, JustifyLastLine: false}
 }
 
 func ExampleOptions_WithParagraphSeparator() {
@@ -955,7 +1000,7 @@ func ExampleOptions_WithParagraphSeparator() {
 
 	fmt.Println(opts.String())
 	// Output:
-	// Options{ParagraphSeparator: "<P>", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false}
+	// Options{ParagraphSeparator: "<P>", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false}
 }
 
 func ExampleOptions_WithPreserveParagraphs() {
@@ -965,5 +1010,5 @@ func ExampleOptions_WithPreserveParagraphs() {
 
 	fmt.Println(opts.String())
 	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: true}
+	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: true, JustifyLastLine: false}
 }

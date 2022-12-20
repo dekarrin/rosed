@@ -93,16 +93,25 @@
 //	ed := rosed.Edit("How are you, Miss Lalonde?")
 //	overtypedEd := ed.Overtype(4, "goes it")
 //
-//	// The original Editor is unchanged; the text
-//	// will be "How are you, Miss Lalonde?":
+//	// The original Editor is unchanged:
 //	originalText := ed.String()
+//	fmt.Printf("originalText: %q\n", originalText)
+//	// Output:
+//	// originalText: "How are you, Miss Lalonde?"
 //
-//	// But the text in the Editor returned by Overtype
-//	// will be "How goes it, Miss Lalonde?":
+//	// But the text in the editor returned by Overtype is modified:
 //	output1 := overtypedEd.String()
+//	fmt.Printf("output1     : %q\n", output1)
+//	// Output:
+//	// output1     : "How goes it, Miss Lalonde?"
 //
 //	// Alternatively, all calls can be chained:
 //	output2 := rosed.Edit("How are you, Miss Lalonde?").Overtype(4, "goes it").String()
+//	fmt.Printf("output2     : %q\n", output2)
+//	// Output:
+//	// output2     : "How goes it, Miss Lalonde?"
+//
+// Try it on the Go Playground: https://go.dev/play/p/XjP0123dDtQ
 //
 // [Editor.Overtype] is not a particularly exciting example of this library's
 // use; [Editor.Wrap], [Editor.InsertTwoColumns], and
@@ -125,8 +134,8 @@
 //	// or by taking an existing Options and calling WithX functions on it:
 //	opts2 := rosed.Options{}.WithPreserveParagraphs(true)
 //
-// Editor operations will mention which options they are affected by and how in
-// their documentation comments.
+// Editor functions will mention which options they are affected by and how they
+// are affected by them in the documentation comment for the function.
 //
 // Note that Editor.WithOptions, like all other Editor functions, treats the
 // Editor it operates on as immutable. It returns an Editor that has those
