@@ -682,7 +682,7 @@ func ExampleEditor_Justify() {
 
 // This example shows the use of options to make the justification respect a
 // rather contrived paragraph splitter of "\nPARA SPLIT\n"
-func ExampleEditor_JustifyOpts() {
+func ExampleEditor_JustifyOpts_paragraphSeparator() {
 	input := "Some words that will have spacing justified.\n"
 	input += "This occurs on a per-line basis.\n"
 	input += "Lines closer to the justified length have less adjustment.\n"
@@ -711,6 +711,35 @@ func ExampleEditor_JustifyOpts() {
 	// This  is a  second  paragraph  that  is  used  to  show  how
 	// paragraphs    can     be     respected     with     options.
 	// And the last paragraph line is still unmodified.
+}
+
+// This example shows the use of options to force the last line to be justified.
+func ExampleEditor_JustifyOpts_justifyLastLine() {
+	input := "Your name is GAMZEE MAKARA. You get pretty\n"
+	input += "excited by CLOWNS OF A GRIM PERSUASION WHICH MAY\n"
+	input += "NOT BE IN FULL POSSESSION OF THEIR MENTAL\n"
+	input += "FACULTIES. You belong to a RATHER OBSCURE CULT,\n"
+	input += "which foretells of a BAND OF ROWDY AND CAPRICIOUS\n"
+	input += "MINSTRELS which will rise one day on a MYTHICAL\n"
+	input += "PARADISE PLANET that does not exist yet."
+
+	opts := Options{
+		JustifyLastLine: true,
+	}
+
+	ed := Edit(input)
+
+	ed = ed.JustifyOpts(50, opts)
+
+	fmt.Println(ed.String())
+	// Output:
+	// Your  name  is  GAMZEE  MAKARA.  You  get   pretty
+	// excited  by CLOWNS OF A GRIM PERSUASION WHICH  MAY
+	// NOT  BE   IN  FULL  POSSESSION  OF  THEIR   MENTAL
+	// FACULTIES.  You belong  to a RATHER  OBSCURE CULT,
+	// which  foretells of a BAND OF ROWDY AND CAPRICIOUS
+	// MINSTRELS  which will  rise one day on a  MYTHICAL
+	// PARADISE   PLANET  that   does   not  exist   yet.
 }
 
 // This example shows querying the number of lines for a variety of text.
