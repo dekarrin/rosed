@@ -1,7 +1,5 @@
 // Package gem provides operations for individual user-perceived
-// characters and implements UAX #29 by Unicode for grapheme boundary finding,
-// and UAX #15 (Unicode 3.11) for calculating the NFC of a string for certain
-// comparison operations.
+// characters and implements UAX #29 by Unicode for grapheme boundary finding.
 //
 // It can be used to show the number of characters as a user would perceive one
 // character to be, implementing the rules specified by Unicode to be safe
@@ -251,20 +249,27 @@ func (str String) Sub(start, end int) String {
 		str.gc = Split(str.r)
 	}
 
-	copy := str.clone()
+	clone := str.clone()
 
 	var runesStart int
 	if start > 0 {
-		runesStart = copy.gc[start-1]
+		runesStart = clone.gc[start-1]
 	}
-	runesEnd := copy.gc[end-1]
+	runesEnd := clone.gc[end-1]
 
-	copy.r = copy.r[runesStart:runesEnd]
+	clone.r = clone.r[runesStart:runesEnd]
+	clone.gc = clone.gc[start:end]
 
-	// ANY further ops require resplitting
-	// rune slice
-	copy.gc = nil
-	return copy
+	// but if we've sub'd from anywhere but the start, because every value in
+	// the gc slice is really the difference in runes from the *prior* value,
+	// we need to subtract whatever came before the sub'd index.
+	if runesStart > 0 {
+		for i := range clone.gc {
+			clone.gc[i] -= runesStart
+		}
+	}
+
+	return clone
 }
 
 // New takes the given string and converts it into a graphemes.String object for
