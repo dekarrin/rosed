@@ -2,7 +2,7 @@
 
 repo_path="$(dirname "$0")"
 
-cat << EOF > "$repo_path/internal/gem/unicode_test.go"
+cat << EOF | gofmt > "$repo_path/internal/gem/unicode_test.go"
 package gem
 
 import (
