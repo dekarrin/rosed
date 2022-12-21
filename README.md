@@ -38,9 +38,8 @@ sequences) can translate into the same visual grapheme.
 
 ### What This Library Is Not
 
-* Performant - Especially for initial release the idea is to create a library
-that is easy to use. Better performance may come in later versions but that is
-not a goal at the time.
+* Performant - Performance is slowly improved with releases but this library
+aims to be easy to use as its first goal.
 * Collating - This libarary does not support Unicode collation. It may come at
 a later date.
 
