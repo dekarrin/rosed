@@ -97,11 +97,11 @@ def main():
     test_func_start += "\t}{"
 
     test_func_end = "\t}\n"
-    test_func_end += "\t\n"
+    test_func_end += "\n"
     test_func_end += "\tfor _, tc := range testCases {\n"
     test_func_end += "\t\tt.Run(tc.name, func(t *testing.T) {\n"
     test_func_end += "\t\t\tassert := assert.New(t)\n"
-    test_func_end += "\t\t\t\n"
+    test_func_end += "\n"
     test_func_end += "\t\t\tactual := tc.input.GraphemeIndexes()\n"
     test_func_end += "\t\t})\n"
     test_func_end += "\t}\n"

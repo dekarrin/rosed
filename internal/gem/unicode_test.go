@@ -614,11 +614,11 @@ func Test_GraphemeClusterBreak(t *testing.T) {
 		{"GraphemeBreakTest #601", New("\u2701\u200D\u2701"), [][]int{{0, 3}}},
 		{"GraphemeBreakTest #602", New("\u0061\u200D\u2701"), [][]int{{0, 2}, {2, 3}}},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
-			
+
 			actual := tc.input.GraphemeIndexes()
 		})
 	}
