@@ -77,6 +77,12 @@ func (ed Editor) Chars(start, end int) Editor {
 		chIdx++
 		if chIdx == runeStart {
 			byteStart = byteIdx
+
+			// special case for when thhe runeEnd is known to be out of range,
+			// immediately stop looping
+			if runeEnd >= len(ed.Text) {
+				break
+			}
 		}
 		if chIdx == runeEnd {
 			byteEnd = byteIdx
