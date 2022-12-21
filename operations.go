@@ -841,10 +841,10 @@ func (ed Editor) WrapOpts(width int, opts Options) Editor {
 
 func (ed Editor) applyGParagraphsOpts(op gParagraphOperation, opts Options) Editor {
 	opts = opts.WithDefaults()
-	
+
 	paraSep := opts.ParagraphSeparator
 	lineSep := opts.LineSeparator
-	
+
 	// if we had negative lookahead we would just do a regexp.Split on the text
 	// on ParagraphSeparator(?!LineSeparator). unfortunately this requires an
 	// external library; the standard library regexp does not support zero-width
@@ -855,8 +855,8 @@ func (ed Editor) applyGParagraphsOpts(op gParagraphOperation, opts Options) Edit
 	// the next paragraph.
 	//
 	// first we note whether the case is even possible:
-	ambigSepSequencePossible := paraSep + lineSep == lineSep + paraSep
-	
+	ambigSepSequencePossible := paraSep+lineSep == lineSep+paraSep
+
 	// split the paragraph separator about its line separators so we can see any
 	// extra chars that will be chopped off while in a preserve-mode operation
 	// that messes with line separators
@@ -878,7 +878,7 @@ func (ed Editor) applyGParagraphsOpts(op gParagraphOperation, opts Options) Edit
 		}
 		if idx != len(paragraphs)-1 {
 			paraSuf = paraSepPrevSuffix
-		
+
 			// additionally, look ahead to see if a trailing lineSep got chopped
 			// to the next paragraph, if we have a set of separators where that
 			// is possible.
