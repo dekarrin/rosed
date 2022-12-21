@@ -24,7 +24,7 @@ def py_listlist_to_golang_int_sliceslice(int_listlist):
 
 
 def main():
-    print("Downloading GraphemeBreakTest.txt from current unicode data sources...", file=sys.stderr)
+    print("Downloading GraphemeBreakTest.txt from current Unicode data sources...", file=sys.stderr)
     
     grapheme_test_data = None
     with urllib.request.urlopen(_ucd_grapheme_test_url) as fp:
@@ -40,6 +40,7 @@ def main():
         if first_line:
             first_line = False
             name_base = line[line.find('#')+1:].strip().split("-", 1)[0]
+            full_first_line = line[line.find('#')+1:].strip()
             continue
         
         comment_start = line.find('#')
@@ -88,8 +89,8 @@ def main():
         
         test_cases.append(test_case)
         
-        
-    test_func_start = "func Test_GraphemeClusterBreak(t *testing.T) {\n"
+    test_func_start = "// Test_GraphemeClusterBreak is generated from file " + full_first_line + " from the Unicode Character Database.\n"
+    test_func_start += "func Test_GraphemeClusterBreak(t *testing.T) {\n"
     test_func_start += "\ttestCases := []struct {\n"
     test_func_start += "\t\tname   string\n"
     test_func_start += "\t\tinput  String\n"

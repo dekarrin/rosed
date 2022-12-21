@@ -5,6 +5,7 @@ import (
 	"testing"
 )
 
+// Test_GraphemeClusterBreak is generated from file GraphemeBreakTest-15.0.0.txt from the Unicode Character Database.
 func Test_GraphemeClusterBreak(t *testing.T) {
 	testCases := []struct {
 		name   string
