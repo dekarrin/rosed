@@ -388,15 +388,6 @@ func (ed Editor) Delete(start, end int) Editor {
 //     treating paragraph breaks as normal text. If set to true, the text is
 //     first split into paragraphs by ParagraphSeparator, then the indent is
 //     applied to each paragraph.
-//
-// Note that there is a behavior that occurs when NoTrailingLineSeparators is
-// set to true, PreserveParagraphs is set to true, and the LineSeparator could
-// be misinterpreted as part of ParagraphSeparator. In this case, the paragraph
-// separation will be prioritized over the line separator, possibly in an
-// unintended fashion. For instance, if ParagraphSeparator is set to "\n\n" (the
-// default) and LineSeparator is set to "\n" (the default), a sequence of
-// "\n\n\n" would be interpreted as the paragraph separator followed by the line
-// separator. This may be fixed in a later version of this library.
 func (ed Editor) Indent(level int) Editor {
 	return ed.IndentOpts(level, ed.Options)
 }
