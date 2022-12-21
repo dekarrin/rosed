@@ -913,7 +913,7 @@ func Test_IndentOpts(t *testing.T) {
 				PreserveParagraphs:       true,
 				LineSeparator:            "<p>",
 			},
-			expect: ">p0,line0<p>>p0,line1<p><p>><p>>p1,line0<p>>p1,line1<p><p>>p2,line1<p>>p2,line2<p>>",
+			expect: ">p0,line0<p>>p0,line1<p>><p><p>>p1,line0<p>>p1,line1<p><p>>p2,line1<p>>p2,line2<p>>",
 		},
 	}
 
