@@ -620,6 +620,8 @@ func Test_GraphemeClusterBreak(t *testing.T) {
 			assert := assert.New(t)
 
 			actual := tc.input.GraphemeIndexes()
+
+			assert.Equal(tc.expect, actual)
 		})
 	}
 }
