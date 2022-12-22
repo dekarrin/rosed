@@ -156,9 +156,6 @@ func (str String) Len() int {
 		str.gc = gc
 	}
 
-	if len(str.r) > 0 && str.r[0] == '\U0001F926' {
-		fmt.Printf("INDEXES: %v\n", str.GraphemeIndexes())
-	}
 	return len(gc)
 }
 
@@ -418,35 +415,23 @@ func shouldBreakAfter(r rune, chars []rune, i int) bool {
 		}
 	}
 
-	// GB12 & GB13 - Do not break within emoji flag sequences
-	if isCbRegionalIndicator(r) {
-		for j := i; j >= 0; j -= 2 {
-			// the one we are on chars[j] is always RI
-			if j-1 < 0 {
-				// odd number of RIs
-				return false
-			}
-			if j-2 < 0 {
-				if !isCbRegionalIndicator(chars[j]) {
-					// odd number of RIs
-					return false
-				}
-				// even number of RIs
-				continue
-			}
+	// GB12 & GB13 - Do not break within emoji flag sequences (at start of text)
+	// That is, do not break between regional indicator (RI) symbols if there is
+	// an odd number of RI characters before the break point.
+	if isCbRegionalIndicator(r) && isCbRegionalIndicator(nextR) {
+		// find how many RI chars are behind this one
+		priorRIs := 0
 
-			// N, _
-			// N, N,
-
-			if !isCbRegionalIndicator(chars[j-1]) {
-				// odd number of RIs
-				return false
-			}
-
-			if !isCbRegionalIndicator(chars[j-2]) {
-				// even number of RIs
+		// check backwards
+		for j := i - 1; j >= 0; j-- {
+			if !isCbRegionalIndicator(chars[j]) {
 				break
 			}
+			priorRIs++
+		}
+
+		if priorRIs%2 == 0 {
+			return false
 		}
 	}
 
