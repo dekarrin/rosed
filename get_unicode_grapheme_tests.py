@@ -4,6 +4,7 @@
 
 import urllib.request
 import sys
+import codecs
 
 _ucd_grapheme_test_url = "https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/GraphemeBreakTest.txt"
 
@@ -21,7 +22,6 @@ def py_listlist_to_golang_int_sliceslice(int_listlist):
         output = output[:-2]  # chop off trailing comma+space
     output += "}"
     return output
-
 
 def main():
     print("Downloading GraphemeBreakTest.txt from current Unicode data sources...", file=sys.stderr)
@@ -50,6 +50,8 @@ def main():
             
         if line == "":
             continue
+            
+        original_line = line
         if line.startswith('÷'):
             test_line += 1
             line = line[1:]
@@ -63,7 +65,8 @@ def main():
         cur_rune_idx = -1
         cur_index = [0,]
         gc_indexes = list()
-        test_case = {'name': name_base + " #" + str(test_line).zfill(3)}
+        original_line = original_line.replace('\u00F7', '/').replace('\u00D7', 'X').strip()[1:-1].strip()
+        test_case = {'name': name_base + " #" + str(test_line).zfill(3) + ": " + original_line}
         
         input_line = ""
         
@@ -90,6 +93,8 @@ def main():
         test_cases.append(test_case)
         
     test_func_start = "// Test_GraphemeClusterBreak is generated from file " + full_first_line + " from the Unicode Character Database.\n"
+    test_func_start += "// In each test name, the '/' char means there should be a break, and the 'X'\n"
+    test_func_start += "// char means there should not be a break.\n"
     test_func_start += "func Test_GraphemeClusterBreak(t *testing.T) {\n"
     test_func_start += "\ttestCases := []struct {\n"
     test_func_start += "\t\tname   string\n"
