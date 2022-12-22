@@ -620,6 +620,7 @@ func Test_GraphemeClusterBreak(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			gbtNum++
 			assert := assert.New(t)
 
 			actual := tc.input.GraphemeIndexes()
