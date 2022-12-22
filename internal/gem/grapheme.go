@@ -295,7 +295,7 @@ func Slice(from []string) []String {
 // The inclusive start index of each cluster is the last index. For the first
 // item, it is 0
 func Split(r []rune) []int {
-	debug := gbtNum == 171
+	debug := gbtNum == 181
 	if debug {
 		fmt.Printf("#%d: []rune{", gbtNum)
 		for idx, ch := range r {
@@ -354,7 +354,7 @@ func (str String) clone() String {
 var gbtNum int
 
 func shouldBreakAfter(r rune, chars []rune, i int) bool {
-	debug := gbtNum == 171
+	debug := gbtNum == 181
 	// GB1 - Break at the start of the text, implemented when starting
 
 	// GB2 - Break at the end of the text
@@ -448,11 +448,15 @@ func shouldBreakAfter(r rune, chars []rune, i int) bool {
 		priorRIs := 0
 		
 		// check backwards
-		for j := i; j >= 0; j -= 2 {
+		for j := i-1; j >= 0; j -= 2 {
 			if !isCbRegionalIndicator(chars[j]) {
 				break
 			}
 			priorRIs++
+		}
+		
+		if debug {
+			fmt.Printf("  [%d]: priorRIs: %d\n", i, priorRIs)
 		}
 		
 		if priorRIs % 2 == 0 {
