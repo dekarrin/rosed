@@ -155,7 +155,7 @@ func (str String) Len() int {
 		gc = Split(str.r)
 		str.gc = gc
 	}
-	
+
 	return len(gc)
 }
 
@@ -295,17 +295,6 @@ func Slice(from []string) []String {
 // The inclusive start index of each cluster is the last index. For the first
 // item, it is 0
 func Split(r []rune) []int {
-	debug := gbtNum == 181
-	if debug {
-		fmt.Printf("#%d: []rune{", gbtNum)
-		for idx, ch := range r {
-			fmt.Printf("0x%04x", ch)
-			if idx + 1 < len(r) {
-				fmt.Printf(", ")
-			}
-		}
-		fmt.Printf("}\n")
-	}
 	done := make([]int, 0)
 	for i := range r {
 		if shouldBreakAfter(r[i], r, i) {
@@ -351,15 +340,11 @@ func (str String) clone() String {
 	return clone
 }
 
-var gbtNum int
-
 func shouldBreakAfter(r rune, chars []rune, i int) bool {
-	debug := gbtNum == 181
 	// GB1 - Break at the start of the text, implemented when starting
 
 	// GB2 - Break at the end of the text
 	if i+1 >= len(chars) {
-		if debug { fmt.Printf("  [%d]: / (GB2)\n", i) }
 		return true
 	}
 
@@ -368,55 +353,46 @@ func shouldBreakAfter(r rune, chars []rune, i int) bool {
 
 	// GB3 - Do not break between a CR and LF
 	if isCbCR(r) && isCbLF(nextR) {
-		if debug { fmt.Printf("  [%d]: X (GB3)\n", i) }
 		return false
 	}
 
 	// GB4 - Break after controls
 	if isCbControl(r) || isCbCR(r) || isCbLF(r) {
-		if debug { fmt.Printf("  [%d]: / (GB4)\n", i) }
 		return true
 	}
 
 	// GB5 - Break before controls
 	if isCbControl(nextR) || isCbCR(nextR) || isCbLF(nextR) {
-		if debug { fmt.Printf("  [%d]: / (GB5)\n", i) }
 		return true
 	}
 
 	// GB6 - Do not break Hangul syllable sequences (1)
 	if isCbL(r) && (isCbL(nextR) || isCbV(nextR) || isCbLV(nextR) || isCbLVT(nextR)) {
-		if debug { fmt.Printf("  [%d]: X (GB6)\n", i) }
 		return false
 	}
 
 	// GB7 - Do not break Hangul syllable sequences (2)
 	if (isCbLV(r) || isCbV(r)) && (isCbV(nextR) || isCbT(nextR)) {
-		if debug { fmt.Printf("  [%d]: X (GB7)\n", i) }
 		return false
 	}
 
 	// GB8 - Do not break Hangul syllable sequences (3)
 	if (isCbLVT(r) || isCbT(r)) && isCbT(nextR) {
-		if debug { fmt.Printf("  [%d]: X (GB8)\n", i) }
 		return false
 	}
 
 	// GB9 - Do not break before extending characters or ZWJ
 	if isCbExtend(nextR) || isCbZWJ(nextR) {
-		if debug { fmt.Printf("  [%d]: X (GB9)\n", i) }
 		return false
 	}
 
 	// GB9a - (Extended grapheme clusters only) Do not break before spacing marks
 	if isCbSpacingMark(nextR) {
-		if debug { fmt.Printf("  [%d]: X (GB9a)\n", i) }
 		return false
 	}
 
 	// GB9b - (Extended grapheme clusters only) Do not break after Prepend characters
 	if isCbPrepend(r) {
-		if debug { fmt.Printf("  [%d]: X (GB9b)\n", i) }
 		return false
 	}
 
@@ -431,7 +407,6 @@ func shouldBreakAfter(r rune, chars []rune, i int) bool {
 					// we also only enter loop if on the ZWJ of a ZWJ \p{Extended_Pictographic} seq.
 					// so we know for sure that we are on a GB11 case.
 					// do not break.
-					if debug { fmt.Printf("  [%d]: X (GB11)\n", i) }
 					return false
 				} else {
 					break
@@ -446,26 +421,20 @@ func shouldBreakAfter(r rune, chars []rune, i int) bool {
 	if isCbRegionalIndicator(r) && isCbRegionalIndicator(nextR) {
 		// find how many RI chars are behind this one
 		priorRIs := 0
-		
+
 		// check backwards
-		for j := i-1; j >= 0; j -= 2 {
+		for j := i - 1; j >= 0; j-- {
 			if !isCbRegionalIndicator(chars[j]) {
 				break
 			}
 			priorRIs++
 		}
-		
-		if debug {
-			fmt.Printf("  [%d]: priorRIs: %d\n", i, priorRIs)
-		}
-		
-		if priorRIs % 2 == 0 {
-			if debug { fmt.Printf("  [%d]: X (GB12/GB13)\n", i) }
+
+		if priorRIs%2 == 0 {
 			return false
 		}
 	}
 
 	// GB999 - Otherwise, break anywhere
-	if debug { fmt.Printf("  [%d]: / (GB999)\n", i) }
 	return true
 }
