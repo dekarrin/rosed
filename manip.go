@@ -330,3 +330,16 @@ func countTrailingWhitespace(text gem.String) int {
 	}
 	return 0
 }
+
+func layoutTable(table [][]string, width int, headerBreak bool, lineSep string, paraSep string) block {
+	// find how big the thing will be
+	maxColCount := 0
+	for i := range table {
+		if len(table[i]) > maxColCount {
+			maxColCount = len(table[i])
+		}
+	}
+
+	if maxColCount == 0
+
+}
