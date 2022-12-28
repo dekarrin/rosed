@@ -506,6 +506,7 @@ func Test_LayoutTable(t *testing.T) {
 					gem.New("The Entire Midnight Crew  'Crew', I guess?  Multiple?  Unclear"),
 					gem.New("Nepeta                    Leijon            Rogue      Heart"),
 				},
+				LineSeparator: gem.New("\n"),
 			},
 		},
 	}
@@ -517,6 +518,7 @@ func Test_LayoutTable(t *testing.T) {
 			actual := LayoutTable(tc.table, tc.width, tc.lineSep, tc.headerBreak, tc.border, tc.charSet)
 
 			assert.True(tc.expect.Equal(actual))
+			assert.Equal(tc.expect.Join().String(), actual.Join().String())
 		})
 	}
 }
