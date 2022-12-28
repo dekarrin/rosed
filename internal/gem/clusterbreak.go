@@ -1,5 +1,104 @@
 package gem
 
+func shouldBreakAfter(r rune, chars []rune, i int) bool {
+	// GB1 - Break at the start of the text, implemented when starting
+
+	// GB2 - Break at the end of the text
+	if i+1 >= len(chars) {
+		return true
+	}
+
+	// GB2 guarentees that i+1 is safe to access
+	nextR := chars[i+1]
+
+	// GB3 - Do not break between a CR and LF
+	if isCbCR(r) && isCbLF(nextR) {
+		return false
+	}
+
+	// GB4 - Break after controls
+	if isCbControl(r) || isCbCR(r) || isCbLF(r) {
+		return true
+	}
+
+	// GB5 - Break before controls
+	if isCbControl(nextR) || isCbCR(nextR) || isCbLF(nextR) {
+		return true
+	}
+
+	// GB6 - Do not break Hangul syllable sequences (1)
+	if isCbL(r) && (isCbL(nextR) || isCbV(nextR) || isCbLV(nextR) || isCbLVT(nextR)) {
+		return false
+	}
+
+	// GB7 - Do not break Hangul syllable sequences (2)
+	if (isCbLV(r) || isCbV(r)) && (isCbV(nextR) || isCbT(nextR)) {
+		return false
+	}
+
+	// GB8 - Do not break Hangul syllable sequences (3)
+	if (isCbLVT(r) || isCbT(r)) && isCbT(nextR) {
+		return false
+	}
+
+	// GB9 - Do not break before extending characters or ZWJ
+	if isCbExtend(nextR) || isCbZWJ(nextR) {
+		return false
+	}
+
+	// GB9a - (Extended grapheme clusters only) Do not break before spacing marks
+	if isCbSpacingMark(nextR) {
+		return false
+	}
+
+	// GB9b - (Extended grapheme clusters only) Do not break after Prepend characters
+	if isCbPrepend(r) {
+		return false
+	}
+
+	// GB11 - Do not break within emoji modifier sequences or emoji ZWJ sequnces
+	// only need to loop through if we know the nextR is an extpicto AND we are
+	// currently on a ZWJ and there is at least one prior rune.
+	if isCbZWJ(r) && isExtPicto(nextR) && i-1 >= 0 {
+		for j := i - 1; j >= 0; j-- {
+			if !isCbExtend(chars[j]) {
+				if isExtPicto(chars[j]) {
+					// we are on the ZWJ of a \p{Extended_Pictographic} Extend* ZWJ sequence.
+					// we also only enter loop if on the ZWJ of a ZWJ \p{Extended_Pictographic} seq.
+					// so we know for sure that we are on a GB11 case.
+					// do not break.
+					return false
+				} else {
+					break
+				}
+			}
+		}
+	}
+
+	// GB12 & GB13 - Do not break within emoji flag sequences (at start of text)
+	// That is, do not break between regional indicator (RI) symbols if there is
+	// an odd number of RI characters before the break point.
+	if isCbRegionalIndicator(r) && isCbRegionalIndicator(nextR) {
+		// find how many RI chars are behind this one
+		priorRIs := 0
+
+		// check backwards
+		for j := i - 1; j >= 0; j-- {
+			if !isCbRegionalIndicator(chars[j]) {
+				break
+			}
+			priorRIs++
+		}
+
+		if priorRIs%2 == 0 {
+			return false
+		}
+	}
+
+	// GB999 - Otherwise, break anywhere
+	return true
+}
+
 // Values are taken from UAX #29 Table 2,
 // "Grapheme_Cluster_Break Property Values".
 //

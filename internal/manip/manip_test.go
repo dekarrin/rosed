@@ -176,7 +176,7 @@ func Test_Wrap(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
 			actual := Wrap(tc.input, tc.width, tc.sep)
-			assert.Equal(tc.expected, actual)
+			assert.True(tc.expected.Equal(actual))
 		})
 	}
 }

@@ -93,7 +93,7 @@ func Test_New(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
 			actual := New(tc.input)
-			assert.Equal(tc.expect, actual)
+			assert.True(tc.expect.Equal(actual))
 		})
 	}
 }

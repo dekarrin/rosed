@@ -96,7 +96,7 @@ func (tb Block) CharCount(linePos int) int {
 }
 
 // Equal checks whether this Block is equal to another object. Returns whether
-// other is also a block with the same contents as tb.
+// other is also a block with the same contents and separator behavior as tb.
 func (tb Block) Equal(other interface{}) bool {
 	b2, ok := other.(Block)
 	if !ok {
