@@ -492,7 +492,7 @@ func Test_LayoutTable(t *testing.T) {
 				{gem.New("The Entire Midnight Crew"), gem.New("'Crew', I Guess?"), gem.New("Multiple?"), gem.New("Unclear")},
 				{gem.New("Nepeta"), gem.New("Leijon"), gem.New("Rogue"), gem.New("Heart")},
 			},
-			width:       40,
+			width:       80,
 			lineSep:     gem.New("\n"),
 			headerBreak: false,
 			border:      false,

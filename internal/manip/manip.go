@@ -333,6 +333,12 @@ func LayoutTable(table [][]gem.String, width int, lineSep gem.String, headerBrea
 	vertChar := charSet.Sub(1, 2)
 	horzChar := charSet.Sub(2, 3)
 
+	fmt.Printf("\nSTART\n")
+	fmt.Printf(">>>> FOR_TABLE: %v\n", table)
+	fmt.Printf(">>>> CHARS: /:%q, |:%q, ->:%q\n", cornerChar, vertChar, horzChar)
+	fmt.Printf(">>>> lineSep: %q, header: %t, border: %t\n", lineSep, headerBreak, border)
+	fmt.Printf(">>>> --------------------\n")
+
 	// find how big the thing will be
 	maxColCount := 0
 	for i := range table {
@@ -341,16 +347,24 @@ func LayoutTable(table [][]gem.String, width int, lineSep gem.String, headerBrea
 		}
 	}
 
+	fmt.Printf(">>>> maxColCount: %d\n", maxColCount)
+
 	// need to calc the length of the widest item in each column
 	colContentWidths := make([]int, len(table))
-	for i := range table {
-		colContentWidths[i] = 0
 
-		for j := range table[i] {
-			strLen := table[i][j].Len()
+	for col := 0; col < maxColCount; col++ {
+		colContentWidths[col] = 0
 
-			if strLen >= colContentWidths[i] {
-				colContentWidths[i] = strLen
+		for row := range table {
+			var content gem.String
+			if col < len(table[row]) {
+				content = table[row][col]
+			}
+
+			strLen := content.Len()
+
+			if strLen >= colContentWidths[col] {
+				colContentWidths[col] = strLen
 			}
 		}
 	}
@@ -365,6 +379,8 @@ func LayoutTable(table [][]gem.String, width int, lineSep gem.String, headerBrea
 		totalContentWidth += colContentWidths[i]
 		if border {
 			totalContentWidth += 2 + horzChar.Len()
+		} else {
+			totalContentWidth += 1
 		}
 	}
 
