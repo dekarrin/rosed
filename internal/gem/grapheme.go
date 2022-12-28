@@ -24,22 +24,27 @@ import (
 //
 // String.Equal can be used to test against raw strings.
 //
-// String implements the fmt.Formatter interface.
+// *String implements the fmt.Formatter interface.
 type String struct {
-	r  []rune
-	gc []int
+	r []rune
+
+	// gc is a pointer but should never be set to nil. it is only a pointer to
+	// allow caching of grampheme counts, but the pointer itself will never be
+	// nil (though the []int it points to might be)
+	gc *[]int
 }
 
 var (
 	// Zero is a String of zero length.
-	Zero String = String{r: []rune{}, gc: []int{}}
+	Zero String = String{r: []rune{}, gc: new([]int)}
 )
 
 // Add adds two strings together and returns the result. The original String is
 // not modified.
 func (str String) Add(s2 String) String {
 	r2 := str.clone()
-	r2.gc = nil
+	*r2.gc = nil
+
 	r2.r = append(r2.r, s2.Runes()...)
 	return r2
 }
@@ -48,17 +53,15 @@ func (str String) Add(s2 String) String {
 // cluster) of the given index. Modifying the returned slice will not modify the
 // String.
 func (str String) CharAt(idx int) []rune {
-	gc := str.gc
-	if gc == nil {
-		gc = Split(str.r)
-		str.gc = gc
+	if *str.gc == nil {
+		*str.gc = Split(str.r)
 	}
 
 	var startIdx = 0
 	if idx > 0 {
-		startIdx = gc[idx-1]
+		startIdx = (*str.gc)[idx-1]
 	}
-	length := gc[idx] - startIdx
+	length := (*str.gc)[idx] - startIdx
 	cluster := make([]rune, length)
 	for i := 0; i < length; i++ {
 		cluster[i] = str.r[startIdx+i]
@@ -118,12 +121,11 @@ func (str *String) Format(f fmt.State, verb rune) {
 // The end indexes will be exclusive; e.g. a gem.String with contents "test"
 // would produce [][]int{{0, 1}, {1, 2}, {2, 3}, {3, 4}}.
 func (str String) GraphemeIndexes() [][]int {
-	gc := str.gc
-	if gc == nil {
-		gc = Split(str.r)
-		str.gc = gc
+	if *str.gc == nil {
+		*str.gc = Split(str.r)
 	}
 
+	gc := *str.gc
 	indexes := make([][]int, len(gc))
 	prevEnd := 0
 	for i := range gc {
@@ -149,16 +151,14 @@ func (str String) IsEmpty() bool {
 // This function may trigger UAX29 analysis on the String if it hasn't yet
 // occured.
 func (str String) Len() int {
-	gc := str.gc
-	if gc == nil {
+	if *str.gc == nil {
 		if len(str.r) == 0 {
 			return 0
 		}
-		gc = Split(str.r)
-		str.gc = gc
+		*str.gc = Split(str.r)
 	}
 
-	return len(gc)
+	return len(*str.gc)
 }
 
 // Less returns whether one String is lexigraphically less than another.
@@ -204,20 +204,20 @@ func (str String) SetCharAt(idx int, r []rune) String {
 		panic("SetCharAt received empty or nil replacement runes slice r")
 	}
 
-	copy := str.clone()
+	clone := str.clone()
 
-	if copy.gc == nil {
-		copy.gc = Split(copy.r)
+	if *clone.gc == nil {
+		*clone.gc = Split(clone.r)
 	}
 
 	var startIdx int
 	if idx > 0 {
-		startIdx = copy.gc[idx-1]
+		startIdx = (*clone.gc)[idx-1]
 	}
-	curEndIdx := copy.gc[idx]
-	copy.r = append(copy.r[:startIdx], append(r, copy.r[curEndIdx:]...)...)
-	copy.gc = nil
-	return copy
+	curEndIdx := (*clone.gc)[idx]
+	clone.r = append(clone.r[:startIdx], append(r, clone.r[curEndIdx:]...)...)
+	*clone.gc = nil
+	return clone
 }
 
 // String gets the contents as the built-in string type.
@@ -241,28 +241,28 @@ func (str String) Sub(start, end int) String {
 		return Zero
 	}
 
-	if str.gc == nil {
+	if *str.gc == nil {
 		// we need a split operation on the graphemes
-		str.gc = Split(str.r)
+		*str.gc = Split(str.r)
 	}
 
 	clone := str.clone()
 
 	var runesStart int
 	if start > 0 {
-		runesStart = clone.gc[start-1]
+		runesStart = (*clone.gc)[start-1]
 	}
-	runesEnd := clone.gc[end-1]
+	runesEnd := (*clone.gc)[end-1]
 
 	clone.r = clone.r[runesStart:runesEnd]
-	clone.gc = clone.gc[start:end]
+	*clone.gc = (*clone.gc)[start:end]
 
 	// but if we've sub'd from anywhere but the start, because every value in
 	// the gc slice is really the difference in runes from the *prior* value,
 	// we need to subtract whatever came before the sub'd index.
 	if runesStart > 0 {
-		for i := range clone.gc {
-			clone.gc[i] -= runesStart
+		for i := range *clone.gc {
+			(*clone.gc)[i] -= runesStart
 		}
 	}
 
@@ -274,7 +274,7 @@ func (str String) Sub(start, end int) String {
 // basis; the contents of s are not scanned for grapheme clusters until an
 // operation requires it.
 func New(s string) String {
-	return String{r: []rune(s)}
+	return String{r: []rune(s), gc: new([]int)}
 }
 
 // Slice turns the from slice into a slice of String objects.
@@ -324,15 +324,19 @@ func Strings(from []String) []string {
 // gem.String is generally passed by value now and immutable, but keeping this
 // because it makes it convenient for deep-copying the members of it.
 func (str String) clone() String {
-	gc := str.gc
 	clone := String{
-		r: make([]rune, len(str.r)),
+		r:  make([]rune, len(str.r)),
+		gc: new([]int),
 	}
+
 	copy(clone.r, str.r)
-	if gc != nil {
-		clone.gc = make([]int, len(gc))
-		copy(clone.gc, gc)
+
+	if *str.gc != nil {
+		newCloneGC := make([]int, len(*str.gc))
+		clone.gc = &newCloneGC
+		copy(*clone.gc, *str.gc)
 	}
+
 	return clone
 }
 
