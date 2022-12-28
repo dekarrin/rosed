@@ -636,10 +636,6 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 	if leftColWidth < minLeftColWidth {
 		leftColWidth = minLeftColWidth
 	}
-	// make sure there is still space for right col
-	if (width-minSpaceBetween)-leftColWidth < minRightColWidth {
-		minLeftColWidth = (width - minSpaceBetween) - minRightColWidth
-	}
 
 	// difference instead of /2 here in case leftColWidth had int truncation
 	// happen during its calculation.
