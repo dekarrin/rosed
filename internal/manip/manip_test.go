@@ -470,3 +470,53 @@ func Test_CountTrailingWhitespace(t *testing.T) {
 		})
 	}
 }
+
+func Test_LayoutTable(t *testing.T) {
+	testCases := []struct {
+		name        string
+		table       [][]gem.String
+		width       int
+		lineSep     gem.String
+		headerBreak bool
+		border      bool
+		charSet     gem.String
+		expect      tb.Block
+	}{
+		{
+			name: "even columns",
+			table: [][]gem.String{
+				{gem.New("John"), gem.New("Egbert"), gem.New("Heir"), gem.New("Breath")},
+				{gem.New("Rose"), gem.New("Lalonde"), gem.New("Seer"), gem.New("Light")},
+				{gem.New("Roxy"), gem.New("Lalonde"), gem.New("Rogue"), gem.New("Void")},
+				{gem.New("Vriska"), gem.New("Serket"), gem.New("Thief"), gem.New("Light")},
+				{gem.New("The Entire Midnight Crew"), gem.New("'Crew', I Guess?"), gem.New("Multiple?"), gem.New("Unclear")},
+				{gem.New("Nepeta"), gem.New("Leijon"), gem.New("Rogue"), gem.New("Heart")},
+			},
+			width:       40,
+			lineSep:     gem.New("\n"),
+			headerBreak: false,
+			border:      false,
+			charSet:     gem.Zero,
+			expect: tb.Block{
+				Lines: []gem.String{
+					gem.New("John                      Egbert            Heir       Breath"),
+					gem.New("Rose                      Lalonde           Seer       Light"),
+					gem.New("Roxy                      Lalonde           Rogue      Void"),
+					gem.New("Vriska                    Serket            Thief      Light"),
+					gem.New("The Entire Midnight Crew  'Crew', I guess?  Multiple?  Unclear"),
+					gem.New("Nepeta                    Leijon            Rogue      Heart"),
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := LayoutTable(tc.table, tc.width, tc.lineSep, tc.headerBreak, tc.border, tc.charSet)
+
+			assert.True(tc.expect.Equal(actual))
+		})
+	}
+}
