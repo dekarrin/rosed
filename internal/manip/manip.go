@@ -183,7 +183,6 @@ func Wrap(text gem.String, width int, lineSep gem.String) tb.Block {
 
 	if !curWord.IsEmpty() {
 		curLine = appendWordToLine(&lines, curWord, curLine, width)
-		curWord = gem.Zero
 	}
 
 	if !curLine.IsEmpty() {

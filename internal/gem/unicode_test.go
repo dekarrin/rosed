@@ -1,8 +1,9 @@
 package gem
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // Test_GraphemeClusterBreak is generated from file GraphemeBreakTest-15.0.0.txt from the Unicode Character Database.

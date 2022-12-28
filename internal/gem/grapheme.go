@@ -8,6 +8,7 @@ package gem
 
 import (
 	"fmt"
+
 	"github.com/dekarrin/rosed/internal/util"
 )
 
@@ -100,10 +101,11 @@ func (str *String) Format(f fmt.State, verb rune) {
 	if verb == 'q' {
 		if str == nil {
 			f.Write([]byte("<nil>"))
+			return
 		}
 		f.Write([]byte(fmt.Sprintf("%q", str.String())))
 	} else {
-		f.Write([]byte(fmt.Sprintf("%s", str.String())))
+		f.Write([]byte(str.String()))
 	}
 }
 
@@ -191,9 +193,7 @@ func (str String) Less(s String) bool {
 // effect on the String.
 func (str String) Runes() []rune {
 	r := make([]rune, len(str.r))
-	for i := range str.r {
-		r[i] = str.r[i]
-	}
+	copy(r, str.r)
 	return r
 }
 
@@ -328,14 +328,10 @@ func (str String) clone() String {
 	clone := String{
 		r: make([]rune, len(str.r)),
 	}
-	for i := range str.r {
-		clone.r[i] = str.r[i]
-	}
+	copy(clone.r, str.r)
 	if gc != nil {
 		clone.gc = make([]int, len(gc))
-		for i := range gc {
-			clone.gc[i] = gc[i]
-		}
+		copy(clone.gc, gc)
 	}
 	return clone
 }
