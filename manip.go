@@ -331,7 +331,22 @@ func countTrailingWhitespace(text gem.String) int {
 	return 0
 }
 
-func layoutTable(table [][]string, width int, headerBreak bool, lineSep string, paraSep string) block {
+// charSet is string with "<CORNER><VERT><HORZ>" where <CORNER> is the char to
+// use for corner character, <VERT> is the char to use for the vertical char,
+// and <HORZ> is the char to use for the horizontal character.
+func layoutTable(table [][]gem.String, width int, headerBreak bool, lineSep gem.String, paraSep gem.String, charSet gem.String, border bool) block {
+	// if charSet is incomplete, set it to defaults
+	if charSet.Len() < 3 {
+		defaultSet := gem.New("+|-")
+		toAdd := defaultSet.Sub(0, 3-charSet.Len())
+		charSet = charSet.Add(toAdd)
+	} else if charSet.Len() > 3 {
+		charSet = charSet.Sub(0, 3)
+	}
+	cornerChar := charSet.Sub(0, 1)
+	vertChar := charSet.Sub(1, 2)
+	horzChar := charSet.Sub(2, 3)
+
 	// find how big the thing will be
 	maxColCount := 0
 	for i := range table {
@@ -340,6 +355,147 @@ func layoutTable(table [][]string, width int, headerBreak bool, lineSep string, 
 		}
 	}
 
-	if maxColCount == 0
+	// need to calc the length of the widest item in each column
+	colContentWidths := make([]int, len(table))
+	for i := range table {
+		colContentWidths[i] = 0
 
+		for j := range table[i] {
+			strLen := table[i][j].Len()
+
+			if strLen >= colContentWidths[i] {
+				colContentWidths[i] = strLen
+			}
+		}
+	}
+
+	// add up the column widths with padding to find how much space it takes
+	// up
+	totalContentWidth := 0
+	if border {
+		totalContentWidth = horzChar.Len()
+	}
+	for i := range colContentWidths {
+		totalContentWidth += colContentWidths[i]
+		if border {
+			totalContentWidth += 2 + horzChar.Len()
+		}
+	}
+
+	// find total extra space we need and divide it among all columns, but for
+	// cases were it does not divide evenly, go left to right
+	spaceToAdd := width - totalContentWidth
+	spaceForEachColumn := spaceToAdd / len(table)
+	remSpace := spaceToAdd % len(table)
+	colWidths := make([]int, len(table))
+	for i := range colWidths {
+		colWidths[i] = colContentWidths[i] + spaceForEachColumn
+		if i < remSpace {
+			colWidths[i]++
+		}
+	}
+
+	// sanity check on width, modify it if needed
+	totalWidth := 0
+	for i := range colWidths {
+		totalWidth += colWidths[i]
+	}
+	if width < totalWidth {
+		width = totalWidth
+	}
+
+	// now we have our table widths and can begin building the table
+	tableBlock := newBlock(gem.Zero, lineSep)
+
+	// build top border if needed
+	var horzBar gem.String
+	if border {
+		horzBar = cornerChar
+		for i := range colWidths {
+			// adding 2 because colWidths does not contain table padding
+			for j := 0; j < colWidths[i]+2; j++ {
+				horzBar = horzBar.Add(horzChar)
+			}
+			horzBar = horzBar.Add(cornerChar)
+		}
+
+		tableBlock.Append(horzBar)
+	}
+
+	var nonBorderBreakBar gem.String
+	if headerBreak && !border {
+		nonBorderBreakBar = gem.Zero
+		for i := 0; i < width; i++ {
+			nonBorderBreakBar = nonBorderBreakBar.Add(horzChar)
+		}
+	}
+
+	// layout all lines
+	for row := range table {
+		line := gem.Zero
+		if border {
+			line = vertChar.Add(gem.New(" "))
+		}
+
+		var colContent gem.String
+		for col := range table[row] {
+			if row == 0 && headerBreak {
+				headerContent := gem.New(strings.ToUpper(table[row][col].String()))
+				colContent = alignLineCenter(headerContent, colWidths[col])
+			} else {
+				colContent = alignLineLeft(table[row][col], colWidths[col])
+			}
+			line = line.Add(colContent)
+			if border {
+				line = line.Add(gem.New(" ")).Add(vertChar)
+			}
+		}
+
+		tableBlock.Append(line)
+
+		if row == 0 && headerBreak {
+			if border {
+				tableBlock.Append(horzBar)
+			} else {
+				tableBlock.Append(nonBorderBreakBar)
+			}
+		}
+	}
+
+	// build bottom border if needed
+	if border {
+		tableBlock.Append(horzBar)
+	}
+
+	return tableBlock
+
+	// BORDER, NO HEADER BREAK:
+	//
+	// +-------------------------+-------------------------------------+
+	// | THE FIRST ITEM          | THE SECOND ITEM                     |
+	// | The second item         | The first item                      |
+	// +-------------------------+-------------------------------------+
+	//
+	//
+	// BORDER, HEADER BREAK:
+	//
+	// +-------------------------+-------------------------------------+
+	// | THE FIRST ITEM          | THE SECOND ITEM                     |
+	// +-------------------------+-------------------------------------+
+	// | The second item         | The first item                      |
+	// +-------------------------+-------------------------------------+
+	//
+	// NO BORDER, NO HEADER BREAK:
+	//
+	// THE FIRST ITEM             THE SECOND ITEM
+	// The second item            The first item
+	//
+	//
+	// NO BORDER, HEADER BREAK:
+	//
+	// THE FIRST ITEM             THE SECOND ITEM
+	// -------------------------------------------------------
+	// The second item            The first item
+	//
+	//
 }
