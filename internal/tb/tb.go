@@ -1,4 +1,6 @@
-package rosed
+// Package tb holds the primitives for working with blocks of gem.String
+// text.
+package tb
 
 import (
 	"fmt"
@@ -7,7 +9,26 @@ import (
 	"github.com/dekarrin/rosed/internal/gem"
 )
 
-// block holds lines of text in a line-terminator agnostic way and provides a
+// LineOperation is a function that accepts a zero-indexed line number and the
+// contents of that line and performs some operation to produce zero or more new
+// lines to replace the contents of the line with.
+//
+// The return value for a LineOperation is a slice of lines to insert at the
+// old line position. This can be used to delete the line or insert additional
+// new ones; to insert, include the new lines in the returned slice in the
+// proper position relative to the old line in the slice, and to delete the
+// original line, a slice with len < 1 can be returned.
+//
+// The parameter idx will always be the index of the line before any
+// transformations were applied; e.g. a call to a LineOperation with idx = 4
+// will always be after a call with idx = 3, regardless of the size of the
+// returned slice in the prior call.
+//
+// NOTE: coupling: this must be kept in sync with rosed.LineOperation to allow
+// interop. TODO: perhaps make this its own type.
+type LineOperation func(idx int, line string) []string
+
+// Block holds lines of text in a line-terminator agnostic way and provides a
 // way to operate on each individually, independent of what the original
 // line terminator behavior is.
 //
@@ -20,14 +41,14 @@ import (
 // LineSeparator unset and TrailingSeparator set to false.
 //
 // block implements the sort.Interface interface.
-type block struct {
+type Block struct {
 	Lines             []gem.String
 	LineSeparator     gem.String
 	TrailingSeparator bool
 }
 
 // Append adds a new line to the block.
-func (tb *block) Append(content gem.String) {
+func (tb *Block) Append(content gem.String) {
 	if len(tb.Lines) < 1 {
 		tb.Lines = []gem.String{content}
 		return
@@ -36,14 +57,14 @@ func (tb *block) Append(content gem.String) {
 }
 
 // AppendBlock adds all lines in the given block to the end of this one.
-func (tb *block) AppendBlock(b block) {
+func (tb *Block) AppendBlock(b Block) {
 	for i := 0; i < b.Len(); i++ {
 		tb.Append(b.Line(i))
 	}
 }
 
 // AppendEmpty adds the given number of empty lines to the Block.
-func (tb *block) AppendEmpty(count int) {
+func (tb *Block) AppendEmpty(count int) {
 	for i := 0; i < count; i++ {
 		tb.Append(gem.Zero)
 	}
@@ -58,7 +79,7 @@ func (tb *block) AppendEmpty(count int) {
 //
 // All lines received by transform should be assumed to not have line
 // terminators, and none should be added by it.
-func (tb *block) Apply(transform LineOperation) {
+func (tb *Block) Apply(transform LineOperation) {
 	var applied []gem.String
 
 	for idx, line := range tb.Lines {
@@ -70,14 +91,14 @@ func (tb *block) Apply(transform LineOperation) {
 
 // CharCount returns the number of characters in the given line which will not
 // include the separator.
-func (tb block) CharCount(linePos int) int {
+func (tb Block) CharCount(linePos int) int {
 	return tb.Line(linePos).Len()
 }
 
 // Equal checks whether this Block is equal to another object. Returns whether
 // other is also a block with the same contents as tb.
-func (tb block) Equal(other interface{}) bool {
-	b2, ok := other.(block)
+func (tb Block) Equal(other interface{}) bool {
+	b2, ok := other.(Block)
 	if !ok {
 		return false
 	}
@@ -112,7 +133,7 @@ func (tb block) Equal(other interface{}) bool {
 // previous. Its currently-set LineSeparator is placed between each line and
 // if and only if TrailingSeparator is set, the LineSeparator is placed at the
 // end of the string as well.
-func (tb block) Join() gem.String {
+func (tb Block) Join() gem.String {
 	if tb.Len() < 1 {
 		if tb.TrailingSeparator {
 			return tb.LineSeparator
@@ -130,25 +151,25 @@ func (tb block) Join() gem.String {
 
 // Len gives the number of lines in the block. This is part of the implementation of
 // sort.Interface.
-func (tb block) Len() int {
+func (tb Block) Len() int {
 	return len(tb.Lines)
 }
 
 // Less reports whether line i should sort before line j. This is part of the implementation of
 // sort.Interface.
-func (tb block) Less(i, j int) bool {
+func (tb Block) Less(i, j int) bool {
 	return tb.Line(i).Less(tb.Line(j))
 }
 
 // Line returns the line at the given position. pos is not checked for validity before
 // accessing; callers must do so.
-func (tb block) Line(pos int) gem.String {
+func (tb Block) Line(pos int) gem.String {
 	return tb.Lines[pos]
 }
 
 // Remove removes the line at the given position. If pos does not exist, no action is
 // taken.
-func (tb *block) Remove(pos int) {
+func (tb *Block) Remove(pos int) {
 	if pos >= 0 && len(tb.Lines) > pos {
 		tb.Lines = append(tb.Lines[:pos], tb.Lines[pos+1:]...)
 	}
@@ -157,22 +178,22 @@ func (tb *block) Remove(pos int) {
 // Set sets a line to new contents.
 //
 // linePos must be a line that exists.
-func (tb *block) Set(linePos int, content gem.String) {
+func (tb *Block) Set(linePos int, content gem.String) {
 	tb.Lines[linePos] = content
 }
 
 // String returns the string representation of the block.
-func (tb block) String() string {
+func (tb Block) String() string {
 	return fmt.Sprintf("<block LineSeparator:%q TrailingSeparator:%v Lines:%q>", tb.LineSeparator, tb.TrailingSeparator, tb.Lines)
 }
 
 // Swap swaps line i with line j. This is part of the implementation of
 // sort.Interface.
-func (tb block) Swap(i, j int) {
+func (tb Block) Swap(i, j int) {
 	tb.Lines[i], tb.Lines[j] = tb.Lines[j], tb.Lines[i]
 }
 
-// newBlock creates a block of text.
+// New creates a block of text.
 //
 // The text is split into lines using the provided lineSep. If any trailing line
 // separator is present, it will be removed prior to split.
@@ -184,13 +205,13 @@ func (tb block) Swap(i, j int) {
 // The returned Block will have TrailingSeparator set to match whatever mode
 // the passed in text had; if it was empty, TrailingSeparator will always be
 // false.
-func newBlock(text, lineSep gem.String) block {
+func New(text, lineSep gem.String) Block {
 	var trailing bool
 
 	// handle special cases of text being empty or text being only the line
 	// separator
 	if text.IsEmpty() {
-		return block{
+		return Block{
 			LineSeparator: lineSep,
 		}
 	}
@@ -200,7 +221,7 @@ func newBlock(text, lineSep gem.String) block {
 		lines = lines[0 : len(lines)-1]
 		trailing = true
 	}
-	bl := block{
+	bl := Block{
 		Lines:             make([]gem.String, len(lines)),
 		LineSeparator:     lineSep,
 		TrailingSeparator: trailing,

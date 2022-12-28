@@ -7,6 +7,9 @@ import (
 	"strings"
 
 	"github.com/dekarrin/rosed/internal/gem"
+	"github.com/dekarrin/rosed/internal/tb"
+
+	"github.com/dekarrin/rosed/internal/manip"
 )
 
 // Alignment is the type of alignment to apply to text. It is used in the
@@ -118,16 +121,16 @@ func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
 			sepStart := _g(strings.Repeat(" ", pre.Len()))
 			sepEnd := _g(strings.Repeat(" ", suf.Len()))
 
-			var bl block
+			var bl tb.Block
 			switch align {
 			case Left:
 				// need to get a block with suf at end of last line and pre
 				// at end of first line
-				bl = newBlock(para.Add(sepEnd), _g(opts.LineSeparator))
+				bl = tb.New(para.Add(sepEnd), _g(opts.LineSeparator))
 				endLineIdx := bl.Len() - 1
 				bl.Set(0, bl.Line(0).Add(sepStart))
 				bl.Apply(func(idx int, line string) []string {
-					return []string{alignLineLeft(_g(line), width).String()}
+					return []string{manip.AlignLineLeft(_g(line), width).String()}
 				})
 				// remove separators (if any)
 				if sepStart.Len() > 0 {
@@ -140,11 +143,11 @@ func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
 			case Right:
 				// need to get a block with suf at start of last line and pre
 				// at start of first line
-				bl = newBlock(sepStart.Add(para), _g(opts.LineSeparator))
+				bl = tb.New(sepStart.Add(para), _g(opts.LineSeparator))
 				endLineIdx := bl.Len() - 1
 				bl.Set(endLineIdx, sepEnd.Add(bl.Line(endLineIdx)))
 				bl.Apply(func(idx int, line string) []string {
-					return []string{alignLineRight(_g(line), width).String()}
+					return []string{manip.AlignLineRight(_g(line), width).String()}
 				})
 				// remove separators (if any)
 				if sepStart.Len() > 0 {
@@ -157,21 +160,21 @@ func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
 				}
 			case Center:
 				// dont pre-add anyfin so center can work its magic
-				bl = newBlock(para, _g(opts.LineSeparator))
+				bl = tb.New(para, _g(opts.LineSeparator))
 				bl.Apply(func(idx int, line string) []string {
-					return []string{alignLineCenter(_g(line), width).String()}
+					return []string{manip.AlignLineCenter(_g(line), width).String()}
 				})
 
 				// now work out how much needs to be removed from the start:
 				if sepStart.Len() > 0 {
 					firstLine := bl.Line(0)
-					leftSpace := countLeadingWhitespace(firstLine)
+					leftSpace := manip.CountLeadingWhitespace(firstLine)
 
 					if leftSpace >= sepStart.Len() {
 						// happy path: just chop off that much from the start
 						firstLine = firstLine.Sub(sepStart.Len(), firstLine.Len())
 					} else {
-						rightSpace := countTrailingWhitespace(firstLine)
+						rightSpace := manip.CountTrailingWhitespace(firstLine)
 						rightRemoveSpace := sepStart.Len() - leftSpace
 						if rightRemoveSpace > rightSpace {
 							rightRemoveSpace = rightSpace
@@ -185,13 +188,13 @@ func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
 				// work how how much needs to be removed from end:
 				if sepEnd.Len() > 0 {
 					lastLine := bl.Line(bl.Len() - 1)
-					rightSpace := countTrailingWhitespace(lastLine)
+					rightSpace := manip.CountTrailingWhitespace(lastLine)
 
 					if rightSpace >= sepEnd.Len() {
 						// happy path: just chop off that much from end
 						lastLine = lastLine.Sub(0, -sepEnd.Len())
 					} else {
-						leftSpace := countLeadingWhitespace(lastLine)
+						leftSpace := manip.CountLeadingWhitespace(lastLine)
 						leftRemoveSpace := sepEnd.Len() - rightSpace
 						if leftRemoveSpace > leftSpace {
 							leftRemoveSpace = leftSpace
@@ -212,11 +215,11 @@ func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
 	return ed.ApplyOpts(func(idx int, line string) []string {
 		switch align {
 		case Left:
-			return []string{alignLineLeft(_g(line), width).String()}
+			return []string{manip.AlignLineLeft(_g(line), width).String()}
 		case Right:
-			return []string{alignLineRight(_g(line), width).String()}
+			return []string{manip.AlignLineRight(_g(line), width).String()}
 		case Center:
-			return []string{alignLineCenter(_g(line), width).String()}
+			return []string{manip.AlignLineCenter(_g(line), width).String()}
 		default:
 			return []string{line}
 		}
@@ -342,7 +345,7 @@ func (ed Editor) CollapseSpace() Editor {
 // Options for the invocation.
 func (ed Editor) CollapseSpaceOpts(opts Options) Editor {
 	opts = opts.WithDefaults()
-	ed.Text = collapseSpace(_g(ed.Text), _g(opts.LineSeparator)).String()
+	ed.Text = manip.CollapseSpace(_g(ed.Text), _g(opts.LineSeparator)).String()
 	return ed
 }
 
@@ -513,7 +516,7 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 	leftWidth := longestTermLen + termLeftTabWidth
 	rightWidth := width - leftWidth - minBetween
 
-	fullTable := block{
+	fullTable := tb.Block{
 		LineSeparator:     _g(opts.LineSeparator),
 		TrailingSeparator: !opts.NoTrailingLineSeparators,
 	}
@@ -526,18 +529,18 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 			rightPadding = strings.Repeat(" ", longestTermLen-len([]rune(term)))
 		}
 		leftTab := strings.Repeat(" ", termLeftTabWidth)
-		leftCol := block{
+		leftCol := tb.Block{
 			Lines: []gem.String{_g(fmt.Sprintf("%s%s%s", leftTab, term, rightPadding))},
 		}
 		// subtract 2 from width so we can put in a left margin of "  "
-		rightCol := wrap(_g(def), rightWidth-2, _g(opts.LineSeparator))
+		rightCol := manip.Wrap(_g(def), rightWidth-2, _g(opts.LineSeparator))
 		rightCol.Apply(func(idx int, line string) []string {
 			if idx == 0 {
 				return []string{"- " + line}
 			}
 			return []string{"  " + line}
 		})
-		combined := combineColumnBlocks(leftCol, rightCol, minBetween)
+		combined := manip.CombineColumnBlocks(leftCol, rightCol, minBetween)
 
 		if fullTable.Len() > 0 && combined.Len() > 0 {
 			// grab the first line and append it to last line first.
@@ -647,8 +650,8 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 	}
 
 	opts = opts.WithDefaults()
-	leftColBlock := wrap(_g(leftText), leftColWidth, _g(opts.LineSeparator))
-	rightColBlock := wrap(_g(rightText), rightColWidth, _g(opts.LineSeparator))
+	leftColBlock := manip.Wrap(_g(leftText), leftColWidth, _g(opts.LineSeparator))
+	rightColBlock := manip.Wrap(_g(rightText), rightColWidth, _g(opts.LineSeparator))
 
 	// need to get longest left-hand line and make the space between make up for the
 	// difference
@@ -662,7 +665,7 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 	// if left col isnt the size it should be, add space so it is
 	spaceBetween := minSpaceBetween + (leftColWidth - maxLeftColLineLen)
 
-	combinedBlock := combineColumnBlocks(leftColBlock, rightColBlock, spaceBetween)
+	combinedBlock := manip.CombineColumnBlocks(leftColBlock, rightColBlock, spaceBetween)
 	combinedBlock.LineSeparator = _g(opts.LineSeparator)
 	combinedBlock.TrailingSeparator = !opts.NoTrailingLineSeparators
 
@@ -717,12 +720,12 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 			sepStart := _g(strings.Repeat("A", pre.Len()))
 			sepEnd := _g(strings.Repeat("A", suf.Len()))
 
-			bl := newBlock(sepStart.Add(para).Add(sepEnd), _g(opts.LineSeparator))
+			bl := tb.New(sepStart.Add(para).Add(sepEnd), _g(opts.LineSeparator))
 			bl.Apply(func(idx int, line string) []string {
 				if !opts.JustifyLastLine && idx == bl.Len()-1 {
 					return []string{line}
 				}
-				return []string{justifyLine(_g(line), width).String()}
+				return []string{manip.JustifyLine(_g(line), width).String()}
 			})
 			text := bl.Join()
 
@@ -742,7 +745,7 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 		}
 
 		ed = ed.ApplyOpts(func(idx int, line string) []string {
-			return []string{justifyLine(_g(line), width).String()}
+			return []string{manip.JustifyLine(_g(line), width).String()}
 		}, opts)
 
 		if !opts.JustifyLastLine {
@@ -813,14 +816,14 @@ func (ed Editor) WrapOpts(width int, opts Options) Editor {
 			// need to include the separator prefix/suffix if any
 			sepStart := _g(strings.Repeat("", sepPrefix.Len()))
 			sepEnd := _g(strings.Repeat("", sepSuffix.Len()))
-			textBlock := wrap(sepStart.Add(para).Add(sepEnd), width, _g(opts.LineSeparator))
+			textBlock := manip.Wrap(sepStart.Add(para).Add(sepEnd), width, _g(opts.LineSeparator))
 			text := textBlock.Join()
 			return []gem.String{text}
 		}, opts)
 		return edi
 	}
 
-	textBlock := wrap(_g(ed.Text), width, _g(opts.LineSeparator))
+	textBlock := manip.Wrap(_g(ed.Text), width, _g(opts.LineSeparator))
 	text := textBlock.Join()
 	if strings.HasSuffix(ed.Text, opts.LineSeparator) {
 		text = text.Add(_g(opts.LineSeparator))

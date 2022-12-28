@@ -1,14 +1,15 @@
-package rosed
+package manip
 
 import (
 	"testing"
 
 	"github.com/dekarrin/rosed/internal/gem"
+	"github.com/dekarrin/rosed/internal/tb"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Manip_collapseSpace(t *testing.T) {
+func Test_CollapseSpace(t *testing.T) {
 	testCases := []struct {
 		name   string
 		input  gem.String
@@ -36,26 +37,26 @@ func Test_Manip_collapseSpace(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
-			actual := collapseSpace(tc.input, tc.sep)
+			actual := CollapseSpace(tc.input, tc.sep)
 			assert.True(tc.expect.Equal(actual))
 		})
 	}
 }
 
-func Test_Manip_wrap(t *testing.T) {
+func Test_Wrap(t *testing.T) {
 	testCases := []struct {
 		name     string
 		input    gem.String
 		width    int
 		sep      gem.String
-		expected block
+		expected tb.Block
 	}{
 		{
 			name:  "empty input",
 			input: gem.Zero,
 			width: 80,
 			sep:   _g("\n"),
-			expected: block{
+			expected: tb.Block{
 				Lines: []gem.String{
 					gem.Zero,
 				},
@@ -67,7 +68,7 @@ func Test_Manip_wrap(t *testing.T) {
 			input: _g("a test string"),
 			width: 80,
 			sep:   _g("\n"),
-			expected: block{
+			expected: tb.Block{
 				Lines: []gem.String{
 					_g("a test string"),
 				},
@@ -79,7 +80,7 @@ func Test_Manip_wrap(t *testing.T) {
 			input: _g("a string long enough to be wrapped"),
 			width: 20,
 			sep:   _g("\n"),
-			expected: block{
+			expected: tb.Block{
 				Lines: []gem.String{
 					_g("a string long enough"),
 					_g("to be wrapped"),
@@ -92,7 +93,7 @@ func Test_Manip_wrap(t *testing.T) {
 			input: _g("a string long enough to be wrapped more than once"),
 			width: 20,
 			sep:   _g("\n"),
-			expected: block{
+			expected: tb.Block{
 				Lines: []gem.String{
 					_g("a string long enough"),
 					_g("to be wrapped more"),
@@ -106,7 +107,7 @@ func Test_Manip_wrap(t *testing.T) {
 			input: _g("test"),
 			width: -1,
 			sep:   _g("\n"),
-			expected: block{
+			expected: tb.Block{
 				Lines: []gem.String{
 					_g("t-"),
 					_g("e-"),
@@ -120,7 +121,7 @@ func Test_Manip_wrap(t *testing.T) {
 			input: _g("test"),
 			width: 0,
 			sep:   _g("\n"),
-			expected: block{
+			expected: tb.Block{
 				Lines: []gem.String{
 					_g("t-"),
 					_g("e-"),
@@ -134,7 +135,7 @@ func Test_Manip_wrap(t *testing.T) {
 			input: _g("test"),
 			width: 1,
 			sep:   _g("\n"),
-			expected: block{
+			expected: tb.Block{
 				Lines: []gem.String{
 					_g("t-"),
 					_g("e-"),
@@ -148,7 +149,7 @@ func Test_Manip_wrap(t *testing.T) {
 			input: _g("test"),
 			width: 2,
 			sep:   _g("\n"),
-			expected: block{
+			expected: tb.Block{
 				Lines: []gem.String{
 					_g("t-"),
 					_g("e-"),
@@ -162,7 +163,7 @@ func Test_Manip_wrap(t *testing.T) {
 			input: _g("test"),
 			width: 3,
 			sep:   _g("\n"),
-			expected: block{
+			expected: tb.Block{
 				Lines: []gem.String{
 					_g("te-"),
 					_g("st"),
@@ -174,13 +175,13 @@ func Test_Manip_wrap(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
-			actual := wrap(tc.input, tc.width, tc.sep)
+			actual := Wrap(tc.input, tc.width, tc.sep)
 			assert.Equal(tc.expected, actual)
 		})
 	}
 }
 
-func Test_Manip_justifyLine(t *testing.T) {
+func Test_JustifyLine(t *testing.T) {
 	testCases := []struct {
 		name   string
 		input  gem.String
@@ -200,43 +201,43 @@ func Test_Manip_justifyLine(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
 
-			actual := justifyLine(tc.input, tc.width)
+			actual := JustifyLine(tc.input, tc.width)
 
 			assert.True(tc.expect.Equal(actual))
 		})
 	}
 }
 
-func Test_Manip_combineColumnBlocks(t *testing.T) {
+func Test_CombineColumnBlocks(t *testing.T) {
 	testCases := []struct {
 		name     string
-		left     block
-		right    block
+		left     tb.Block
+		right    tb.Block
 		minSpace int
-		expect   block
+		expect   tb.Block
 	}{
 		{
 			name: "empty lines",
-			left: block{
+			left: tb.Block{
 				Lines: []gem.String{_g("")},
 			},
-			right: block{
+			right: tb.Block{
 				Lines: []gem.String{_g("")},
 			},
 			minSpace: 0,
-			expect: block{
+			expect: tb.Block{
 				Lines: []gem.String{_g("")},
 			},
 		},
 		{
 			name: "right col bigger",
-			left: block{
+			left: tb.Block{
 				Lines: []gem.String{
 					_g("This is a test"),
 					_g("string for the"),
 					_g("left side")},
 			},
-			right: block{
+			right: tb.Block{
 				Lines: []gem.String{
 					_g("Column number"),
 					_g("two is right"),
@@ -248,7 +249,7 @@ func Test_Manip_combineColumnBlocks(t *testing.T) {
 				},
 			},
 			minSpace: 2,
-			expect: block{
+			expect: tb.Block{
 				Lines: []gem.String{
 					_g("This is a test  Column number"),
 					_g("string for the  two is right"),
@@ -262,7 +263,7 @@ func Test_Manip_combineColumnBlocks(t *testing.T) {
 		},
 		{
 			name: "left col bigger",
-			left: block{
+			left: tb.Block{
 				Lines: []gem.String{
 					_g("Column number"),
 					_g("one is right"),
@@ -273,14 +274,14 @@ func Test_Manip_combineColumnBlocks(t *testing.T) {
 					_g("included"),
 				},
 			},
-			right: block{
+			right: tb.Block{
 				Lines: []gem.String{
 					_g("This is a test"),
 					_g("string for the"),
 					_g("right side")},
 			},
 			minSpace: 2,
-			expect: block{
+			expect: tb.Block{
 				Lines: []gem.String{
 					_g("Column number  This is a test"),
 					_g("one is right   string for the"),
@@ -294,21 +295,21 @@ func Test_Manip_combineColumnBlocks(t *testing.T) {
 		},
 		{
 			name: "equal size columns",
-			left: block{
+			left: tb.Block{
 				Lines: []gem.String{
 					_g("Column number"),
 					_g("one is right"),
 					_g("here!"),
 				},
 			},
-			right: block{
+			right: tb.Block{
 				Lines: []gem.String{
 					_g("This is a test"),
 					_g("string for the"),
 					_g("right side")},
 			},
 			minSpace: 2,
-			expect: block{
+			expect: tb.Block{
 				Lines: []gem.String{
 					_g("Column number  This is a test"),
 					_g("one is right   string for the"),
@@ -322,14 +323,14 @@ func Test_Manip_combineColumnBlocks(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
 
-			actual := combineColumnBlocks(tc.left, tc.right, tc.minSpace)
+			actual := CombineColumnBlocks(tc.left, tc.right, tc.minSpace)
 
 			assert.Equal(tc.expect, actual)
 		})
 	}
 }
 
-func Test_Manip_alignLineLeft(t *testing.T) {
+func Test_AlignLineLeft(t *testing.T) {
 	testCases := []struct {
 		name   string
 		input  gem.String
@@ -351,7 +352,7 @@ func Test_Manip_alignLineLeft(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
 
-			actual := alignLineLeft(tc.input, tc.width)
+			actual := AlignLineLeft(tc.input, tc.width)
 
 			assert.True(tc.expect.Equal(actual))
 			assert.Equal(tc.expect.String(), actual.String())
@@ -359,7 +360,7 @@ func Test_Manip_alignLineLeft(t *testing.T) {
 	}
 }
 
-func Test_Manip_alignLineRight(t *testing.T) {
+func Test_AlignLineRight(t *testing.T) {
 	testCases := []struct {
 		name   string
 		input  gem.String
@@ -381,7 +382,7 @@ func Test_Manip_alignLineRight(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
 
-			actual := alignLineRight(tc.input, tc.width)
+			actual := AlignLineRight(tc.input, tc.width)
 
 			assert.True(tc.expect.Equal(actual))
 			assert.Equal(tc.expect.String(), actual.String())
@@ -389,7 +390,7 @@ func Test_Manip_alignLineRight(t *testing.T) {
 	}
 }
 
-func Test_Manip_alignLineCenter(t *testing.T) {
+func Test_AlignLineCenter(t *testing.T) {
 	testCases := []struct {
 		name   string
 		input  gem.String
@@ -412,7 +413,7 @@ func Test_Manip_alignLineCenter(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
 
-			actual := alignLineCenter(tc.input, tc.width)
+			actual := AlignLineCenter(tc.input, tc.width)
 
 			assert.True(tc.expect.Equal(actual))
 			assert.Equal(tc.expect.String(), actual.String())
@@ -420,7 +421,7 @@ func Test_Manip_alignLineCenter(t *testing.T) {
 	}
 }
 
-func Test_Manip_countLeadingWhitespace(t *testing.T) {
+func Test_CountLeadingWhitespace(t *testing.T) {
 	testCases := []struct {
 		name   string
 		input  gem.String
@@ -438,14 +439,14 @@ func Test_Manip_countLeadingWhitespace(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
 
-			actual := countLeadingWhitespace(tc.input)
+			actual := CountLeadingWhitespace(tc.input)
 
 			assert.Equal(tc.expect, actual)
 		})
 	}
 }
 
-func Test_Manip_countTrailingWhitespace(t *testing.T) {
+func Test_CountTrailingWhitespace(t *testing.T) {
 	testCases := []struct {
 		name   string
 		input  gem.String
@@ -463,7 +464,7 @@ func Test_Manip_countTrailingWhitespace(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
 
-			actual := countTrailingWhitespace(tc.input)
+			actual := CountTrailingWhitespace(tc.input)
 
 			assert.Equal(tc.expect, actual)
 		})

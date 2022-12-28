@@ -203,9 +203,9 @@ func ExampleEditor_ApplyParagraphs() {
 
 	paraOp := func(idx int, para, sepPrefix, sepSuffix string) []string {
 		var newPara string
-		if strings.Index(para, "John") > -1 {
+		if strings.Contains(para, "John") {
 			newPara = "Beta Kids:\n" + para
-		} else if strings.Index(para, "Jane") > -1 {
+		} else if strings.Contains(para, "Jane") {
 			newPara = "Alpha Kids:\n" + para
 		} else {
 			newPara = "Someone Else:\n" + para
@@ -266,6 +266,7 @@ func ExampleEditor_CharCount() {
 	testCount := Edit("test").CharCount()
 	fmt.Println(testCount)
 
+	//lint:ignore ST1018 because go-staticcheck dislikes emoji literals with ZWJ sequences
 	emojiCount := Edit("👩‍❤️‍💋‍👩").CharCount()
 	fmt.Println(emojiCount)
 

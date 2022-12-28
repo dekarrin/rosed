@@ -39,6 +39,7 @@ func Test_Editor_CharCount(t *testing.T) {
 		{"multi-char", "test", 4},
 		{"decomposed sequence", "C\u0327", 1},
 		{"one emoji with two codepoints: ❤️", "\u2764\uFE0F", 1},
+		//lint:ignore ST1018 dont bother fixing this linter error, we have it unescaped bc its immediately escaped after
 		{"several codepoint emoji woman kiss woman 👩‍❤️‍💋‍👩", "\U0001F469\u200D\u2764\uFE0F\u200D\U0001F48B\u200D\U0001F469", 1},
 	}
 
