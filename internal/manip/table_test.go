@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_LayoutTable(t *testing.T) {
+func Test_MakeTable(t *testing.T) {
 	testCases := []struct {
 		name    string
 		table   [][]gem.String
@@ -754,7 +754,7 @@ func Test_LayoutTable(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			assert := assert.New(t)
 
-			actual := LayoutTable(tc.table, tc.width, tc.lineSep, tc.header, tc.border, tc.charSet)
+			actual := MakeTable(tc.table, tc.width, tc.lineSep, tc.header, tc.border, tc.charSet)
 
 			assert.True(tc.expect.Equal(actual))
 			assert.Equal(tc.expect.Join().String(), actual.Join().String())

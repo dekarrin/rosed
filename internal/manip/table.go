@@ -13,7 +13,7 @@ import (
 	"github.com/dekarrin/rosed/internal/tb"
 )
 
-// LayoutTable creates a table from the given slice of rows, where each row
+// MakeTable creates a table from the given slice of rows, where each row
 // is a slice of column content.
 //
 // width is the width to make the table. If the content and border options make
@@ -30,7 +30,7 @@ import (
 // and <HORZ> is the char to use for the horizontal character.
 //
 // border is whether to have a border
-func LayoutTable(data [][]gem.String, width int, lineSep gem.String, header bool, border bool, charSet gem.String) tb.Block {
+func MakeTable(data [][]gem.String, width int, lineSep gem.String, header bool, border bool, charSet gem.String) tb.Block {
 	// TODO: clean up, this function is huge and probably could be broken down
 	// for readability sake even if constituent parts turns out to not be very
 	// re-usable
