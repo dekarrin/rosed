@@ -360,6 +360,10 @@ func Test_Options_WithDefaults(t *testing.T) {
 				IndentStr:                " ",
 				NoTrailingLineSeparators: true,
 				PreserveParagraphs:       true,
+				JustifyLastLine:          true,
+				TableBorders:             true,
+				TableHeaders:             true,
+				TableCharSet:             "#!=",
 			},
 			expected: Options{
 				ParagraphSeparator:       "\n\n--\n\n",
@@ -367,6 +371,10 @@ func Test_Options_WithDefaults(t *testing.T) {
 				IndentStr:                " ",
 				NoTrailingLineSeparators: true,
 				PreserveParagraphs:       true,
+				JustifyLastLine:          true,
+				TableBorders:             true,
+				TableHeaders:             true,
+				TableCharSet:             "#!=",
 			},
 		},
 		{
@@ -376,6 +384,10 @@ func Test_Options_WithDefaults(t *testing.T) {
 				IndentStr:                " ",
 				NoTrailingLineSeparators: false,
 				PreserveParagraphs:       true,
+				JustifyLastLine:          true,
+				TableBorders:             true,
+				TableHeaders:             true,
+				TableCharSet:             " ",
 			},
 			expected: Options{
 				ParagraphSeparator:       "\n\n--\n\n",
@@ -383,6 +395,10 @@ func Test_Options_WithDefaults(t *testing.T) {
 				IndentStr:                " ",
 				NoTrailingLineSeparators: false,
 				PreserveParagraphs:       true,
+				JustifyLastLine:          true,
+				TableBorders:             true,
+				TableHeaders:             true,
+				TableCharSet:             " |-",
 			},
 		},
 		{
@@ -392,6 +408,10 @@ func Test_Options_WithDefaults(t *testing.T) {
 				LineSeparator:            "---",
 				NoTrailingLineSeparators: true,
 				PreserveParagraphs:       false,
+				JustifyLastLine:          true,
+				TableBorders:             true,
+				TableHeaders:             true,
+				TableCharSet:             "XY",
 			},
 			expected: Options{
 				ParagraphSeparator:       "\n\n--\n\n",
@@ -399,6 +419,10 @@ func Test_Options_WithDefaults(t *testing.T) {
 				IndentStr:                DefaultIndentString,
 				NoTrailingLineSeparators: true,
 				PreserveParagraphs:       false,
+				JustifyLastLine:          true,
+				TableBorders:             true,
+				TableHeaders:             true,
+				TableCharSet:             "XY-",
 			},
 		},
 		{
@@ -410,6 +434,10 @@ func Test_Options_WithDefaults(t *testing.T) {
 				IndentStr:                DefaultIndentString,
 				NoTrailingLineSeparators: false,
 				PreserveParagraphs:       false,
+				JustifyLastLine:          false,
+				TableBorders:             false,
+				TableHeaders:             false,
+				TableCharSet:             DefaultTableCharSet,
 			},
 		},
 		{
@@ -424,6 +452,22 @@ func Test_Options_WithDefaults(t *testing.T) {
 				NoTrailingLineSeparators: false,
 				PreserveParagraphs:       false,
 				JustifyLastLine:          true,
+				TableCharSet:             DefaultTableCharSet,
+			},
+		},
+		{
+			name: "dont unset TableBorders",
+			input: Options{
+				TableBorders: true,
+			},
+			expected: Options{
+				ParagraphSeparator:       DefaultParagraphSeparator,
+				LineSeparator:            DefaultLineSeparator,
+				IndentStr:                DefaultIndentString,
+				NoTrailingLineSeparators: false,
+				PreserveParagraphs:       false,
+				TableBorders:             true,
+				TableCharSet:             DefaultTableCharSet,
 			},
 		},
 	}
@@ -436,6 +480,222 @@ func Test_Options_WithDefaults(t *testing.T) {
 			if actual != tc.expected {
 				t.Fatalf("expected %v but was %v", tc.expected, actual)
 			}
+		})
+	}
+}
+
+func Test_Options_WithTableBorders(t *testing.T) {
+	testCases := []struct {
+		name       string
+		input      Options
+		newBorders bool
+		expected   Options
+	}{
+		{
+			name: "from defaults",
+			input: Options{
+				ParagraphSeparator:       DefaultParagraphSeparator,
+				LineSeparator:            DefaultLineSeparator,
+				IndentStr:                DefaultIndentString,
+				NoTrailingLineSeparators: false,
+				PreserveParagraphs:       false,
+				JustifyLastLine:          false,
+				TableBorders:             false,
+				TableHeaders:             false,
+				TableCharSet:             DefaultTableCharSet,
+			},
+			newBorders: true,
+			expected: Options{
+				ParagraphSeparator:       DefaultParagraphSeparator,
+				LineSeparator:            DefaultLineSeparator,
+				IndentStr:                DefaultIndentString,
+				NoTrailingLineSeparators: false,
+				PreserveParagraphs:       false,
+				JustifyLastLine:          false,
+				TableBorders:             true,
+				TableHeaders:             false,
+				TableCharSet:             DefaultTableCharSet,
+			},
+		},
+		{
+			name: "from empty",
+			input: Options{
+				ParagraphSeparator:       "",
+				LineSeparator:            "",
+				IndentStr:                "",
+				NoTrailingLineSeparators: false,
+				PreserveParagraphs:       false,
+				JustifyLastLine:          false,
+				TableBorders:             false,
+				TableHeaders:             false,
+				TableCharSet:             "",
+			},
+			newBorders: true,
+			expected: Options{
+				ParagraphSeparator:       "",
+				LineSeparator:            "",
+				IndentStr:                "",
+				NoTrailingLineSeparators: false,
+				PreserveParagraphs:       false,
+				JustifyLastLine:          false,
+				TableBorders:             true,
+				TableHeaders:             false,
+				TableCharSet:             "",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := tc.input.WithTableBorders(tc.newBorders)
+
+			assert.Equal(tc.expected, actual)
+		})
+	}
+}
+
+func Test_Options_WithTableHeaders(t *testing.T) {
+	testCases := []struct {
+		name       string
+		input      Options
+		newHeaders bool
+		expected   Options
+	}{
+		{
+			name: "from defaults",
+			input: Options{
+				ParagraphSeparator:       DefaultParagraphSeparator,
+				LineSeparator:            DefaultLineSeparator,
+				IndentStr:                DefaultIndentString,
+				NoTrailingLineSeparators: false,
+				PreserveParagraphs:       false,
+				JustifyLastLine:          false,
+				TableBorders:             false,
+				TableHeaders:             false,
+				TableCharSet:             DefaultTableCharSet,
+			},
+			newHeaders: true,
+			expected: Options{
+				ParagraphSeparator:       DefaultParagraphSeparator,
+				LineSeparator:            DefaultLineSeparator,
+				IndentStr:                DefaultIndentString,
+				NoTrailingLineSeparators: false,
+				PreserveParagraphs:       false,
+				JustifyLastLine:          false,
+				TableBorders:             false,
+				TableHeaders:             true,
+				TableCharSet:             DefaultTableCharSet,
+			},
+		},
+		{
+			name: "from empty",
+			input: Options{
+				ParagraphSeparator:       "",
+				LineSeparator:            "",
+				IndentStr:                "",
+				NoTrailingLineSeparators: false,
+				PreserveParagraphs:       false,
+				JustifyLastLine:          false,
+				TableBorders:             false,
+				TableHeaders:             false,
+				TableCharSet:             "",
+			},
+			newHeaders: true,
+			expected: Options{
+				ParagraphSeparator:       "",
+				LineSeparator:            "",
+				IndentStr:                "",
+				NoTrailingLineSeparators: false,
+				PreserveParagraphs:       false,
+				JustifyLastLine:          false,
+				TableBorders:             false,
+				TableHeaders:             true,
+				TableCharSet:             "",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := tc.input.WithTableHeaders(tc.newHeaders)
+
+			assert.Equal(tc.expected, actual)
+		})
+	}
+}
+
+func Test_Options_WithTableCharSet(t *testing.T) {
+	testCases := []struct {
+		name       string
+		input      Options
+		newCharSet string
+		expected   Options
+	}{
+		{
+			name: "from defaults",
+			input: Options{
+				ParagraphSeparator:       DefaultParagraphSeparator,
+				LineSeparator:            DefaultLineSeparator,
+				IndentStr:                DefaultIndentString,
+				NoTrailingLineSeparators: false,
+				PreserveParagraphs:       false,
+				JustifyLastLine:          false,
+				TableBorders:             false,
+				TableHeaders:             false,
+				TableCharSet:             DefaultTableCharSet,
+			},
+			newCharSet: "#!^",
+			expected: Options{
+				ParagraphSeparator:       DefaultParagraphSeparator,
+				LineSeparator:            DefaultLineSeparator,
+				IndentStr:                DefaultIndentString,
+				NoTrailingLineSeparators: false,
+				PreserveParagraphs:       false,
+				JustifyLastLine:          false,
+				TableBorders:             false,
+				TableHeaders:             false,
+				TableCharSet:             "#!^",
+			},
+		},
+		{
+			name: "from empty",
+			input: Options{
+				ParagraphSeparator:       "",
+				LineSeparator:            "",
+				IndentStr:                "",
+				NoTrailingLineSeparators: false,
+				PreserveParagraphs:       false,
+				JustifyLastLine:          false,
+				TableBorders:             false,
+				TableHeaders:             false,
+				TableCharSet:             "",
+			},
+			newCharSet: "XIL",
+			expected: Options{
+				ParagraphSeparator:       "",
+				LineSeparator:            "",
+				IndentStr:                "",
+				NoTrailingLineSeparators: false,
+				PreserveParagraphs:       false,
+				JustifyLastLine:          false,
+				TableBorders:             false,
+				TableHeaders:             false,
+				TableCharSet:             "XIL",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := tc.input.WithTableCharSet(tc.newCharSet)
+
+			assert.Equal(tc.expected, actual)
 		})
 	}
 }
