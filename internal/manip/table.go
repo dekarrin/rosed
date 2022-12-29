@@ -28,22 +28,22 @@ import (
 // and <HORZ> is the char to use for the horizontal character.
 //
 // border is whether to have a border
-func LayoutTable(table [][]gem.String, width int, lineSep gem.String, header bool, border bool, charSet gem.String) tb.Block {
+func LayoutTable(data [][]gem.String, width int, lineSep gem.String, header bool, border bool, charSet gem.String) tb.Block {
 	// TODO: clean up, this function is huge and probably could be broken down
 	// for readability sake even if constituent parts turns out to not be very
 	// re-usable
 	const minNonBorderInterColumnPadding = 2
 
 	// sanity check table input
-	if len(table) < 1 {
+	if len(data) < 1 {
 		return tb.New(gem.Zero, lineSep)
 	}
 
 	// find how many columns the final table will have
 	colCount := 0
-	for i := range table {
-		if len(table[i]) > colCount {
-			colCount = len(table[i])
+	for i := range data {
+		if len(data[i]) > colCount {
+			colCount = len(data[i])
 		}
 	}
 
@@ -70,10 +70,10 @@ func LayoutTable(table [][]gem.String, width int, lineSep gem.String, header boo
 	for col := 0; col < colCount; col++ {
 		colContentWidths[col] = 0
 
-		for row := range table {
+		for row := range data {
 			var content gem.String
-			if col < len(table[row]) {
-				content = table[row][col]
+			if col < len(data[row]) {
+				content = data[row][col]
 			}
 
 			strLen := content.Len()
@@ -172,16 +172,16 @@ func LayoutTable(table [][]gem.String, width int, lineSep gem.String, header boo
 	}
 
 	// layout all lines
-	for row := range table {
+	for row := range data {
 		line := gem.Zero
 		if border {
 			line = vertChar
 		}
 
 		var colContent gem.String
-		for col := range table[row] {
+		for col := range data[row] {
 			if row == 0 && header {
-				headerContent := gem.New(strings.ToUpper(table[row][col].String()))
+				headerContent := gem.New(strings.ToUpper(data[row][col].String()))
 				if border {
 					colContent = AlignLineCenter(headerContent, colWidths[col])
 					colContent = colContent.Add(vertChar)
@@ -190,10 +190,10 @@ func LayoutTable(table [][]gem.String, width int, lineSep gem.String, header boo
 				}
 			} else {
 				if border {
-					colContent = AlignLineLeft(table[row][col], colWidths[col]-1)
+					colContent = AlignLineLeft(data[row][col], colWidths[col]-1)
 					colContent = gem.New(" ").Add(colContent).Add(vertChar)
 				} else {
-					colContent = AlignLineLeft(table[row][col], colWidths[col])
+					colContent = AlignLineLeft(data[row][col], colWidths[col])
 				}
 			}
 			line = line.Add(colContent)
