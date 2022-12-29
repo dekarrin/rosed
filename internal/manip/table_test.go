@@ -391,7 +391,6 @@ func Test_LayoutTable(t *testing.T) {
 			charSet: gem.Zero,
 			expect: tb.Block{
 				Lines: []gem.String{
-					gem.New(""),
 					gem.New("+--------------+"),
 					gem.New("| John Egbert  |"),
 					gem.New("| Rose Lalonde |"),
@@ -475,7 +474,6 @@ func Test_LayoutTable(t *testing.T) {
 			charSet: gem.Zero,
 			expect: tb.Block{
 				Lines: []gem.String{
-					gem.New(""),
 					gem.New("+------------------+"),
 					gem.New("| John Egbert      |"),
 					gem.New("| Rose Lalonde     |"),

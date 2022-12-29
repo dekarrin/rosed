@@ -7,6 +7,8 @@ package manip
 import (
 	"strings"
 
+	"fmt"
+
 	"github.com/dekarrin/rosed/internal/gem"
 	"github.com/dekarrin/rosed/internal/tb"
 )
@@ -47,6 +49,9 @@ func LayoutTable(data [][]gem.String, width int, lineSep gem.String, header bool
 		}
 	}
 
+	fmt.Printf("START\n")
+	fmt.Printf(">>>> colCount: %d\n", colCount)
+
 	if colCount == 0 {
 		// there are no columns so no table to create
 		return tb.New(gem.Zero, lineSep)
@@ -83,6 +88,7 @@ func LayoutTable(data [][]gem.String, width int, lineSep gem.String, header bool
 			}
 		}
 	}
+	fmt.Printf(">>>> colContentWidths: %d\n", colContentWidths)
 
 	// add up the column widths with padding to find how much space it takes
 	// up
@@ -111,6 +117,8 @@ func LayoutTable(data [][]gem.String, width int, lineSep gem.String, header bool
 			minTableWidth += horzChar.Len()
 		}
 	}
+	fmt.Printf(">>>> colContenWithPaddingtWidths: %d\n", colContentWithPaddingWidths)
+	fmt.Printf(">>>> minTableWidth: %d\n", minTableWidth)
 
 	// now calculate actual target column widths (including full padding)
 	colWidths := make([]int, colCount)
@@ -128,9 +136,12 @@ func LayoutTable(data [][]gem.String, width int, lineSep gem.String, header bool
 		// if not in border mode, extra space is shared among all columns except
 		// for the last so that the right edge of the longest word in last
 		// column is at the edge of the width
+		//
+		// the exception to the above is the single-column table; in that case,
+		// all space is added to the first column.
 
 		numColumnsToSpace := colCount
-		if !border {
+		if !border && colCount > 1 {
 			numColumnsToSpace--
 		}
 
@@ -145,6 +156,7 @@ func LayoutTable(data [][]gem.String, width int, lineSep gem.String, header bool
 	} else {
 		width = minTableWidth
 	}
+	fmt.Printf(">>>> colWidths: %d\n", colWidths)
 
 	// now we have our table widths and can begin building the table
 	tableBlock := tb.New(gem.Zero, lineSep)
@@ -171,32 +183,42 @@ func LayoutTable(data [][]gem.String, width int, lineSep gem.String, header bool
 		}
 	}
 
+	fmt.Printf(">>>> tableBUILD:\n")
 	// layout all lines
 	for row := range data {
+		fmt.Printf(">>>>>> ROW(%d):\n", row)
 		line := gem.Zero
 		if border {
 			line = vertChar
 		}
 
-		var colContent gem.String
-		for col := range data[row] {
+		var cellContent gem.String
+		for col := 0; col < colCount; col++ {
+			fmt.Printf(">>>>>>>> COL(%d):\n", col)
+			var cellData gem.String
+			if col < len(data[row]) {
+				cellData = data[row][col]
+			}
+
+			fmt.Printf(">>>>>>>>>> DATA: %q\n", cellData)
 			if row == 0 && header {
-				headerContent := gem.New(strings.ToUpper(data[row][col].String()))
+				headerContent := gem.New(strings.ToUpper(cellData.String()))
 				if border {
-					colContent = AlignLineCenter(headerContent, colWidths[col])
-					colContent = colContent.Add(vertChar)
+					cellContent = AlignLineCenter(headerContent, colWidths[col])
+					cellContent = cellContent.Add(vertChar)
 				} else {
-					colContent = AlignLineLeft(headerContent, colWidths[col])
+					cellContent = AlignLineLeft(headerContent, colWidths[col])
 				}
 			} else {
 				if border {
-					colContent = AlignLineLeft(data[row][col], colWidths[col]-1)
-					colContent = gem.New(" ").Add(colContent).Add(vertChar)
+					cellContent = AlignLineLeft(cellData, colWidths[col]-1)
+					cellContent = gem.New(" ").Add(cellContent).Add(vertChar)
 				} else {
-					colContent = AlignLineLeft(data[row][col], colWidths[col])
+					cellContent = AlignLineLeft(cellData, colWidths[col])
 				}
 			}
-			line = line.Add(colContent)
+			fmt.Printf(">>>>>>>>>> LAID: %q\n", cellContent)
+			line = line.Add(cellContent)
 		}
 
 		tableBlock.Append(line)
