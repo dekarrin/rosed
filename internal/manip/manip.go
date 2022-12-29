@@ -320,7 +320,30 @@ func CountTrailingWhitespace(text gem.String) int {
 // and <HORZ> is the char to use for the horizontal character.
 //
 // border is whether to have a border
-func LayoutTable(table [][]gem.String, width int, lineSep gem.String, headerBreak bool, border bool, charSet gem.String) tb.Block {
+func LayoutTable(table [][]gem.String, width int, lineSep gem.String, header bool, border bool, charSet gem.String) tb.Block {
+	// TODO: clean up, this function is huge and probably could be broken down
+	// for readability sake even if constituent parts turns out to not be very
+	// re-usable
+	const minNonBorderInterColumnPadding = 2
+
+	// sanity check table input
+	if len(table) < 1 {
+		return tb.New(gem.Zero, lineSep)
+	}
+
+	// find how many columns the final table will have
+	colCount := 0
+	for i := range table {
+		if len(table[i]) > colCount {
+			colCount = len(table[i])
+		}
+	}
+
+	if colCount == 0 {
+		// there are no columns so no table to create
+		return tb.New(gem.Zero, lineSep)
+	}
+
 	// if charSet is incomplete, set it to defaults
 	if charSet.Len() < 3 {
 		defaultSet := gem.New("+|-")
@@ -333,26 +356,10 @@ func LayoutTable(table [][]gem.String, width int, lineSep gem.String, headerBrea
 	vertChar := charSet.Sub(1, 2)
 	horzChar := charSet.Sub(2, 3)
 
-	fmt.Printf("\nSTART\n")
-	fmt.Printf(">>>> FOR_TABLE: %v\n", table)
-	fmt.Printf(">>>> CHARS: /:%q, |:%q, ->:%q\n", cornerChar, vertChar, horzChar)
-	fmt.Printf(">>>> lineSep: %q, header: %t, border: %t\n", lineSep, headerBreak, border)
-	fmt.Printf(">>>> --------------------\n")
-
-	// find how big the thing will be
-	maxColCount := 0
-	for i := range table {
-		if len(table[i]) > maxColCount {
-			maxColCount = len(table[i])
-		}
-	}
-
-	fmt.Printf(">>>> maxColCount: %d\n", maxColCount)
-
 	// need to calc the length of the widest item in each column
-	colContentWidths := make([]int, len(table))
+	colContentWidths := make([]int, colCount)
 
-	for col := 0; col < maxColCount; col++ {
+	for col := 0; col < colCount; col++ {
 		colContentWidths[col] = 0
 
 		for row := range table {
@@ -371,39 +378,64 @@ func LayoutTable(table [][]gem.String, width int, lineSep gem.String, headerBrea
 
 	// add up the column widths with padding to find how much space it takes
 	// up
-	totalContentWidth := 0
+	colContentWithPaddingWidths := make([]int, len(colContentWidths))
+	copy(colContentWithPaddingWidths, colContentWidths)
+
+	minTableWidth := 0
 	if border {
-		totalContentWidth = horzChar.Len()
+		// pre-add extra space for each min col padding (2) along with the
+		// additional horz border char.
+		minTableWidth = horzChar.Len()
 	}
+
 	for i := range colContentWidths {
-		totalContentWidth += colContentWidths[i]
+		var minPadding int
 		if border {
-			totalContentWidth += 2 + horzChar.Len()
-		} else {
-			totalContentWidth += 1
+			minPadding = 2
+		} else if i+1 < len(colContentWidths) {
+			// all except last column get some padding even at the smallest size
+			minPadding = minNonBorderInterColumnPadding
+		}
+		colContentWithPaddingWidths[i] += minPadding
+		minTableWidth += colContentWithPaddingWidths[i]
+
+		if border {
+			minTableWidth += horzChar.Len()
 		}
 	}
+
+	// now calculate actual target column widths (including full padding)
+	colWidths := make([]int, colCount)
+	// start with the min content padded widths
+	copy(colWidths, colContentWithPaddingWidths)
 
 	// find total extra space we need and divide it among all columns, but for
-	// cases were it does not divide evenly, go left to right
-	spaceToAdd := width - totalContentWidth
-	spaceForEachColumn := spaceToAdd / len(table)
-	remSpace := spaceToAdd % len(table)
-	colWidths := make([]int, len(table))
-	for i := range colWidths {
-		colWidths[i] = colContentWidths[i] + spaceForEachColumn
-		if i < remSpace {
-			colWidths[i]++
-		}
-	}
+	// cases were it does not divide evenly, go left to right.
+	// additionally, final column is excluded because it should not waste space
+	// on the right margin.
+	spaceToAdd := width - minTableWidth
+	if spaceToAdd > 0 {
+		// if we are doing border mode, extra space is shared among all columns.
+		//
+		// if not in border mode, extra space is shared among all columns except
+		// for the last so that the right edge of the longest word in last
+		// column is at the edge of the width
 
-	// sanity check on width, modify it if needed
-	totalWidth := 0
-	for i := range colWidths {
-		totalWidth += colWidths[i]
-	}
-	if width < totalWidth {
-		width = totalWidth
+		numColumnsToSpace := colCount
+		if !border {
+			numColumnsToSpace--
+		}
+
+		spacePerColumn := spaceToAdd / numColumnsToSpace
+		remSpace := spaceToAdd % numColumnsToSpace
+		for i := range colWidths[:numColumnsToSpace] {
+			colWidths[i] += spacePerColumn
+			if i < remSpace {
+				colWidths[i]++
+			}
+		}
+	} else {
+		width = minTableWidth
 	}
 
 	// now we have our table widths and can begin building the table
@@ -414,8 +446,7 @@ func LayoutTable(table [][]gem.String, width int, lineSep gem.String, headerBrea
 	if border {
 		horzBar = cornerChar
 		for i := range colWidths {
-			// adding 2 because colWidths does not contain table padding
-			for j := 0; j < colWidths[i]+2; j++ {
+			for j := 0; j < colWidths[i]; j++ {
 				horzBar = horzBar.Add(horzChar)
 			}
 			horzBar = horzBar.Add(cornerChar)
@@ -425,7 +456,7 @@ func LayoutTable(table [][]gem.String, width int, lineSep gem.String, headerBrea
 	}
 
 	var nonBorderBreakBar gem.String
-	if headerBreak && !border {
+	if header && !border {
 		nonBorderBreakBar = gem.Zero
 		for i := 0; i < width; i++ {
 			nonBorderBreakBar = nonBorderBreakBar.Add(horzChar)
@@ -436,26 +467,33 @@ func LayoutTable(table [][]gem.String, width int, lineSep gem.String, headerBrea
 	for row := range table {
 		line := gem.Zero
 		if border {
-			line = vertChar.Add(gem.New(" "))
+			line = vertChar
 		}
 
 		var colContent gem.String
 		for col := range table[row] {
-			if row == 0 && headerBreak {
+			if row == 0 && header {
 				headerContent := gem.New(strings.ToUpper(table[row][col].String()))
-				colContent = AlignLineCenter(headerContent, colWidths[col])
+				if border {
+					colContent = AlignLineCenter(headerContent, colWidths[col])
+					colContent = colContent.Add(vertChar)
+				} else {
+					colContent = AlignLineLeft(headerContent, colWidths[col])
+				}
 			} else {
-				colContent = AlignLineLeft(table[row][col], colWidths[col])
+				if border {
+					colContent = AlignLineLeft(table[row][col], colWidths[col]-1)
+					colContent = gem.New(" ").Add(colContent).Add(vertChar)
+				} else {
+					colContent = AlignLineLeft(table[row][col], colWidths[col])
+				}
 			}
 			line = line.Add(colContent)
-			if border {
-				line = line.Add(gem.New(" ")).Add(vertChar)
-			}
 		}
 
 		tableBlock.Append(line)
 
-		if row == 0 && headerBreak {
+		if row == 0 && header {
 			if border {
 				tableBlock.Append(horzBar)
 			} else {
