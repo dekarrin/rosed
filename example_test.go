@@ -689,7 +689,7 @@ func ExampleEditor_InsertTableOpts_tableHeaders() {
 // combined to both add a border and create a header from the first row in the
 // data. The result is slightly different from just setting TableBorders, as
 // when both are set, the headers will be centered within their cells and the
-// header break line is changed to the TableBorder-style horizontal rule.
+// header break line is changed to the TableBorders-style horizontal rule.
 func ExampleEditor_InsertTableOpts_tableBordersAndHeaders() {
 	data := [][]string{
 		{"Name", "Surname", "Class", "Aspect", "Species"},
