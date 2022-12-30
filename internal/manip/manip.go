@@ -1,4 +1,9 @@
-package rosed
+// Package manip contains manipulation primitives used by Editor functions to
+// manipulate text. This is to split the operation on Editor itself from the
+// actual manipulation.
+//
+// All functions in manip operate on block.Blocks and gem.Strings.
+package manip
 
 import (
 	"fmt"
@@ -7,58 +12,16 @@ import (
 	"unicode"
 
 	"github.com/dekarrin/rosed/internal/gem"
+	"github.com/dekarrin/rosed/internal/tb"
 )
-
-// contains manipulation primitives used by Editor functions to manipulate text.
-// This is to split the operation on Editor itself from the actual manipulation.
 
 var (
 	spaceCollapser = regexp.MustCompile(" +")
 )
 
-// lines will be modified to add the appended line if curLine is full.
-func appendWordToLine(lines *block, curWord gem.String, curLine gem.String, width int) (newCurLine gem.String) {
-	// any width less than 2 is not possible and will result in an infinite loop,
-	// as at least one character is required for next in word, and one character for
-	// line continuation.
-	if width < 2 {
-		panic(fmt.Sprintf("invalid width in call to appendWordToLine: %v", width))
-	}
-	//originalWord := string(curWord)
-	for curWord.Len() > 0 {
-		addedChars := curWord.Len()
-		if curLine.Len() != 0 {
-			addedChars++ // for the space
-		}
-		if curLine.Len()+addedChars == width {
-			if curLine.Len() != 0 {
-				curLine = curLine.Add(_g(" "))
-			}
-
-			curLine = curLine.Add(curWord)
-			lines.Append(curLine)
-			curLine = gem.Zero
-			curWord = gem.Zero
-		} else if curLine.Len()+addedChars > width {
-			if curLine.Len() == 0 {
-				curLine = curLine.Add(curWord.Sub(0, width-1))
-				curLine = curLine.Add(_g("-"))
-				curWord = curWord.Sub(width-1, curWord.Len())
-			}
-			lines.Append(curLine)
-			curLine = gem.Zero
-		} else {
-			if curLine.Len() != 0 {
-				curLine = curLine.Add(_g(" "))
-			}
-			curLine = curLine.Add(curWord)
-			curWord = gem.Zero
-		}
-	}
-	return curLine
-}
-
-func collapseSpace(text gem.String, lineSep gem.String) gem.String {
+// CollapseSpace takes all runs of space in a gem String and collapses them into
+// a single space. The lineSep is considered whitespace if non-empty.
+func CollapseSpace(text gem.String, lineSep gem.String) gem.String {
 	// handle the separator but do not use the empty string.
 	if !lineSep.IsEmpty() {
 		text = _g(strings.ReplaceAll(text.String(), lineSep.String(), " "))
@@ -73,13 +36,13 @@ func collapseSpace(text gem.String, lineSep gem.String) gem.String {
 	return _g(collapsed)
 }
 
-// combineColumnBlocks takes two separate columns and combines them into a
+// CombineColumnBlocks takes two separate columns and combines them into a
 // single block of text. The right column will be left-aligned such that it will
 // be separated by minSpaceBetween space characters at minimum from the left
 // column.
 //
-// leftText and rightText are blocks where each Line is an already-wrapped line.
-// The returned block will have the lines joined and stored in its Lines property.
+// left and right are blocks where each Line is an already-wrapped line. The
+// returned block will have the lines joined and stored in its Lines property.
 //
 // The left and right column blocks do not need to have the same number of lines;
 // if one has more lines than the other, the returned block will have a number of
@@ -91,9 +54,9 @@ func collapseSpace(text gem.String, lineSep gem.String) gem.String {
 // Additionally, if the left column has more lines than the right column, note
 // that the last few lines will have the center spacing inserted still. So will
 // end where the right column would start if there was more of it.
-func combineColumnBlocks(left, right block, minSpaceBetween int) block {
+func CombineColumnBlocks(left, right tb.Block, minSpaceBetween int) tb.Block {
 	if left.Len() == 0 && right.Len() == 0 {
-		return block{}
+		return tb.Block{}
 	}
 	numLines := left.Len()
 	if numLines < right.Len() {
@@ -113,7 +76,7 @@ func combineColumnBlocks(left, right block, minSpaceBetween int) block {
 
 	totalCharsOnLeft := leftColMaxWidth + minSpaceBetween
 
-	combined := block{}
+	combined := tb.Block{}
 	for i := 0; i < numLines; i++ {
 		// first get lines from each column
 		var leftLine gem.String
@@ -136,15 +99,15 @@ func combineColumnBlocks(left, right block, minSpaceBetween int) block {
 	return combined
 }
 
-// justifyLine takes the given text and attempts to justify it. No attempt is
+// JustifyLine takes the given text and attempts to justify it. No attempt is
 // made to split the given line into multiple lines.
 //
 // If there are no spaces in the given string, it is returned centered.
 // If it is longer than the desired width after collapsing spaces in it, the
 // collapsed-space string is returned without further modification.
-func justifyLine(text gem.String, width int) gem.String {
+func JustifyLine(text gem.String, width int) gem.String {
 	// collapseSpace in a line so that it can be properly laid out
-	text = collapseSpace(text, _g("\n")) // doing \n which would be whitespace-collapsed anyways
+	text = CollapseSpace(text, _g("\n")) // doing \n which would be whitespace-collapsed anyways
 
 	if text.Len() >= width {
 		return text
@@ -187,20 +150,20 @@ func justifyLine(text gem.String, width int) gem.String {
 	return _g(finishedWord)
 }
 
-// does a wrap without considering any additional lengths. Automatically
+// Wrap does a wrap without considering any additional lengths. Automatically
 // normalizes all runs of space characters to a single space.
 //
 // The returned value is a Block of all resulting lines. Trailing mode will not
 // be set on the Block.
-func wrap(text gem.String, width int, lineSep gem.String) block {
+func Wrap(text gem.String, width int, lineSep gem.String) tb.Block {
 	if width < 2 {
 		width = 2
 	}
 
-	lines := block{LineSeparator: lineSep}
+	lines := tb.Block{LineSeparator: lineSep}
 
 	// normalize string to convert all whitespace to single space char.
-	text = collapseSpace(text, lineSep)
+	text = CollapseSpace(text, lineSep)
 	if text.String() == "" {
 		lines.Append(gem.Zero)
 		return lines
@@ -220,7 +183,6 @@ func wrap(text gem.String, width int, lineSep gem.String) block {
 
 	if !curWord.IsEmpty() {
 		curLine = appendWordToLine(&lines, curWord, curLine, width)
-		curWord = gem.Zero
 	}
 
 	if !curLine.IsEmpty() {
@@ -230,9 +192,11 @@ func wrap(text gem.String, width int, lineSep gem.String) block {
 	return lines
 }
 
-func alignLineLeft(text gem.String, width int) gem.String {
+// AlignLineLeft performs a left-align. Space is added to the right to make the
+// line fill the width.
+func AlignLineLeft(text gem.String, width int) gem.String {
 	// find first instance of non-space grapheme at start.
-	startSpaces := countLeadingWhitespace(text)
+	startSpaces := CountLeadingWhitespace(text)
 
 	// if there are leading spaces, split the string there
 	var endingText gem.String
@@ -254,9 +218,11 @@ func alignLineLeft(text gem.String, width int) gem.String {
 	return text
 }
 
-func alignLineRight(text gem.String, width int) gem.String {
+// AlignLineRight performs a right-align. Space is added to the left to make the
+// line fill the width.
+func AlignLineRight(text gem.String, width int) gem.String {
 	// find first instance of non-space grapheme at end.
-	endSpaces := countTrailingWhitespace(text)
+	endSpaces := CountTrailingWhitespace(text)
 
 	// if there are trailing spaces, split the string there
 	var startingText gem.String
@@ -281,10 +247,12 @@ func alignLineRight(text gem.String, width int) gem.String {
 	return text
 }
 
-func alignLineCenter(text gem.String, width int) gem.String {
+// AlignLineLeft performs a center of the text. Space is added to both sides to
+// make the line fill the width.
+func AlignLineCenter(text gem.String, width int) gem.String {
 	// find first instance of non-space grapheme at start.
-	startSpaces := countLeadingWhitespace(text)
-	endSpaces := countTrailingWhitespace(text)
+	startSpaces := CountLeadingWhitespace(text)
+	endSpaces := CountTrailingWhitespace(text)
 
 	// get the text to be centered
 	var midText gem.String
@@ -313,7 +281,9 @@ func alignLineCenter(text gem.String, width int) gem.String {
 	return text
 }
 
-func countLeadingWhitespace(text gem.String) int {
+// CountLeadingWhitespace counts the number of ws characters at the front of the
+// string.
+func CountLeadingWhitespace(text gem.String) int {
 	for i := 0; i < text.Len(); i++ {
 		if !unicode.IsSpace(text.CharAt(i)[0]) {
 			return i
@@ -322,11 +292,65 @@ func countLeadingWhitespace(text gem.String) int {
 	return 0
 }
 
-func countTrailingWhitespace(text gem.String) int {
+// CountTrailingWhitespace counts the number of ws characters at the end of the
+// string.
+func CountTrailingWhitespace(text gem.String) int {
 	for i := text.Len() - 1; i >= 0; i-- {
 		if !unicode.IsSpace(text.CharAt(i)[0]) {
 			return text.Len() - (i + 1)
 		}
 	}
 	return 0
+}
+
+func _g(s string) gem.String {
+	return gem.New(s)
+}
+
+// appendWordToLine adds the current word to the the current line unless it
+// would make the width of curLine too long, in which case curLine is put into
+// the lines, curLine is reset, curWord is added to the curLine. Lines will be
+// modified to add the appended line if curLine is full.
+//
+// TODO: this is part of a wrapping operation. Consider renaming because as is
+// it does not appear to have anything to do with it.
+func appendWordToLine(lines *tb.Block, curWord gem.String, curLine gem.String, width int) (newCurLine gem.String) {
+	// any width less than 2 is not possible and will result in an infinite loop,
+	// as at least one character is required for next in word, and one character for
+	// line continuation.
+	if width < 2 {
+		panic(fmt.Sprintf("invalid width in call to appendWordToLine: %v", width))
+	}
+	//originalWord := string(curWord)
+	for curWord.Len() > 0 {
+		addedChars := curWord.Len()
+		if curLine.Len() != 0 {
+			addedChars++ // for the space
+		}
+		if curLine.Len()+addedChars == width {
+			if curLine.Len() != 0 {
+				curLine = curLine.Add(_g(" "))
+			}
+
+			curLine = curLine.Add(curWord)
+			lines.Append(curLine)
+			curLine = gem.Zero
+			curWord = gem.Zero
+		} else if curLine.Len()+addedChars > width {
+			if curLine.Len() == 0 {
+				curLine = curLine.Add(curWord.Sub(0, width-1))
+				curLine = curLine.Add(_g("-"))
+				curWord = curWord.Sub(width-1, curWord.Len())
+			}
+			lines.Append(curLine)
+			curLine = gem.Zero
+		} else {
+			if curLine.Len() != 0 {
+				curLine = curLine.Add(_g(" "))
+			}
+			curLine = curLine.Add(curWord)
+			curWord = gem.Zero
+		}
+	}
+	return curLine
 }

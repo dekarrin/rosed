@@ -203,9 +203,9 @@ func ExampleEditor_ApplyParagraphs() {
 
 	paraOp := func(idx int, para, sepPrefix, sepSuffix string) []string {
 		var newPara string
-		if strings.Index(para, "John") > -1 {
+		if strings.Contains(para, "John") {
 			newPara = "Beta Kids:\n" + para
-		} else if strings.Index(para, "Jane") > -1 {
+		} else if strings.Contains(para, "Jane") {
 			newPara = "Alpha Kids:\n" + para
 		} else {
 			newPara = "Someone Else:\n" + para
@@ -266,6 +266,7 @@ func ExampleEditor_CharCount() {
 	testCount := Edit("test").CharCount()
 	fmt.Println(testCount)
 
+	//lint:ignore ST1018 because go-staticcheck dislikes emoji literals with ZWJ sequences
 	emojiCount := Edit("👩‍❤️‍💋‍👩").CharCount()
 	fmt.Println(emojiCount)
 
@@ -586,6 +587,211 @@ func ExampleEditor_InsertDefinitionsTableOpts() {
 	// ------------------------------------------------------------
 	//   Dog Pinata  - If you hit it, candy will come out.
 	//
+}
+
+// This example shows the creation of a table from data. Options are used to
+// control the table formatting; see InsertTableOpts examples for a
+// demonstration of this.
+func ExampleEditor_InsertTable() {
+	data := [][]string{
+		{"John", "Egbert", "Heir", "Breath", "Human"},
+		{"Kanaya", "Maryam", "Sylph", "Space", "Troll"},
+		{"Roxy", "Lalonde", "Rogue", "Void", "Human"},
+		{"Rose", "Lalonde", "Seer", "Light", "Human"},
+	}
+
+	const width = 50
+	const position = 0
+
+	ed := Edit("").InsertTable(position, data, width)
+
+	fmt.Println(ed.String())
+	// Output:
+	// John        Egbert      Heir      Breath     Human
+	// Kanaya      Maryam      Sylph     Space      Troll
+	// Roxy        Lalonde     Rogue     Void       Human
+	// Rose        Lalonde     Seer      Light      Human
+}
+
+// This example shows the use of the TableBorders option to add a border to
+// table output.
+func ExampleEditor_InsertTableOpts_tableBorders() {
+	data := [][]string{
+		{"John", "Egbert", "Heir", "Breath", "Human"},
+		{"Kanaya", "Maryam", "Sylph", "Space", "Troll"},
+		{"Wayward", "Vagabond", "", "", "Carapacian"},
+		{"Roxy", "Lalonde", "Rogue", "Void", "Human"},
+		{"Rose", "Lalonde", "Seer", "Light", "Human"},
+		{"Caliborn", "", "Lord", "Time", "Cherub"},
+	}
+
+	opts := Options{
+		TableBorders: true,
+	}
+
+	const width = 65
+	const position = 0
+
+	ed := Edit("").InsertTableOpts(position, data, width, opts)
+
+	fmt.Println(ed.String())
+	// Output:
+	// +-------------+-------------+---------+----------+--------------+
+	// | John        | Egbert      | Heir    | Breath   | Human        |
+	// | Kanaya      | Maryam      | Sylph   | Space    | Troll        |
+	// | Wayward     | Vagabond    |         |          | Carapacian   |
+	// | Roxy        | Lalonde     | Rogue   | Void     | Human        |
+	// | Rose        | Lalonde     | Seer    | Light    | Human        |
+	// | Caliborn    |             | Lord    | Time     | Cherub       |
+	// +-------------+-------------+---------+----------+--------------+
+}
+
+// This example shows the use of the TableHeaders option to set the first row of
+// data apart from the rest with a horizontal rule and to format the first row
+// of data as a header row.
+func ExampleEditor_InsertTableOpts_tableHeaders() {
+	data := [][]string{
+		{"Aspect", "Class", "Surname", "Name"},
+		{"Breath", "Heir", "Egbert", "John"},
+		{"Light", "Seer", "Lalonde", "Rose"},
+		{"Time", "Knight", "Strider", "Dave"},
+		{"Space", "Witch", "Harley", "Jade"},
+		{"Void", "Rogue", "Lalonde", "Roxy"},
+		{"Heart", "Prince", "Strider", "Dirk"},
+		{"Hope", "Page", "English", "Jake"},
+		{"Life", "Maid", "Crocker", "Jane"},
+	}
+
+	opts := Options{
+		TableHeaders: true,
+	}
+
+	const width = 65
+	const position = 0
+
+	ed := Edit("").InsertTableOpts(position, data, width, opts)
+
+	fmt.Println(ed.String())
+	// Output:
+	// ASPECT              CLASS               SURNAME              NAME
+	// -----------------------------------------------------------------
+	// Breath              Heir                Egbert               John
+	// Light               Seer                Lalonde              Rose
+	// Time                Knight              Strider              Dave
+	// Space               Witch               Harley               Jade
+	// Void                Rogue               Lalonde              Roxy
+	// Heart               Prince              Strider              Dirk
+	// Hope                Page                English              Jake
+	// Life                Maid                Crocker              Jane
+}
+
+// This example shows how the TableHeaders and TableBorders options can be
+// combined to both add a border and create a header from the first row in the
+// data. The result is slightly different from just setting TableBorders, as
+// when both are set, the headers will be centered within their cells and the
+// header break line is changed to the TableBorders-style horizontal rule.
+func ExampleEditor_InsertTableOpts_tableBordersAndHeaders() {
+	data := [][]string{
+		{"Name", "Surname", "Class", "Aspect", "Species"},
+		{"John", "Egbert", "Heir", "Breath", "Human"},
+		{"Kanaya", "Maryam", "Sylph", "Space", "Troll"},
+		{"Wayward", "Vagabond", "", "", "Carapacian"},
+		{"Roxy", "Lalonde", "Rogue", "Void", "Human"},
+		{"Rose", "Lalonde", "Seer", "Light", "Human"},
+		{"Caliborn", "", "Lord", "Time", "Cherub"},
+	}
+
+	opts := Options{
+		TableBorders: true,
+		TableHeaders: true,
+	}
+
+	const width = 65
+	const position = 0
+
+	ed := Edit("").InsertTableOpts(position, data, width, opts)
+
+	fmt.Println(ed.String())
+	// Output:
+	// +-------------+-------------+---------+----------+--------------+
+	// |     NAME    |   SURNAME   |  CLASS  |  ASPECT  |    SPECIES   |
+	// +-------------+-------------+---------+----------+--------------+
+	// | John        | Egbert      | Heir    | Breath   | Human        |
+	// | Kanaya      | Maryam      | Sylph   | Space    | Troll        |
+	// | Wayward     | Vagabond    |         |          | Carapacian   |
+	// | Roxy        | Lalonde     | Rogue   | Void     | Human        |
+	// | Rose        | Lalonde     | Seer    | Light    | Human        |
+	// | Caliborn    |             | Lord    | Time     | Cherub       |
+	// +-------------+-------------+---------+----------+--------------+
+}
+
+// This example shows how to override the character set used to draw table
+// borders and horizontal rules within the table.
+func ExampleEditor_InsertTableOpts_tableCharSet() {
+	borderData := [][]string{
+		{"John", "Egbert", "Heir", "Breath", "Human"},
+		{"Kanaya", "Maryam", "Sylph", "Space", "Troll"},
+		{"Wayward", "Vagabond", "", "", "Carapacian"},
+		{"Roxy", "Lalonde", "Rogue", "Void", "Human"},
+		{"Rose", "Lalonde", "Seer", "Light", "Human"},
+		{"Caliborn", "", "Lord", "Time", "Cherub"},
+	}
+
+	opts := Options{
+		TableBorders: true,
+
+		// First character is used for corners/intersections
+		// Second character is used for vertical lines
+		// Third character is used for horizontal lines
+		TableCharSet: "#*=",
+	}
+
+	const width = 65
+	const position = 0
+
+	edBorders := Edit("").InsertTableOpts(position, borderData, width, opts)
+
+	fmt.Println("With borders:")
+	fmt.Println()
+	fmt.Println(edBorders.String())
+
+	// you can also do this for headers only; in this case, the third character
+	// of TableCharSet is used for drawing the horizontal rule:
+
+	smallDataSet := [][]string{
+		{"Surname", "Name"},
+		{"Egbert", "John"},
+		{"Lalonde", "Rose"},
+	}
+
+	// use a smaller width for this one, it's a smaller table
+	const smallTableWidth = 15
+
+	opts = opts.WithTableBorders(false).WithTableHeaders(true)
+	edHeaders := Edit("").InsertTableOpts(position, smallDataSet, smallTableWidth, opts)
+
+	fmt.Println("With headers:")
+	fmt.Println()
+	fmt.Println(edHeaders.String())
+
+	// Output:
+	// With borders:
+	//
+	// #=============#=============#=========#==========#==============#
+	// * John        * Egbert      * Heir    * Breath   * Human        *
+	// * Kanaya      * Maryam      * Sylph   * Space    * Troll        *
+	// * Wayward     * Vagabond    *         *          * Carapacian   *
+	// * Roxy        * Lalonde     * Rogue   * Void     * Human        *
+	// * Rose        * Lalonde     * Seer    * Light    * Human        *
+	// * Caliborn    *             * Lord    * Time     * Cherub       *
+	// #=============#=============#=========#==========#==============#
+	//
+	// With headers:
+	//
+	// SURNAME    NAME
+	// ===============
+	// Egbert     John
+	// Lalonde    Rose
 }
 
 // This example creates two columns from two runs of text.
@@ -934,7 +1140,7 @@ func ExampleOptions_String() {
 
 	fmt.Println(str)
 	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false}
+	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false, TableBorders: false, TableHeaders: false, TableCharSet: ""}
 }
 
 // This example shows how WithDefaults can be called to set all currently unset
@@ -943,72 +1149,122 @@ func ExampleOptions_WithDefaults() {
 	opts := Options{
 		LineSeparator:      "<br/>",
 		PreserveParagraphs: true,
+		TableCharSet:       "#",
 	}
-	fmt.Println(opts)
 
 	optsDefault := opts.WithDefaults()
-	fmt.Println(optsDefault)
+	fmt.Printf("IndentStr: %q\n", optsDefault.IndentStr)
+	fmt.Printf("LineSeparator: %q\n", optsDefault.LineSeparator)
+	fmt.Printf("PreserveParagraphs: %v\n", optsDefault.PreserveParagraphs)
+
+	// TableCharSet, instead of being all or nothing for settedness, allows the
+	// user to specify fewer characters than are required. If that is the case,
+	// as it was above, additional characters are added to it on a call to
+	// WithDefaults to make a complete char set
+	fmt.Printf("TableCharSet: %q\n", optsDefault.TableCharSet)
+
 	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "<br/>", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: true, JustifyLastLine: false}
-	// Options{ParagraphSeparator: "\n\n", LineSeparator: "<br/>", IndentStr: "\t", NoTrailingLineSeparators: false, PreserveParagraphs: true, JustifyLastLine: false}
+	// IndentStr: "\t"
+	// LineSeparator: "<br/>"
+	// PreserveParagraphs: true
+	// TableCharSet: "#|-"
 }
 
 func ExampleOptions_WithIndentStr() {
-	opts := Options{}
+	opts := Options{
+		IndentStr: "",
+	}
 
 	opts = opts.WithIndentStr("-->")
 
-	fmt.Println(opts.String())
-	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false}
+	fmt.Println(opts.IndentStr)
+	// Output: -->
 }
 
 func ExampleOptions_WithJustifyLastLine() {
-	opts := Options{}
+	opts := Options{
+		JustifyLastLine: false,
+	}
 
 	opts = opts.WithJustifyLastLine(true)
 
-	fmt.Println(opts.String())
-	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: true}
+	fmt.Println(opts.JustifyLastLine)
+	// Output: true
 }
 
 func ExampleOptions_WithLineSeparator() {
-	opts := Options{}
+	opts := Options{
+		LineSeparator: "\n",
+	}
 
 	opts = opts.WithLineSeparator("<br/>")
 
-	fmt.Println(opts.String())
-	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "<br/>", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false}
+	fmt.Println(opts.LineSeparator)
+	// Output: <br/>
 }
 
 func ExampleOptions_WithNoTrailingLineSeparators() {
-	opts := Options{}
+	opts := Options{
+		NoTrailingLineSeparators: false,
+	}
 
 	opts = opts.WithNoTrailingLineSeparators(true)
 
-	fmt.Println(opts.String())
-	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: true, PreserveParagraphs: false, JustifyLastLine: false}
+	fmt.Println(opts.NoTrailingLineSeparators)
+	// Output: true
 }
 
 func ExampleOptions_WithParagraphSeparator() {
-	opts := Options{}
+	opts := Options{
+		ParagraphSeparator: "\n\n",
+	}
 
 	opts = opts.WithParagraphSeparator("<P>")
 
-	fmt.Println(opts.String())
-	// Output:
-	// Options{ParagraphSeparator: "<P>", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false}
+	fmt.Println(opts.ParagraphSeparator)
+	// Output: <P>
 }
 
 func ExampleOptions_WithPreserveParagraphs() {
-	opts := Options{}
+	opts := Options{
+		PreserveParagraphs: false,
+	}
 
 	opts = opts.WithPreserveParagraphs(true)
 
-	fmt.Println(opts.String())
-	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: true, JustifyLastLine: false}
+	fmt.Println(opts.PreserveParagraphs)
+	// Output: true
+}
+
+func ExampleOptions_WithTableBorders() {
+	opts := Options{
+		TableBorders: false,
+	}
+
+	opts = opts.WithTableBorders(true)
+
+	fmt.Println(opts.TableBorders)
+	// Output: true
+}
+
+func ExampleOptions_WithTableHeaders() {
+	opts := Options{
+		TableHeaders: false,
+	}
+
+	opts = opts.WithTableHeaders(true)
+
+	fmt.Println(opts.TableHeaders)
+	// Output: true
+}
+
+func ExampleOptions_WithTableCharSet() {
+	opts := Options{
+		TableCharSet: "123",
+	}
+
+	opts = opts.WithTableCharSet("@IK")
+
+	fmt.Println(opts.TableCharSet)
+	// Output: @IK
 }

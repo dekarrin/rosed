@@ -2,6 +2,8 @@ package rosed
 
 import (
 	"fmt"
+
+	"github.com/dekarrin/rosed/internal/gem"
 )
 
 const (
@@ -15,17 +17,20 @@ const (
 	// DefaultParagraphSeparator is the default sequence that separates
 	// paragraphs.
 	DefaultParagraphSeparator = "\n\n"
+
+	// DefaultTableCharSet is the default characters used to draw table borders.
+	DefaultTableCharSet = "+|-"
 )
 
 // Options control the behavior of an [Editor]. The zero-value is an Options
 // with all members set to defaults.
 //
-// IndentStr, LineSeparator, and ParagraphSeparator have special behavior if not
-// set manually. In a zero-valued Options, each one will be the empty string.
-// When interpreting the options in the course of performing an operation,
-// functions that use those values will treat an empty string as
-// [DefaultIndentString], [DefaultLineSeparator], or [DefaultParagraphSeparator]
-// respectively.
+// IndentStr, LineSeparator, ParagraphSeparator, and TableChars have special
+// behavior if not set manually. In a zero-valued Options, each one will be the
+// empty string. When interpreting the options in the course of performing an
+// operation, functions that use those values will treat an empty string as
+// [DefaultIndentString], [DefaultLineSeparator], [DefaultParagraphSeparator],
+// or [DefaultTableChars] respectively.
 type Options struct {
 	// IndentStr is the string that is used for a single horizontal indent. If
 	// this is set to "", it will be interpreted as though it were set to
@@ -72,6 +77,29 @@ type Options struct {
 	// applied to the last line of a block of text and this is the default
 	// behavior.
 	JustifyLastLine bool
+
+	// TableBorders sets whether created tables draw cell and table borders on
+	// them.
+	TableBorders bool
+
+	// TableHeaders sets whether table creation functions should consider the
+	// first row of data to be data headers. If so, they will be layed out
+	// separately from the other data and separated by a horizontal rule.
+	TableHeaders bool
+
+	// TableCharSet is the set of characters used to draw tables. It can be up
+	// to 3 characters long. The first char is used to draw table corners and
+	// line crossings, the second char is used to draw vertical lines, and the
+	// third char is used to draw horizontal lines.
+	//
+	// Any characters beyond the first three are ignored.
+	//
+	// If this is set to "", it will be interpreted as though it were set to
+	// DefaultTableCharSet. If it is set to less than three characters, the
+	// missing characters up to 3 will be filled in from the remaining chars in
+	// DefaultTableCharSet; e.g. setting TableCharSet to "#" will result in an
+	// interpreted TableCharSet of "#|-".
+	TableCharSet string
 }
 
 // String gets the string representation of the Options.
@@ -81,11 +109,15 @@ func (opts Options) String() string {
 	fmtStr += " IndentStr: %q,"
 	fmtStr += " NoTrailingLineSeparators: %v,"
 	fmtStr += " PreserveParagraphs: %v,"
-	fmtStr += " JustifyLastLine: %v}"
+	fmtStr += " JustifyLastLine: %v,"
+	fmtStr += " TableBorders: %v,"
+	fmtStr += " TableHeaders: %v,"
+	fmtStr += " TableCharSet: %q}"
 	return fmt.Sprintf(
 		fmtStr, opts.ParagraphSeparator, opts.LineSeparator, opts.IndentStr,
 		opts.NoTrailingLineSeparators, opts.PreserveParagraphs,
-		opts.JustifyLastLine,
+		opts.JustifyLastLine, opts.TableBorders, opts.TableHeaders,
+		opts.TableCharSet,
 	)
 }
 
@@ -104,6 +136,27 @@ func (opts Options) WithDefaults() Options {
 	if opts.ParagraphSeparator == "" {
 		opts.ParagraphSeparator = DefaultParagraphSeparator
 	}
+
+	gemTableCharSet := gem.New(opts.TableCharSet)
+	gemDefaultTableCharSet := gem.New(DefaultTableCharSet)
+	if gemTableCharSet.Len() != gemDefaultTableCharSet.Len() {
+		if gemTableCharSet.Len() < gemDefaultTableCharSet.Len() {
+			numNeeded := gemDefaultTableCharSet.Len() - gemTableCharSet.Len()
+
+			// need 1, get (2, 3)
+			// need 2, get (1, 3)
+			// need 3, get (0, 3)
+
+			end := gemDefaultTableCharSet.Len()
+			start := end - numNeeded
+
+			gemTableCharSet = gemTableCharSet.Add(gemDefaultTableCharSet.Sub(start, end))
+		} else {
+			gemTableCharSet = gemTableCharSet.Sub(0, gemDefaultTableCharSet.Len())
+		}
+		opts.TableCharSet = gemTableCharSet.String()
+	}
+
 	return opts
 }
 
@@ -161,5 +214,32 @@ func (opts Options) WithParagraphSeparator(sep string) Options {
 // This function does not modify the Options it is called on.
 func (opts Options) WithPreserveParagraphs(preserve bool) Options {
 	opts.PreserveParagraphs = preserve
+	return opts
+}
+
+// WithTableBorders returns a new Options identical to this one but with
+// TableBorders set to borders.
+//
+// This function does not modify the Options it is called on.
+func (opts Options) WithTableBorders(borders bool) Options {
+	opts.TableBorders = borders
+	return opts
+}
+
+// WithTableHeaders returns a new Options identical to this one but with
+// TableHeaders set to headers.
+//
+// This function does not modify the Options it is called on.
+func (opts Options) WithTableHeaders(headers bool) Options {
+	opts.TableHeaders = headers
+	return opts
+}
+
+// WithTableCharSet returns a new Options identical to this one but with
+// TableCharSet set to charSet.
+//
+// This function does not modify the Options it is called on.
+func (opts Options) WithTableCharSet(charSet string) Options {
+	opts.TableCharSet = charSet
 	return opts
 }

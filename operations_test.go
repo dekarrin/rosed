@@ -2402,3 +2402,332 @@ func Test_AlignOpts(t *testing.T) {
 		})
 	}
 }
+
+func Test_InsertTable(t *testing.T) {
+	testCases := []struct {
+		name   string
+		input  string
+		pos    int
+		data   [][]string
+		width  int
+		expect string
+	}{
+		{
+			name:   "empty table",
+			input:  "",
+			pos:    0,
+			data:   [][]string{},
+			width:  60,
+			expect: "",
+		},
+		{
+			name:   "nil table",
+			input:  "",
+			pos:    0,
+			data:   nil,
+			width:  40,
+			expect: "",
+		},
+		{
+			name:  "basic table",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"Act 1", "The Note Desolation Plays", "247 pages"},
+				{"Act 2", "Raise of the Conductor's Baton", "511 pages"},
+				{"Act 3", "Insane Corkscrew Haymakers", "395 pages"},
+				{"Intermission", "Don't Bleed on the Suits", "204 pages"},
+				{"Act 4", "Flight of the Paradox Clones", "631 pages"},
+			},
+			width: 60,
+			expect: "Act 1            The Note Desolation Plays         247 pages" + DefaultLineSeparator +
+				"Act 2            Raise of the Conductor's Baton    511 pages" + DefaultLineSeparator +
+				"Act 3            Insane Corkscrew Haymakers        395 pages" + DefaultLineSeparator +
+				"Intermission     Don't Bleed on the Suits          204 pages" + DefaultLineSeparator +
+				"Act 4            Flight of the Paradox Clones      631 pages" + DefaultLineSeparator,
+		},
+		{
+			name:  "table in the middle of content",
+			input: "hello friends",
+			pos:   3,
+			data: [][]string{
+				{"Act 1", "The Note Desolation Plays", "247 pages"},
+				{"Act 2", "Raise of the Conductor's Baton", "511 pages"},
+				{"Act 3", "Insane Corkscrew Haymakers", "395 pages"},
+				{"Intermission", "Don't Bleed on the Suits", "204 pages"},
+				{"Act 4", "Flight of the Paradox Clones", "631 pages"},
+			},
+			width: 60,
+			expect: "helAct 1            The Note Desolation Plays         247 pages" + DefaultLineSeparator +
+				"Act 2            Raise of the Conductor's Baton    511 pages" + DefaultLineSeparator +
+				"Act 3            Insane Corkscrew Haymakers        395 pages" + DefaultLineSeparator +
+				"Intermission     Don't Bleed on the Suits          204 pages" + DefaultLineSeparator +
+				"Act 4            Flight of the Paradox Clones      631 pages" + DefaultLineSeparator +
+				"lo friends",
+		},
+		{
+			name:  "table expands to minimum possible size if width is too small",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"Act 1", "The Note Desolation Plays", "247 pages"},
+				{"Act 2", "Raise of the Conductor's Baton", "511 pages"},
+				{"Act 3", "Insane Corkscrew Haymakers", "395 pages"},
+				{"Intermission", "Don't Bleed on the Suits", "204 pages"},
+				{"Act 4", "Flight of the Paradox Clones", "631 pages"},
+			},
+			width: 2,
+			expect: "Act 1         The Note Desolation Plays       247 pages" + DefaultLineSeparator +
+				"Act 2         Raise of the Conductor's Baton  511 pages" + DefaultLineSeparator +
+				"Act 3         Insane Corkscrew Haymakers      395 pages" + DefaultLineSeparator +
+				"Intermission  Don't Bleed on the Suits        204 pages" + DefaultLineSeparator +
+				"Act 4         Flight of the Paradox Clones    631 pages" + DefaultLineSeparator,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := Edit(tc.input).InsertTable(tc.pos, tc.data, tc.width).String()
+
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
+func Test_InsertTableOpts(t *testing.T) {
+	testCases := []struct {
+		name    string
+		input   string
+		pos     int
+		data    [][]string
+		width   int
+		options Options
+		expect  string
+	}{
+		{
+			name:  "empty with no trailing set to true",
+			input: "",
+			pos:   0,
+			data:  nil,
+			width: 30,
+			options: Options{
+				NoTrailingLineSeparators: true,
+			},
+			expect: "",
+		},
+		{
+			name:  "empty with no trailing set to false",
+			input: "",
+			pos:   0,
+			data:  nil,
+			width: 30,
+			options: Options{
+				NoTrailingLineSeparators: false,
+			},
+			expect: "",
+		},
+		{
+			name:  "basic table, no trailing set to true",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"Eridan", "Ampora", "Troll"},
+				{"Feferi", "Peixes", "Troll"},
+				{"Dirk", "Strider", "Human"},
+				{"Equius", "Zahhak", "Troll"},
+			},
+			width: 30,
+			options: Options{
+				NoTrailingLineSeparators: true,
+			},
+			expect: "Eridan      Ampora       Troll" + DefaultLineSeparator +
+				"Feferi      Peixes       Troll" + DefaultLineSeparator +
+				"Dirk        Strider      Human" + DefaultLineSeparator +
+				"Equius      Zahhak       Troll",
+		},
+		{
+			name:  "table with borders",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"Eridan", "Ampora", "Troll"},
+				{"Feferi", "Peixes", "Troll"},
+				{"Dirk", "Strider", "Human"},
+				{"Equius", "Zahhak", "Troll"},
+				{"Calliope", "", "Cherub"},
+			},
+			width: 35,
+			options: Options{
+				TableBorders: true,
+			},
+			expect: "+------------+----------+---------+" + DefaultLineSeparator +
+				"| Eridan     | Ampora   | Troll   |" + DefaultLineSeparator +
+				"| Feferi     | Peixes   | Troll   |" + DefaultLineSeparator +
+				"| Dirk       | Strider  | Human   |" + DefaultLineSeparator +
+				"| Equius     | Zahhak   | Troll   |" + DefaultLineSeparator +
+				"| Calliope   |          | Cherub  |" + DefaultLineSeparator +
+				"+------------+----------+---------+" + DefaultLineSeparator,
+		},
+		{
+			name:  "table with headers",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"First Name", "Surname", "Species"},
+				{"Eridan", "Ampora", "Troll"},
+				{"Feferi", "Peixes", "Troll"},
+				{"Dirk", "Strider", "Human"},
+				{"Equius", "Zahhak", "Troll"},
+				{"Calliope", "", "Cherub"},
+			},
+			width: 30,
+			options: Options{
+				TableHeaders: true,
+			},
+			expect: "FIRST NAME   SURNAME   SPECIES" + DefaultLineSeparator +
+				"------------------------------" + DefaultLineSeparator +
+				"Eridan       Ampora    Troll  " + DefaultLineSeparator +
+				"Feferi       Peixes    Troll  " + DefaultLineSeparator +
+				"Dirk         Strider   Human  " + DefaultLineSeparator +
+				"Equius       Zahhak    Troll  " + DefaultLineSeparator +
+				"Calliope               Cherub " + DefaultLineSeparator,
+		},
+		{
+			name:  "table with borders and headers",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"First Name", "Surname", "Species"},
+				{"Eridan", "Ampora", "Troll"},
+				{"Feferi", "Peixes", "Troll"},
+				{"Dirk", "Strider", "Human"},
+				{"Equius", "Zahhak", "Troll"},
+				{"Calliope", "", "Cherub"},
+			},
+			width: 41,
+			options: Options{
+				TableBorders: true,
+				TableHeaders: true,
+			},
+			expect: "+---------------+-----------+-----------+" + DefaultLineSeparator +
+				"|   FIRST NAME  |  SURNAME  |  SPECIES  |" + DefaultLineSeparator +
+				"+---------------+-----------+-----------+" + DefaultLineSeparator +
+				"| Eridan        | Ampora    | Troll     |" + DefaultLineSeparator +
+				"| Feferi        | Peixes    | Troll     |" + DefaultLineSeparator +
+				"| Dirk          | Strider   | Human     |" + DefaultLineSeparator +
+				"| Equius        | Zahhak    | Troll     |" + DefaultLineSeparator +
+				"| Calliope      |           | Cherub    |" + DefaultLineSeparator +
+				"+---------------+-----------+-----------+" + DefaultLineSeparator,
+		},
+		{
+			name:  "single-cell table with borders and headers",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"Single Item"},
+			},
+			width: 20,
+			options: Options{
+				TableBorders: true,
+				TableHeaders: true,
+			},
+			expect: "+------------------+" + DefaultLineSeparator +
+				"|    SINGLE ITEM   |" + DefaultLineSeparator +
+				"+------------------+" + DefaultLineSeparator,
+		},
+		{
+			name:  "single-cell table with headers",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"Single Item"},
+			},
+			width: 20,
+			options: Options{
+				TableHeaders: true,
+			},
+			expect: "SINGLE ITEM         " + DefaultLineSeparator +
+				"--------------------" + DefaultLineSeparator,
+		},
+		{
+			name:  "alt char set borders",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"Eridan", "Ampora", "Troll"},
+				{"Feferi", "Peixes", "Troll"},
+				{"Dirk", "Strider", "Human"},
+				{"Equius", "Zahhak", "Troll"},
+				{"Calliope", "", "Cherub"},
+			},
+			width: 35,
+			options: Options{
+				TableBorders: true,
+				TableCharSet: "*I_",
+			},
+			expect: "*____________*__________*_________*" + DefaultLineSeparator +
+				"I Eridan     I Ampora   I Troll   I" + DefaultLineSeparator +
+				"I Feferi     I Peixes   I Troll   I" + DefaultLineSeparator +
+				"I Dirk       I Strider  I Human   I" + DefaultLineSeparator +
+				"I Equius     I Zahhak   I Troll   I" + DefaultLineSeparator +
+				"I Calliope   I          I Cherub  I" + DefaultLineSeparator +
+				"*____________*__________*_________*" + DefaultLineSeparator,
+		},
+		{
+			name:  "alt char set headers",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"First Name", "Surname", "Species"},
+				{"Eridan", "Ampora", "Troll"},
+				{"Feferi", "Peixes", "Troll"},
+				{"Dirk", "Strider", "Human"},
+				{"Equius", "Zahhak", "Troll"},
+				{"Calliope", "", "Cherub"},
+			},
+			width: 30,
+			options: Options{
+				TableHeaders: true,
+				TableCharSet: "  =",
+			},
+			expect: "FIRST NAME   SURNAME   SPECIES" + DefaultLineSeparator +
+				"==============================" + DefaultLineSeparator +
+				"Eridan       Ampora    Troll  " + DefaultLineSeparator +
+				"Feferi       Peixes    Troll  " + DefaultLineSeparator +
+				"Dirk         Strider   Human  " + DefaultLineSeparator +
+				"Equius       Zahhak    Troll  " + DefaultLineSeparator +
+				"Calliope               Cherub " + DefaultLineSeparator,
+		},
+		{
+			name: "custom line separator",
+			data: [][]string{
+				{"Eridan", "Ampora", "Troll"},
+				{"Feferi", "Peixes", "Troll"},
+				{"Dirk", "Strider", "Human"},
+				{"Equius", "Zahhak", "Troll"},
+			},
+			width: 30,
+			options: Options{
+				LineSeparator: "<br/>\n",
+			},
+			expect: "Eridan      Ampora       Troll<br/>\n" +
+				"Feferi      Peixes       Troll<br/>\n" +
+				"Dirk        Strider      Human<br/>\n" +
+				"Equius      Zahhak       Troll<br/>\n",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actualDirect := Edit(tc.input).InsertTableOpts(tc.pos, tc.data, tc.width, tc.options).String()
+			actualPreOpts := Edit(tc.input).WithOptions(tc.options).InsertTable(tc.pos, tc.data, tc.width).String()
+
+			assert.Equal(tc.expect, actualDirect, "InsertTableOpts(opts) check failed")
+			assert.Equal(tc.expect, actualPreOpts, "WithOptions(opts).InsertTable() check failed")
+		})
+	}
+}

@@ -8,6 +8,7 @@ package gem
 
 import (
 	"fmt"
+
 	"github.com/dekarrin/rosed/internal/util"
 )
 
@@ -19,26 +20,33 @@ import (
 // If such guarantees are needed, raw strings can be used primarily with
 // conversion to and from gem.String as needed.
 //
-// The zero-value is an empty String.
+// The zero-value is an empty String, ready to use.
 //
 // String.Equal can be used to test against raw strings.
 //
 // String implements the fmt.Formatter interface.
 type String struct {
-	r  []rune
-	gc []int
+	r []rune
+
+	// gc is a pointer but should never be set to nil explicitly. However, zero
+	// value creation will result in it being set to nil, so it must still be
+	// checked with every access.
+	gc *[]int
 }
 
 var (
 	// Zero is a String of zero length.
-	Zero String = String{r: []rune{}, gc: []int{}}
+	Zero String = String{r: []rune{}, gc: new([]int)}
 )
 
 // Add adds two strings together and returns the result. The original String is
 // not modified.
 func (str String) Add(s2 String) String {
+	str = str.initialized()
+
 	r2 := str.clone()
-	r2.gc = nil
+	*r2.gc = nil
+
 	r2.r = append(r2.r, s2.Runes()...)
 	return r2
 }
@@ -47,17 +55,17 @@ func (str String) Add(s2 String) String {
 // cluster) of the given index. Modifying the returned slice will not modify the
 // String.
 func (str String) CharAt(idx int) []rune {
-	gc := str.gc
-	if gc == nil {
-		gc = Split(str.r)
-		str.gc = gc
+	str = str.initialized()
+
+	if *str.gc == nil {
+		*str.gc = Split(str.r)
 	}
 
 	var startIdx = 0
 	if idx > 0 {
-		startIdx = gc[idx-1]
+		startIdx = (*str.gc)[idx-1]
 	}
-	length := gc[idx] - startIdx
+	length := (*str.gc)[idx] - startIdx
 	cluster := make([]rune, length)
 	for i := 0; i < length; i++ {
 		cluster[i] = str.r[startIdx+i]
@@ -70,6 +78,8 @@ func (str String) CharAt(idx int) []rune {
 // a raw string object, it is compared to the output of calling String() on the
 // gem.String. Otherwise, false is returned.
 func (str String) Equal(other interface{}) bool {
+	str = str.initialized()
+
 	if other == nil {
 		return false
 	}
@@ -96,14 +106,13 @@ func (str String) Equal(other interface{}) bool {
 
 // Format formats the String for printing. This is part of the implementation
 // of fmt.Formatter.
-func (str *String) Format(f fmt.State, verb rune) {
+func (str String) Format(f fmt.State, verb rune) {
+	str = str.initialized()
+
 	if verb == 'q' {
-		if str == nil {
-			f.Write([]byte("<nil>"))
-		}
 		f.Write([]byte(fmt.Sprintf("%q", str.String())))
 	} else {
-		f.Write([]byte(fmt.Sprintf("%s", str.String())))
+		f.Write([]byte(str.String()))
 	}
 }
 
@@ -116,12 +125,13 @@ func (str *String) Format(f fmt.State, verb rune) {
 // The end indexes will be exclusive; e.g. a gem.String with contents "test"
 // would produce [][]int{{0, 1}, {1, 2}, {2, 3}, {3, 4}}.
 func (str String) GraphemeIndexes() [][]int {
-	gc := str.gc
-	if gc == nil {
-		gc = Split(str.r)
-		str.gc = gc
+	str = str.initialized()
+
+	if *str.gc == nil {
+		*str.gc = Split(str.r)
 	}
 
+	gc := *str.gc
 	indexes := make([][]int, len(gc))
 	prevEnd := 0
 	for i := range gc {
@@ -138,6 +148,8 @@ func (str String) GraphemeIndexes() [][]int {
 
 // IsEmpty return whether the String is the empty string "".
 func (str String) IsEmpty() bool {
+	str = str.initialized()
+
 	return len(str.r) == 0
 }
 
@@ -147,20 +159,22 @@ func (str String) IsEmpty() bool {
 // This function may trigger UAX29 analysis on the String if it hasn't yet
 // occured.
 func (str String) Len() int {
-	gc := str.gc
-	if gc == nil {
+	str = str.initialized()
+
+	if *str.gc == nil {
 		if len(str.r) == 0 {
 			return 0
 		}
-		gc = Split(str.r)
-		str.gc = gc
+		*str.gc = Split(str.r)
 	}
 
-	return len(gc)
+	return len(*str.gc)
 }
 
 // Less returns whether one String is lexigraphically less than another.
 func (str String) Less(s String) bool {
+	str = str.initialized()
+
 	sR := s.Runes()
 	minLen := len(sR)
 	if minLen > len(str.r) {
@@ -190,38 +204,42 @@ func (str String) Less(s String) bool {
 // Runes returns the string's raw Runes. Modifying the returned slice has no
 // effect on the String.
 func (str String) Runes() []rune {
+	str = str.initialized()
+
 	r := make([]rune, len(str.r))
-	for i := range str.r {
-		r[i] = str.r[i]
-	}
+	copy(r, str.r)
 	return r
 }
 
 // SetCharAt sets the character at the given index to the given value and
 // returns the resulting String. The original String is not modified.
 func (str String) SetCharAt(idx int, r []rune) String {
+	str = str.initialized()
+
 	if len(r) == 0 {
 		panic("SetCharAt received empty or nil replacement runes slice r")
 	}
 
-	copy := str.clone()
+	clone := str.clone()
 
-	if copy.gc == nil {
-		copy.gc = Split(copy.r)
+	if *clone.gc == nil {
+		*clone.gc = Split(clone.r)
 	}
 
 	var startIdx int
 	if idx > 0 {
-		startIdx = copy.gc[idx-1]
+		startIdx = (*clone.gc)[idx-1]
 	}
-	curEndIdx := copy.gc[idx]
-	copy.r = append(copy.r[:startIdx], append(r, copy.r[curEndIdx:]...)...)
-	copy.gc = nil
-	return copy
+	curEndIdx := (*clone.gc)[idx]
+	clone.r = append(clone.r[:startIdx], append(r, clone.r[curEndIdx:]...)...)
+	*clone.gc = nil
+	return clone
 }
 
 // String gets the contents as the built-in string type.
 func (str String) String() string {
+	str = str.initialized()
+
 	return string(str.r)
 }
 
@@ -235,34 +253,36 @@ func (str String) String() string {
 // end are negative and point to an index less than 0 after calculating, it is
 // assumed that they are pointing to 0.
 func (str String) Sub(start, end int) String {
+	str = str.initialized()
+
 	start, end = util.RangeToIndexes(str.Len(), start, end)
 
 	if start == end {
 		return Zero
 	}
 
-	if str.gc == nil {
+	if *str.gc == nil {
 		// we need a split operation on the graphemes
-		str.gc = Split(str.r)
+		*str.gc = Split(str.r)
 	}
 
 	clone := str.clone()
 
 	var runesStart int
 	if start > 0 {
-		runesStart = clone.gc[start-1]
+		runesStart = (*clone.gc)[start-1]
 	}
-	runesEnd := clone.gc[end-1]
+	runesEnd := (*clone.gc)[end-1]
 
 	clone.r = clone.r[runesStart:runesEnd]
-	clone.gc = clone.gc[start:end]
+	*clone.gc = (*clone.gc)[start:end]
 
 	// but if we've sub'd from anywhere but the start, because every value in
 	// the gc slice is really the difference in runes from the *prior* value,
 	// we need to subtract whatever came before the sub'd index.
 	if runesStart > 0 {
-		for i := range clone.gc {
-			clone.gc[i] -= runesStart
+		for i := range *clone.gc {
+			(*clone.gc)[i] -= runesStart
 		}
 	}
 
@@ -274,7 +294,7 @@ func (str String) Sub(start, end int) String {
 // basis; the contents of s are not scanned for grapheme clusters until an
 // operation requires it.
 func New(s string) String {
-	return String{r: []rune(s)}
+	return String{r: []rune(s), gc: new([]int)}
 }
 
 // Slice turns the from slice into a slice of String objects.
@@ -324,117 +344,37 @@ func Strings(from []String) []string {
 // gem.String is generally passed by value now and immutable, but keeping this
 // because it makes it convenient for deep-copying the members of it.
 func (str String) clone() String {
-	gc := str.gc
+	str = str.initialized()
+
 	clone := String{
-		r: make([]rune, len(str.r)),
+		r:  make([]rune, len(str.r)),
+		gc: new([]int),
 	}
-	for i := range str.r {
-		clone.r[i] = str.r[i]
+
+	copy(clone.r, str.r)
+
+	if *str.gc != nil {
+		newCloneGC := make([]int, len(*str.gc))
+		clone.gc = &newCloneGC
+		copy(*clone.gc, *str.gc)
 	}
-	if gc != nil {
-		clone.gc = make([]int, len(gc))
-		for i := range gc {
-			clone.gc[i] = gc[i]
-		}
-	}
+
 	return clone
 }
 
-func shouldBreakAfter(r rune, chars []rune, i int) bool {
-	// GB1 - Break at the start of the text, implemented when starting
-
-	// GB2 - Break at the end of the text
-	if i+1 >= len(chars) {
-		return true
+// initialized returns a new String with all properties set to values suitable
+// for immediate use. It is used to convert a String created with no setting of
+// internal properties to one that is ready for use, with gc explicitly set to a
+// non-nil pointer (though it may point to a nil slice), and r set to a non-nil
+// slice.
+func (str String) initialized() String {
+	if str.gc == nil {
+		str.gc = new([]int)
 	}
 
-	// GB2 guarentees that i+1 is safe to access
-	nextR := chars[i+1]
-
-	// GB3 - Do not break between a CR and LF
-	if isCbCR(r) && isCbLF(nextR) {
-		return false
+	if str.r == nil {
+		str.r = []rune{}
 	}
 
-	// GB4 - Break after controls
-	if isCbControl(r) || isCbCR(r) || isCbLF(r) {
-		return true
-	}
-
-	// GB5 - Break before controls
-	if isCbControl(nextR) || isCbCR(nextR) || isCbLF(nextR) {
-		return true
-	}
-
-	// GB6 - Do not break Hangul syllable sequences (1)
-	if isCbL(r) && (isCbL(nextR) || isCbV(nextR) || isCbLV(nextR) || isCbLVT(nextR)) {
-		return false
-	}
-
-	// GB7 - Do not break Hangul syllable sequences (2)
-	if (isCbLV(r) || isCbV(r)) && (isCbV(nextR) || isCbT(nextR)) {
-		return false
-	}
-
-	// GB8 - Do not break Hangul syllable sequences (3)
-	if (isCbLVT(r) || isCbT(r)) && isCbT(nextR) {
-		return false
-	}
-
-	// GB9 - Do not break before extending characters or ZWJ
-	if isCbExtend(nextR) || isCbZWJ(nextR) {
-		return false
-	}
-
-	// GB9a - (Extended grapheme clusters only) Do not break before spacing marks
-	if isCbSpacingMark(nextR) {
-		return false
-	}
-
-	// GB9b - (Extended grapheme clusters only) Do not break after Prepend characters
-	if isCbPrepend(r) {
-		return false
-	}
-
-	// GB11 - Do not break within emoji modifier sequences or emoji ZWJ sequnces
-	// only need to loop through if we know the nextR is an extpicto AND we are
-	// currently on a ZWJ and there is at least one prior rune.
-	if isCbZWJ(r) && isExtPicto(nextR) && i-1 >= 0 {
-		for j := i - 1; j >= 0; j-- {
-			if !isCbExtend(chars[j]) {
-				if isExtPicto(chars[j]) {
-					// we are on the ZWJ of a \p{Extended_Pictographic} Extend* ZWJ sequence.
-					// we also only enter loop if on the ZWJ of a ZWJ \p{Extended_Pictographic} seq.
-					// so we know for sure that we are on a GB11 case.
-					// do not break.
-					return false
-				} else {
-					break
-				}
-			}
-		}
-	}
-
-	// GB12 & GB13 - Do not break within emoji flag sequences (at start of text)
-	// That is, do not break between regional indicator (RI) symbols if there is
-	// an odd number of RI characters before the break point.
-	if isCbRegionalIndicator(r) && isCbRegionalIndicator(nextR) {
-		// find how many RI chars are behind this one
-		priorRIs := 0
-
-		// check backwards
-		for j := i - 1; j >= 0; j-- {
-			if !isCbRegionalIndicator(chars[j]) {
-				break
-			}
-			priorRIs++
-		}
-
-		if priorRIs%2 == 0 {
-			return false
-		}
-	}
-
-	// GB999 - Otherwise, break anywhere
-	return true
+	return str
 }
