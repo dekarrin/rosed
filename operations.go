@@ -582,7 +582,9 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 //   - LineSeparator is used to separate each line of the output.
 //   - NoTrailingLineSeparators sets whether to include a trailing LineSeparator
 //     at the end of the generated table. If set to true, it will be omitted,
-//     otherwise the table will end with a LineSeparator.
+//     otherwise the table will end with a LineSeparator. Note that this does
+//     not apply to any case where InsertTable output is empty (e.g. if given an
+//     empty set of data).
 //   - TableBorders controls whether the table will have a border.
 //   - TableHeaders controls whether the first row of data is layed out as
 //     headers for the table. They will be separated from the rest of the data
