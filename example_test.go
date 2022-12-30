@@ -647,7 +647,8 @@ func ExampleEditor_InsertTableOpts_tableBorders() {
 }
 
 // This example shows the use of the TableHeaders option to set the first row of
-// data apart from the rest with a horizontal rule and treat it as a header.
+// data apart from the rest with a horizontal rule and to format it as a header
+// row.
 func ExampleEditor_InsertTableOpts_tableHeaders() {
 	data := [][]string{
 		{"Aspect", "Class", "Surname", "Name"},
