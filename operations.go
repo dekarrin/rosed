@@ -585,7 +585,9 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 //     otherwise the table will end with a LineSeparator.
 //   - TableBorders controls whether the table will have a border.
 //   - TableHeaders controls whether the first row of data is layed out as
-//     headers for the table.
+//     headers for the table. They will be separated from the rest of the data
+//     with a horizontal rule (or an additional border if TableBorders is also
+//     set to true).
 //   - TableCharSet gives the characters to use to represent lines in the table,
 //     used for drawing borders. If TableBorders is enabled, the characters in
 //     TableCharSet are used to draw the borders. If TableBorders is disabled

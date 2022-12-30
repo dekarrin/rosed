@@ -589,6 +589,61 @@ func ExampleEditor_InsertDefinitionsTableOpts() {
 	//
 }
 
+// This example shows the creation of a table from data. Options are used to
+// control the table formatting; see [Editor.InsertTableOpts] examples to for a
+// demonstration of this.
+func ExampleEditor_InsertTable() {
+	data := [][]string{
+		{"John", "Egbert", "Heir", "Breath", "Human"},
+		{"Kanaya", "Maryam", "Sylph", "Space", "Troll"},
+		{"Roxy", "Lalonde", "Rogue", "Void", "Human"},
+		{"Rose", "Lalonde", "Seer", "Light", "Human"},
+	}
+
+	const width = 50
+	const position = 0
+
+	ed := Edit("").InsertTable(position, data, width)
+
+	fmt.Println(ed.String())
+	// Output:
+	// John        Egbert      Heir      Breath     Human
+	// Kanaya      Maryam      Sylph     Space      Troll
+	// Roxy        Lalonde     Rogue     Void       Human
+	// Rose        Lalonde     Seer      Light      Human
+}
+
+// This example shows the use of the TableBorders option to add a border to
+// table output.
+func ExampleEditor_InsertTableOpts_tableBorders() {
+	fmt.Println("")
+	// Output: TODO
+}
+
+// This example shows the use of the TableHeaders option to set the first row of
+// data apart from the rest with a horizontal rule and treat it as a header.
+func ExampleEditor_InsertTableOpts_tableHeaders() {
+	fmt.Println("")
+	// Output: TODO
+}
+
+// This example shows how the TableHeaders and TableBorders options can be
+// combined to both add a border and create a header from the first row in the
+// data. The result is slightly different from just setting TableBorders, as
+// when both are set, the headers will be centered within their cells and the
+// header break line is changed to the TableBorder-style horizontal rule.
+func ExampleEditor_InsertTableOpts_tableBordersAndHeaders() {
+	fmt.Println("")
+	// Output: TODO
+}
+
+// This example shows how to override the character set used to draw table
+// borders and horizontal rules within the table.
+func ExampleEditor_InsertTableOpts_tableCharSet() {
+	fmt.Println("")
+	// Output: TODO
+}
+
 // This example creates two columns from two runs of text.
 func ExampleEditor_InsertTwoColumns() {
 	leftText := "Karkalicious, definition: makes Terezi loco. "
