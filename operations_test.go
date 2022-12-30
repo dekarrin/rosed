@@ -2444,7 +2444,7 @@ func Test_InsertTable(t *testing.T) {
 				"Act 2            Raise of the Conductor's Baton    511 pages" + DefaultLineSeparator +
 				"Act 3            Insane Corkscrew Haymakers        395 pages" + DefaultLineSeparator +
 				"Intermission     Don't Bleed on the Suits          204 pages" + DefaultLineSeparator +
-				"Act 4            Flight of the Paradox Clones      631 pages",
+				"Act 4            Flight of the Paradox Clones      631 pages" + DefaultLineSeparator,
 		},
 		{
 			name:  "table in the middle of content",
@@ -2462,7 +2462,8 @@ func Test_InsertTable(t *testing.T) {
 				"Act 2            Raise of the Conductor's Baton    511 pages" + DefaultLineSeparator +
 				"Act 3            Insane Corkscrew Haymakers        395 pages" + DefaultLineSeparator +
 				"Intermission     Don't Bleed on the Suits          204 pages" + DefaultLineSeparator +
-				"Act 4            Flight of the Paradox Clones      631 pageslo friends",
+				"Act 4            Flight of the Paradox Clones      631 pages" + DefaultLineSeparator +
+				"lo friends",
 		},
 		{
 			name:  "table expands to minimum possible size if width is too small",
@@ -2480,7 +2481,7 @@ func Test_InsertTable(t *testing.T) {
 				"Act 2         Raise of the Conductor's Baton  511 pages" + DefaultLineSeparator +
 				"Act 3         Insane Corkscrew Haymakers      395 pages" + DefaultLineSeparator +
 				"Intermission  Don't Bleed on the Suits        204 pages" + DefaultLineSeparator +
-				"Act 4         Flight of the Paradox Clones    631 pages",
+				"Act 4         Flight of the Paradox Clones    631 pages" + DefaultLineSeparator,
 		},
 	}
 
@@ -2504,7 +2505,162 @@ func Test_InsertTableOpts(t *testing.T) {
 		width   int
 		options Options
 		expect  string
-	}{}
+	}{
+		{
+			name:  "empty with no trailing set to true",
+			input: "",
+			pos:   0,
+			data:  nil,
+			width: 30,
+			options: Options{
+				NoTrailingLineSeparators: true,
+			},
+			expect: "",
+		},
+		{
+			name:  "empty with no trailing set to false",
+			input: "",
+			pos:   0,
+			data:  nil,
+			width: 30,
+			options: Options{
+				NoTrailingLineSeparators: false,
+			},
+			expect: "",
+		},
+		{
+			name:  "basic table, no trailing set to true",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"Eridan", "Ampora", "Troll"},
+				{"Feferi", "Peixes", "Troll"},
+				{"Dirk", "Strider", "Human"},
+				{"Equius", "Zahhak", "Troll"},
+			},
+			width: 30,
+			options: Options{
+				NoTrailingLineSeparators: true,
+			},
+			expect: "Eridan      Ampora       Troll" + DefaultLineSeparator +
+				"Feferi      Peixes       Troll" + DefaultLineSeparator +
+				"Dirk        Strider      Human" + DefaultLineSeparator +
+				"Equius      Zahhak       Troll",
+		},
+		{
+			name:  "table with borders",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"Eridan", "Ampora", "Troll"},
+				{"Feferi", "Peixes", "Troll"},
+				{"Dirk", "Strider", "Human"},
+				{"Equius", "Zahhak", "Troll"},
+				{"Calliope", "", "Cherub"},
+			},
+			width: 35,
+			options: Options{
+				TableBorders: true,
+			},
+			expect: "+------------+----------+---------+" + DefaultLineSeparator +
+				"| Eridan     | Ampora   | Troll   |" + DefaultLineSeparator +
+				"| Feferi     | Peixes   | Troll   |" + DefaultLineSeparator +
+				"| Dirk       | Strider  | Human   |" + DefaultLineSeparator +
+				"| Equius     | Zahhak   | Troll   |" + DefaultLineSeparator +
+				"| Calliope   |          | Cherub  |" + DefaultLineSeparator +
+				"+------------+----------+---------+" + DefaultLineSeparator,
+		},
+		{
+			name:  "table with headers",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"First Name", "Surname", "Species"},
+				{"Eridan", "Ampora", "Troll"},
+				{"Feferi", "Peixes", "Troll"},
+				{"Dirk", "Strider", "Human"},
+				{"Equius", "Zahhak", "Troll"},
+				{"Calliope", "", "Cherub"},
+			},
+			width: 30,
+			options: Options{
+				TableHeaders: true,
+			},
+			expect: "FIRST NAME   SURNAME   SPECIES" + DefaultLineSeparator +
+				"------------------------------" + DefaultLineSeparator +
+				"Eridan       Ampora    Troll  " + DefaultLineSeparator +
+				"Feferi       Peixes    Troll  " + DefaultLineSeparator +
+				"Dirk         Strider   Human  " + DefaultLineSeparator +
+				"Equius       Zahhak    Troll  " + DefaultLineSeparator +
+				"Calliope               Cherub " + DefaultLineSeparator,
+		},
+		{
+			name:  "table with borders and headers",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"First Name", "Surname", "Species"},
+				{"Eridan", "Ampora", "Troll"},
+				{"Feferi", "Peixes", "Troll"},
+				{"Dirk", "Strider", "Human"},
+				{"Equius", "Zahhak", "Troll"},
+				{"Calliope", "", "Cherub"},
+			},
+			width: 41,
+			options: Options{
+				TableBorders: true,
+				TableHeaders: true,
+			},
+			expect: "+---------------+-----------+-----------+" + DefaultLineSeparator +
+				"|   FIRST NAME  |  SURNAME  |  SPECIES  |" + DefaultLineSeparator +
+				"+---------------+-----------+-----------+" + DefaultLineSeparator +
+				"| Eridan        | Ampora    | Troll     |" + DefaultLineSeparator +
+				"| Feferi        | Peixes    | Troll     |" + DefaultLineSeparator +
+				"| Dirk          | Strider   | Human     |" + DefaultLineSeparator +
+				"| Equius        | Zahhak    | Troll     |" + DefaultLineSeparator +
+				"| Calliope      |           | Cherub    |" + DefaultLineSeparator +
+				"+---------------+-----------+-----------+" + DefaultLineSeparator,
+		},
+		{
+			name:  "single-cell table with borders and headers",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"Single Item"},
+			},
+			width: 20,
+			options: Options{
+				TableBorders: true,
+				TableHeaders: true,
+			},
+			expect: "+------------------+" + DefaultLineSeparator +
+				"|    SINGLE ITEM   |" + DefaultLineSeparator +
+				"+------------------+" + DefaultLineSeparator,
+		},
+		{
+			name:  "single-cell table with headers",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"Single Item"},
+			},
+			width: 20,
+			options: Options{
+				TableHeaders: true,
+			},
+			expect: "SINGLE ITEM         " + DefaultLineSeparator +
+				"--------------------" + DefaultLineSeparator,
+		}, /*
+			{
+				name: "alt char set borders",
+			},
+			{
+				name: "alt char set headers",
+			},
+			{
+				name: "custom line separator",
+			},*/
+	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

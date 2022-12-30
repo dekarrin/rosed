@@ -566,6 +566,17 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 // InsertTable creates a table from the provided data and inserts it into the
 // text of the Editor.
 //
+// By default, this will create a table with equally-sized columns spaced out
+// to reach width, with every row of data treated the same. The options
+// TableHeaders, TableBorders, and TableCharSet are all consulted to determine
+// how to draw the table and can be set to customize the table output.
+//
+// The parameter data is a slice of rows, each of which is a slice of cells of
+// table data. The resulting table will have as many columns as the row in data
+// with the most cells; if any row has fewer than that, an empty string is
+// substituted for the missing cells. If data is empty or nil, no output is
+// produced. If data consists only of empty rows, no output is produced.
+//
 // This function is affected by the following [Options]:
 //
 //   - LineSeparator is used to separate each line of the output.
@@ -602,9 +613,13 @@ func (ed Editor) InsertTableOpts(pos int, data [][]string, width int, opts Optio
 	gemCharSet := gem.New(opts.TableCharSet)
 
 	tableBlock := manip.MakeTable(gemData, width, gemLineSep, opts.TableHeaders, opts.TableBorders, gemCharSet)
-	table := tableBlock.Join()
+	table := tableBlock.Join().String()
 
-	return ed.Insert(pos, table.String())
+	if !opts.NoTrailingLineSeparators && len(table) > 0 {
+		table += opts.LineSeparator
+	}
+
+	return ed.Insert(pos, table)
 }
 
 // InsertTwoColumns builds a two-column layout of side-by-side text from two

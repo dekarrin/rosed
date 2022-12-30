@@ -211,7 +211,10 @@ func MakeTable(data [][]gem.String, width int, lineSep gem.String, header bool, 
 
 		if row == 0 && header {
 			if border {
-				tableBlock.Append(horzBar)
+				// do this in a bordered table ONLY if there are more elements
+				if len(data) > 1 {
+					tableBlock.Append(horzBar)
+				}
 			} else {
 				tableBlock.Append(nonBorderBreakBar)
 			}

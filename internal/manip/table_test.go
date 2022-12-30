@@ -79,6 +79,79 @@ func Test_MakeTable(t *testing.T) {
 			},
 		},
 		{
+			name: "single-cell table",
+			table: [][]gem.String{
+				{gem.New("Item")},
+			},
+			width:   10,
+			lineSep: gem.New("\n"),
+			header:  false,
+			border:  false,
+			charSet: gem.Zero,
+			expect: tb.Block{
+				Lines: []gem.String{
+					gem.New("Item      "),
+				},
+				LineSeparator: gem.New("\n"),
+			},
+		},
+		{
+			name: "single-cell table, with header",
+			table: [][]gem.String{
+				{gem.New("Item")},
+			},
+			width:   10,
+			lineSep: gem.New("\n"),
+			header:  true,
+			border:  false,
+			charSet: gem.Zero,
+			expect: tb.Block{
+				Lines: []gem.String{
+					gem.New("ITEM      "),
+					gem.New("----------"),
+				},
+				LineSeparator: gem.New("\n"),
+			},
+		},
+		{
+			name: "single-cell table, with border",
+			table: [][]gem.String{
+				{gem.New("Item")},
+			},
+			width:   10,
+			lineSep: gem.New("\n"),
+			header:  false,
+			border:  true,
+			charSet: gem.Zero,
+			expect: tb.Block{
+				Lines: []gem.String{
+					gem.New("+--------+"),
+					gem.New("| Item   |"),
+					gem.New("+--------+"),
+				},
+				LineSeparator: gem.New("\n"),
+			},
+		},
+		{
+			name: "single-cell table, with border and header",
+			table: [][]gem.String{
+				{gem.New("Item")},
+			},
+			width:   10,
+			lineSep: gem.New("\n"),
+			header:  true,
+			border:  true,
+			charSet: gem.Zero,
+			expect: tb.Block{
+				Lines: []gem.String{
+					gem.New("+--------+"),
+					gem.New("|  ITEM  |"),
+					gem.New("+--------+"),
+				},
+				LineSeparator: gem.New("\n"),
+			},
+		},
+		{
 			name: "width < min",
 			table: [][]gem.String{
 				{gem.New("John"), gem.New("Egbert"), gem.New("Heir"), gem.New("Breath")},
