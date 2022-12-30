@@ -616,15 +616,72 @@ func ExampleEditor_InsertTable() {
 // This example shows the use of the TableBorders option to add a border to
 // table output.
 func ExampleEditor_InsertTableOpts_tableBorders() {
-	fmt.Println("")
-	// Output: TODO
+	data := [][]string{
+		{"John", "Egbert", "Heir", "Breath", "Human"},
+		{"Kanaya", "Maryam", "Sylph", "Space", "Troll"},
+		{"Wayward", "Vagabond", "", "", "Carapacian"},
+		{"Roxy", "Lalonde", "Rogue", "Void", "Human"},
+		{"Rose", "Lalonde", "Seer", "Light", "Human"},
+		{"Caliborn", "", "Lord", "Time", "Cherub"},
+	}
+
+	opts := Options{
+		TableBorders: true,
+	}
+
+	const width = 65
+	const position = 0
+
+	ed := Edit("").InsertTableOpts(position, data, width, opts)
+
+	fmt.Println(ed.String())
+	// Output:
+	// +-------------+-------------+---------+----------+--------------+
+	// | John        | Egbert      | Heir    | Breath   | Human        |
+	// | Kanaya      | Maryam      | Sylph   | Space    | Troll        |
+	// | Wayward     | Vagabond    |         |          | Carapacian   |
+	// | Roxy        | Lalonde     | Rogue   | Void     | Human        |
+	// | Rose        | Lalonde     | Seer    | Light    | Human        |
+	// | Caliborn    |             | Lord    | Time     | Cherub       |
+	// +-------------+-------------+---------+----------+--------------+
 }
 
 // This example shows the use of the TableHeaders option to set the first row of
 // data apart from the rest with a horizontal rule and treat it as a header.
 func ExampleEditor_InsertTableOpts_tableHeaders() {
-	fmt.Println("")
-	// Output: TODO
+	data := [][]string{
+		{"Aspect", "Class", "Surname", "Name"},
+		{"Breath", "Heir", "Egbert", "John"},
+		{"Light", "Seer", "Lalonde", "Rose"},
+		{"Time", "Knight", "Strider", "Dave"},
+		{"Space", "Witch", "Harley", "Jade"},
+		{"Void", "Rogue", "Lalonde", "Roxy"},
+		{"Heart", "Prince", "Strider", "Dirk"},
+		{"Hope", "Page", "English", "Jake"},
+		{"Life", "Maid", "Crocker", "Jane"},
+	}
+
+	opts := Options{
+		TableHeaders: true,
+	}
+
+	const width = 65
+	const position = 0
+
+	ed := Edit("").InsertTableOpts(position, data, width, opts)
+
+	fmt.Println(ed.String())
+	// Output:
+	// ASPECT              CLASS               SURNAME              NAME
+	// -----------------------------------------------------------------
+	// Breath              Heir                Egbert               John
+	// Light               Seer                Lalonde              Rose
+	// Time                Knight              Strider              Dave
+	// Space               Witch               Harley               Jade
+	// Void                Rogue               Lalonde              Roxy
+	// Heart               Prince              Strider              Dirk
+	// Hope                Page                English              Jake
+	// Life                Maid                Crocker              Jane
 }
 
 // This example shows how the TableHeaders and TableBorders options can be
@@ -633,15 +690,107 @@ func ExampleEditor_InsertTableOpts_tableHeaders() {
 // when both are set, the headers will be centered within their cells and the
 // header break line is changed to the TableBorder-style horizontal rule.
 func ExampleEditor_InsertTableOpts_tableBordersAndHeaders() {
-	fmt.Println("")
-	// Output: TODO
+	data := [][]string{
+		{"Name", "Surname", "Class", "Aspect", "Species"},
+		{"John", "Egbert", "Heir", "Breath", "Human"},
+		{"Kanaya", "Maryam", "Sylph", "Space", "Troll"},
+		{"Wayward", "Vagabond", "", "", "Carapacian"},
+		{"Roxy", "Lalonde", "Rogue", "Void", "Human"},
+		{"Rose", "Lalonde", "Seer", "Light", "Human"},
+		{"Caliborn", "", "Lord", "Time", "Cherub"},
+	}
+
+	opts := Options{
+		TableBorders: true,
+		TableHeaders: true,
+	}
+
+	const width = 65
+	const position = 0
+
+	ed := Edit("").InsertTableOpts(position, data, width, opts)
+
+	fmt.Println(ed.String())
+	// Output:
+	// +-------------+-------------+---------+----------+--------------+
+	// |     NAME    |   SURNAME   |  CLASS  |  ASPECT  |    SPECIES   |
+	// +-------------+-------------+---------+----------+--------------+
+	// | John        | Egbert      | Heir    | Breath   | Human        |
+	// | Kanaya      | Maryam      | Sylph   | Space    | Troll        |
+	// | Wayward     | Vagabond    |         |          | Carapacian   |
+	// | Roxy        | Lalonde     | Rogue   | Void     | Human        |
+	// | Rose        | Lalonde     | Seer    | Light    | Human        |
+	// | Caliborn    |             | Lord    | Time     | Cherub       |
+	// +-------------+-------------+---------+----------+--------------+
 }
 
 // This example shows how to override the character set used to draw table
 // borders and horizontal rules within the table.
 func ExampleEditor_InsertTableOpts_tableCharSet() {
-	fmt.Println("")
-	// Output: TODO
+	borderData := [][]string{
+		{"John", "Egbert", "Heir", "Breath", "Human"},
+		{"Kanaya", "Maryam", "Sylph", "Space", "Troll"},
+		{"Wayward", "Vagabond", "", "", "Carapacian"},
+		{"Roxy", "Lalonde", "Rogue", "Void", "Human"},
+		{"Rose", "Lalonde", "Seer", "Light", "Human"},
+		{"Caliborn", "", "Lord", "Time", "Cherub"},
+	}
+
+	opts := Options{
+		TableBorders: true,
+
+		// First character is used for corners/intersections
+		// Second character is used for vertical lines
+		// Third character is used for horizontal lines
+		TableCharSet: "#*=",
+	}
+
+	const width = 65
+	const position = 0
+
+	edBorders := Edit("").InsertTableOpts(position, borderData, width, opts)
+
+	fmt.Println("With borders:")
+	fmt.Println()
+	fmt.Println(edBorders.String())
+
+	// you can also do this for headers only; in this case, the third character
+	// of TableCharSet is used for drawing the horizontal rule:
+
+	smallDataSet := [][]string{
+		{"Surname", "Name"},
+		{"Egbert", "John"},
+		{"Lalonde", "Rose"},
+	}
+
+	// use a smaller width for this one, it's a smaller table
+	const smallTableWidth = 15
+
+	opts = opts.WithTableBorders(false).WithTableHeaders(true)
+	edHeaders := Edit("").InsertTableOpts(position, smallDataSet, smallTableWidth, opts)
+
+	fmt.Println("With headers:")
+	fmt.Println()
+	fmt.Println(edHeaders.String())
+
+	// Output:
+	// With borders:
+	//
+	// #=============#=============#=========#==========#==============#
+	// * John        * Egbert      * Heir    * Breath   * Human        *
+	// * Kanaya      * Maryam      * Sylph   * Space    * Troll        *
+	// * Wayward     * Vagabond    *         *          * Carapacian   *
+	// * Roxy        * Lalonde     * Rogue   * Void     * Human        *
+	// * Rose        * Lalonde     * Seer    * Light    * Human        *
+	// * Caliborn    *             * Lord    * Time     * Cherub       *
+	// #=============#=============#=========#==========#==============#
+	//
+	// With headers:
+	//
+	// SURNAME    NAME
+	// ===============
+	// Egbert     John
+	// Lalonde    Rose
 }
 
 // This example creates two columns from two runs of text.
