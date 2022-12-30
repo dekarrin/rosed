@@ -563,8 +563,8 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 	}
 }
 
-// InsertTable creats a table from provided data and inserts it into the text of
-// the Editor.
+// InsertTable creates a table from the provided data and inserts it into the
+// text of the Editor.
 //
 // This function is affected by the following [Options]:
 //
@@ -573,16 +573,38 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 //     at the end of the generated table. If set to true, it will be omitted,
 //     otherwise the table will end with a LineSeparator.
 //   - TableBorders controls whether the table will have a border.
-//   - TableHeaders controls whether the first line of data is treated as
-//     headers.
+//   - TableHeaders controls whether the first row of data is layed out as
+//     headers for the table.
 //   - TableCharSet gives the characters to use to represent lines in the table,
 //     used for drawing borders. If TableBorders is enabled, the characters in
 //     TableCharSet are used to draw the borders. If TableBorders is disabled
 //     but TableHeaders is enabled, the characters in TableCharSet are used to
 //     draw the horizontal rule separating the headers from the data.
 func (ed Editor) InsertTable(pos int, data [][]string, width int) Editor {
+	return ed.InsertTableOpts(pos, data, width, ed.Options)
+}
 
-	return ed
+// InsertTableOpts creates a table from the provided data using the provided
+// options and inserts it into the text of the Editor.
+//
+// This is identical to [Editor.InsertTable] but provides the ability to set
+// Options for the invocation.
+func (ed Editor) InsertTableOpts(pos int, data [][]string, width int, opts Options) Editor {
+	opts = opts.WithDefaults()
+
+	gemData := make([][]gem.String, len(data))
+	for row := range data {
+		gemRow := gem.Slice(data[row])
+		gemData[row] = gemRow
+	}
+
+	gemLineSep := gem.New(opts.LineSeparator)
+	gemCharSet := gem.New(opts.TableCharSet)
+
+	tableBlock := manip.MakeTable(gemData, width, gemLineSep, opts.TableHeaders, opts.TableBorders, gemCharSet)
+	table := tableBlock.Join()
+
+	return ed.Insert(pos, table.String())
 }
 
 // InsertTwoColumns builds a two-column layout of side-by-side text from two

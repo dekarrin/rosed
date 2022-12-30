@@ -935,7 +935,7 @@ func ExampleOptions_String() {
 
 	fmt.Println(str)
 	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false}
+	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false, TableBorders: false, TableHeaders: false, TableCharSet: ""}
 }
 
 // This example shows how WithDefaults can be called to set all currently unset
@@ -944,72 +944,122 @@ func ExampleOptions_WithDefaults() {
 	opts := Options{
 		LineSeparator:      "<br/>",
 		PreserveParagraphs: true,
+		TableCharSet:       "#",
 	}
-	fmt.Println(opts)
 
 	optsDefault := opts.WithDefaults()
-	fmt.Println(optsDefault)
+	fmt.Printf("IndentStr: %q\n", optsDefault.IndentStr)
+	fmt.Printf("LineSeparator: %q\n", optsDefault.LineSeparator)
+	fmt.Printf("PreserveParagraphs: %v\n", optsDefault.PreserveParagraphs)
+
+	// TableCharSet, instead of being all or nothing for settedness, allows the
+	// user to specify fewer characters than are required. If that is the case,
+	// as it was above, additional characters are added to it on a call to
+	// WithDefaults to make a complete char set
+	fmt.Printf("TableCharSet: %q\n", optsDefault.TableCharSet)
+
 	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "<br/>", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: true, JustifyLastLine: false}
-	// Options{ParagraphSeparator: "\n\n", LineSeparator: "<br/>", IndentStr: "\t", NoTrailingLineSeparators: false, PreserveParagraphs: true, JustifyLastLine: false}
+	// IndentStr: "\t"
+	// LineSeparator: "<br/>"
+	// PreserveParagraphs: true
+	// TableCharSet: "#|-"
 }
 
 func ExampleOptions_WithIndentStr() {
-	opts := Options{}
+	opts := Options{
+		IndentStr: "",
+	}
 
 	opts = opts.WithIndentStr("-->")
 
-	fmt.Println(opts.String())
-	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "-->", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false}
+	fmt.Println(opts.IndentStr)
+	// Output: -->
 }
 
 func ExampleOptions_WithJustifyLastLine() {
-	opts := Options{}
+	opts := Options{
+		JustifyLastLine: false,
+	}
 
 	opts = opts.WithJustifyLastLine(true)
 
-	fmt.Println(opts.String())
-	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: true}
+	fmt.Println(opts.JustifyLastLine)
+	// Output: true
 }
 
 func ExampleOptions_WithLineSeparator() {
-	opts := Options{}
+	opts := Options{
+		LineSeparator: "\n",
+	}
 
 	opts = opts.WithLineSeparator("<br/>")
 
-	fmt.Println(opts.String())
-	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "<br/>", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false}
+	fmt.Println(opts.LineSeparator)
+	// Output: <br/>
 }
 
 func ExampleOptions_WithNoTrailingLineSeparators() {
-	opts := Options{}
+	opts := Options{
+		NoTrailingLineSeparators: false,
+	}
 
 	opts = opts.WithNoTrailingLineSeparators(true)
 
-	fmt.Println(opts.String())
-	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: true, PreserveParagraphs: false, JustifyLastLine: false}
+	fmt.Println(opts.NoTrailingLineSeparators)
+	// Output: true
 }
 
 func ExampleOptions_WithParagraphSeparator() {
-	opts := Options{}
+	opts := Options{
+		ParagraphSeparator: "\n\n",
+	}
 
 	opts = opts.WithParagraphSeparator("<P>")
 
-	fmt.Println(opts.String())
-	// Output:
-	// Options{ParagraphSeparator: "<P>", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: false, JustifyLastLine: false}
+	fmt.Println(opts.ParagraphSeparator)
+	// Output: <P>
 }
 
 func ExampleOptions_WithPreserveParagraphs() {
-	opts := Options{}
+	opts := Options{
+		PreserveParagraphs: false,
+	}
 
 	opts = opts.WithPreserveParagraphs(true)
 
-	fmt.Println(opts.String())
-	// Output:
-	// Options{ParagraphSeparator: "", LineSeparator: "", IndentStr: "", NoTrailingLineSeparators: false, PreserveParagraphs: true, JustifyLastLine: false}
+	fmt.Println(opts.PreserveParagraphs)
+	// Output: true
+}
+
+func ExampleOptions_WithTableBorders() {
+	opts := Options{
+		TableBorders: false,
+	}
+
+	opts = opts.WithTableBorders(true)
+
+	fmt.Println(opts.TableBorders)
+	// Output: true
+}
+
+func ExampleOptions_WithTableHeaders() {
+	opts := Options{
+		TableHeaders: false,
+	}
+
+	opts = opts.WithTableHeaders(true)
+
+	fmt.Println(opts.TableHeaders)
+	// Output: true
+}
+
+func ExampleOptions_WithTableCharSet() {
+	opts := Options{
+		TableCharSet: "123",
+	}
+
+	opts = opts.WithTableCharSet("@IK")
+
+	fmt.Println(opts.TableCharSet)
+	// Output: @IK
 }

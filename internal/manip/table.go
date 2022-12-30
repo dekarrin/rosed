@@ -7,8 +7,6 @@ package manip
 import (
 	"strings"
 
-	"fmt"
-
 	"github.com/dekarrin/rosed/internal/gem"
 	"github.com/dekarrin/rosed/internal/tb"
 )
@@ -49,9 +47,6 @@ func MakeTable(data [][]gem.String, width int, lineSep gem.String, header bool, 
 		}
 	}
 
-	fmt.Printf("START\n")
-	fmt.Printf(">>>> colCount: %d\n", colCount)
-
 	if colCount == 0 {
 		// there are no columns so no table to create
 		return tb.New(gem.Zero, lineSep)
@@ -88,7 +83,6 @@ func MakeTable(data [][]gem.String, width int, lineSep gem.String, header bool, 
 			}
 		}
 	}
-	fmt.Printf(">>>> colContentWidths: %d\n", colContentWidths)
 
 	// add up the column widths with padding to find how much space it takes
 	// up
@@ -117,8 +111,6 @@ func MakeTable(data [][]gem.String, width int, lineSep gem.String, header bool, 
 			minTableWidth += horzChar.Len()
 		}
 	}
-	fmt.Printf(">>>> colContenWithPaddingtWidths: %d\n", colContentWithPaddingWidths)
-	fmt.Printf(">>>> minTableWidth: %d\n", minTableWidth)
 
 	// now calculate actual target column widths (including full padding)
 	colWidths := make([]int, colCount)
@@ -156,7 +148,6 @@ func MakeTable(data [][]gem.String, width int, lineSep gem.String, header bool, 
 	} else {
 		width = minTableWidth
 	}
-	fmt.Printf(">>>> colWidths: %d\n", colWidths)
 
 	// now we have our table widths and can begin building the table
 	tableBlock := tb.New(gem.Zero, lineSep)
@@ -183,10 +174,8 @@ func MakeTable(data [][]gem.String, width int, lineSep gem.String, header bool, 
 		}
 	}
 
-	fmt.Printf(">>>> tableBUILD:\n")
 	// layout all lines
 	for row := range data {
-		fmt.Printf(">>>>>> ROW(%d):\n", row)
 		line := gem.Zero
 		if border {
 			line = vertChar
@@ -194,13 +183,11 @@ func MakeTable(data [][]gem.String, width int, lineSep gem.String, header bool, 
 
 		var cellContent gem.String
 		for col := 0; col < colCount; col++ {
-			fmt.Printf(">>>>>>>> COL(%d):\n", col)
 			var cellData gem.String
 			if col < len(data[row]) {
 				cellData = data[row][col]
 			}
 
-			fmt.Printf(">>>>>>>>>> DATA: %q\n", cellData)
 			if row == 0 && header {
 				headerContent := gem.New(strings.ToUpper(cellData.String()))
 				if border {
@@ -217,7 +204,6 @@ func MakeTable(data [][]gem.String, width int, lineSep gem.String, header bool, 
 					cellContent = AlignLineLeft(cellData, colWidths[col])
 				}
 			}
-			fmt.Printf(">>>>>>>>>> LAID: %q\n", cellContent)
 			line = line.Add(cellContent)
 		}
 

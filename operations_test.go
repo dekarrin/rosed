@@ -2402,3 +2402,119 @@ func Test_AlignOpts(t *testing.T) {
 		})
 	}
 }
+
+func Test_InsertTable(t *testing.T) {
+	testCases := []struct {
+		name   string
+		input  string
+		pos    int
+		data   [][]string
+		width  int
+		expect string
+	}{
+		{
+			name:   "empty table",
+			input:  "",
+			pos:    0,
+			data:   [][]string{},
+			width:  60,
+			expect: "",
+		},
+		{
+			name:   "nil table",
+			input:  "",
+			pos:    0,
+			data:   nil,
+			width:  40,
+			expect: "",
+		},
+		{
+			name:  "basic table",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"Act 1", "The Note Desolation Plays", "247 pages"},
+				{"Act 2", "Raise of the Conductor's Baton", "511 pages"},
+				{"Act 3", "Insane Corkscrew Haymakers", "395 pages"},
+				{"Intermission", "Don't Bleed on the Suits", "204 pages"},
+				{"Act 4", "Flight of the Paradox Clones", "631 pages"},
+			},
+			width: 60,
+			expect: "Act 1            The Note Desolation Plays         247 pages" + DefaultLineSeparator +
+				"Act 2            Raise of the Conductor's Baton    511 pages" + DefaultLineSeparator +
+				"Act 3            Insane Corkscrew Haymakers        395 pages" + DefaultLineSeparator +
+				"Intermission     Don't Bleed on the Suits          204 pages" + DefaultLineSeparator +
+				"Act 4            Flight of the Paradox Clones      631 pages",
+		},
+		{
+			name:  "table in the middle of content",
+			input: "hello friends",
+			pos:   3,
+			data: [][]string{
+				{"Act 1", "The Note Desolation Plays", "247 pages"},
+				{"Act 2", "Raise of the Conductor's Baton", "511 pages"},
+				{"Act 3", "Insane Corkscrew Haymakers", "395 pages"},
+				{"Intermission", "Don't Bleed on the Suits", "204 pages"},
+				{"Act 4", "Flight of the Paradox Clones", "631 pages"},
+			},
+			width: 60,
+			expect: "helAct 1            The Note Desolation Plays         247 pages" + DefaultLineSeparator +
+				"Act 2            Raise of the Conductor's Baton    511 pages" + DefaultLineSeparator +
+				"Act 3            Insane Corkscrew Haymakers        395 pages" + DefaultLineSeparator +
+				"Intermission     Don't Bleed on the Suits          204 pages" + DefaultLineSeparator +
+				"Act 4            Flight of the Paradox Clones      631 pageslo friends",
+		},
+		{
+			name:  "table expands to minimum possible size if width is too small",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"Act 1", "The Note Desolation Plays", "247 pages"},
+				{"Act 2", "Raise of the Conductor's Baton", "511 pages"},
+				{"Act 3", "Insane Corkscrew Haymakers", "395 pages"},
+				{"Intermission", "Don't Bleed on the Suits", "204 pages"},
+				{"Act 4", "Flight of the Paradox Clones", "631 pages"},
+			},
+			width: 2,
+			expect: "Act 1         The Note Desolation Plays       247 pages" + DefaultLineSeparator +
+				"Act 2         Raise of the Conductor's Baton  511 pages" + DefaultLineSeparator +
+				"Act 3         Insane Corkscrew Haymakers      395 pages" + DefaultLineSeparator +
+				"Intermission  Don't Bleed on the Suits        204 pages" + DefaultLineSeparator +
+				"Act 4         Flight of the Paradox Clones    631 pages",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := Edit(tc.input).InsertTable(tc.pos, tc.data, tc.width).String()
+
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
+func Test_InsertTableOpts(t *testing.T) {
+	testCases := []struct {
+		name    string
+		input   string
+		pos     int
+		data    [][]string
+		width   int
+		options Options
+		expect  string
+	}{}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actualDirect := Edit(tc.input).InsertTableOpts(tc.pos, tc.data, tc.width, tc.options).String()
+			actualPreOpts := Edit(tc.input).WithOptions(tc.options).InsertTable(tc.pos, tc.data, tc.width).String()
+
+			assert.Equal(tc.expect, actualDirect, "InsertTableOpts(opts) check failed")
+			assert.Equal(tc.expect, actualPreOpts, "WithOptions(opts).InsertTable() check failed")
+		})
+	}
+}
