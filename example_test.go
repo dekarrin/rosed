@@ -590,7 +590,7 @@ func ExampleEditor_InsertDefinitionsTableOpts() {
 }
 
 // This example shows the creation of a table from data. Options are used to
-// control the table formatting; see [Editor.InsertTableOpts] examples for a
+// control the table formatting; see InsertTableOpts examples for a
 // demonstration of this.
 func ExampleEditor_InsertTable() {
 	data := [][]string{
