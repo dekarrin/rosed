@@ -2650,16 +2650,73 @@ func Test_InsertTableOpts(t *testing.T) {
 			},
 			expect: "SINGLE ITEM         " + DefaultLineSeparator +
 				"--------------------" + DefaultLineSeparator,
-		}, /*
-			{
-				name: "alt char set borders",
+		},
+		{
+			name:  "alt char set borders",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"Eridan", "Ampora", "Troll"},
+				{"Feferi", "Peixes", "Troll"},
+				{"Dirk", "Strider", "Human"},
+				{"Equius", "Zahhak", "Troll"},
+				{"Calliope", "", "Cherub"},
 			},
-			{
-				name: "alt char set headers",
+			width: 35,
+			options: Options{
+				TableBorders: true,
+				TableCharSet: "*I_",
 			},
-			{
-				name: "custom line separator",
-			},*/
+			expect: "*____________*__________*_________*" + DefaultLineSeparator +
+				"I Eridan     I Ampora   I Troll   I" + DefaultLineSeparator +
+				"I Feferi     I Peixes   I Troll   I" + DefaultLineSeparator +
+				"I Dirk       I Strider  I Human   I" + DefaultLineSeparator +
+				"I Equius     I Zahhak   I Troll   I" + DefaultLineSeparator +
+				"I Calliope   I          I Cherub  I" + DefaultLineSeparator +
+				"*____________*__________*_________*" + DefaultLineSeparator,
+		},
+		{
+			name:  "alt char set headers",
+			input: "",
+			pos:   0,
+			data: [][]string{
+				{"First Name", "Surname", "Species"},
+				{"Eridan", "Ampora", "Troll"},
+				{"Feferi", "Peixes", "Troll"},
+				{"Dirk", "Strider", "Human"},
+				{"Equius", "Zahhak", "Troll"},
+				{"Calliope", "", "Cherub"},
+			},
+			width: 30,
+			options: Options{
+				TableHeaders: true,
+				TableCharSet: "  =",
+			},
+			expect: "FIRST NAME   SURNAME   SPECIES" + DefaultLineSeparator +
+				"==============================" + DefaultLineSeparator +
+				"Eridan       Ampora    Troll  " + DefaultLineSeparator +
+				"Feferi       Peixes    Troll  " + DefaultLineSeparator +
+				"Dirk         Strider   Human  " + DefaultLineSeparator +
+				"Equius       Zahhak    Troll  " + DefaultLineSeparator +
+				"Calliope               Cherub " + DefaultLineSeparator,
+		},
+		{
+			name: "custom line separator",
+			data: [][]string{
+				{"Eridan", "Ampora", "Troll"},
+				{"Feferi", "Peixes", "Troll"},
+				{"Dirk", "Strider", "Human"},
+				{"Equius", "Zahhak", "Troll"},
+			},
+			width: 30,
+			options: Options{
+				LineSeparator: "<br/>\n",
+			},
+			expect: "Eridan      Ampora       Troll<br/>\n" +
+				"Feferi      Peixes       Troll<br/>\n" +
+				"Dirk        Strider      Human<br/>\n" +
+				"Equius      Zahhak       Troll<br/>\n",
+		},
 	}
 
 	for _, tc := range testCases {
