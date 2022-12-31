@@ -32,7 +32,6 @@ func CollapseSpace(text gem.String, lineSep gem.String) gem.String {
 		}
 	}
 	collapsed := spaceCollapser.ReplaceAllString(text.String(), " ")
-	//collapsed = strings.TrimSpace(collapsed)
 	return _g(collapsed)
 }
 
