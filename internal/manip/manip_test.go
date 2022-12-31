@@ -428,6 +428,7 @@ func Test_CountLeadingWhitespace(t *testing.T) {
 		expect int
 	}{
 		{"empty string", gem.Zero, 0},
+		{"only space", gem.RepeatStr(" ", 8), 8},
 		{"no leading or trailing space", gem.New("feferi peixes"), 0},
 		{"no leading space, with trailing space", gem.New("feferi peixes   "), 0},
 		{"leading space, no trailing space", gem.New(" feferi peixes"), 1},
@@ -453,6 +454,7 @@ func Test_CountTrailingWhitespace(t *testing.T) {
 		expect int
 	}{
 		{"empty string", gem.Zero, 0},
+		{"only space", gem.RepeatStr(" ", 8), 8},
 		{"no leading or trailing space", gem.New("feferi peixes"), 0},
 		{"no leading space, with trailing space", gem.New("feferi peixes   "), 3},
 		{"leading space, no trailing space", gem.New(" feferi peixes"), 0},
