@@ -12,68 +12,6 @@ import (
 	"github.com/dekarrin/rosed/internal/manip"
 )
 
-// Alignment is the type of alignment to apply to text. It is used in the
-// [Editor.Align] function.
-type Alignment int
-
-const (
-	// None is no alignment and is the zero value of an Alignment.
-	None Alignment = iota
-
-	// Left is alignment to the left side of the text.
-	Left
-
-	// Right is alignment to the right side of the text.
-	Right
-
-	// Center is alignment to the center of the text.
-	Center
-)
-
-// LineOperation is a function that accepts a zero-indexed line number and the
-// contents of that line and performs some operation to produce zero or more new
-// lines to replace the contents of the line with.
-//
-// The return value for a LineOperation is a slice of lines to insert at the
-// old line position. This can be used to delete the line or insert additional
-// new ones; to insert, include the new lines in the returned slice in the
-// proper position relative to the old line in the slice, and to delete the
-// original line, a slice with len < 1 can be returned.
-//
-// The parameter idx will always be the index of the line before any
-// transformations were applied; e.g. if used in [Editor.Apply], a call to a
-// LineOperation with idx = 4 will always be after a call with idx = 3,
-// regardless of the size of the returned slice in the prior call.
-type LineOperation func(idx int, line string) []string
-
-// ParagraphOperation is a function that accepts a zero-indexed paragraph number
-// and the contents of that paragraph and performs some operation to produce
-// zero or more new paragraphs to replace the contents of the paragraph with.
-//
-// The return value for a ParagraphOperation is a slice of paragraphs to insert
-// at the old paragraph position. This can be used to delete the paragraph or
-// insert additional new ones; to insert, include the new paragraph in the
-// returned slice in the proper position relative to the old paragraph in the
-// slice; to delete the original paragraph, a slice with len < 1 can be
-// returned.
-//
-// The parameter idx will always be the index of the paragraph before any
-// transformations were applied; e.g. if used in [Editor.ApplyParagraphs], a
-// call to a ParagraphOperation with idx = 4 will always be after a call with
-// idx = 3, regardless of the size of the returned slice in the prior call.
-//
-// The paragraphs may have additional contents at the beginning and end as part
-// of the currently defined ParagraphSeparator. In this case, such content that
-// would come at the start of the paragraph is provided in sepPrefix, and such
-// content that would come at the end of the paragraph is provied in sepSuffix.
-// These values are provided for reference within a ParagraphOperation, but a
-// ParagraphOperation should assume the caller of it will automatically add the
-// separators (which will include the affixes) as needed to the returned
-// paragraph(s).
-type ParagraphOperation func(idx int, para, sepPrefix, sepSuffix string) []string
-
-type gParagraphOperation func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String
-
 // Align makes each line follow the given alignment. If None is given for the
 // alignment, this operation has no effect. If a line is not the given width,
 // spaces are added to the unaligned-to end until the line is that width. If a
@@ -126,11 +64,11 @@ func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
 			case Left:
 				// need to get a block with suf at end of last line and pre
 				// at end of first line
-				bl = tb.New(para.Add(sepEnd), _g(opts.LineSeparator))
+				bl = tb.New(para.Add(sepEnd), gem.New(opts.LineSeparator))
 				endLineIdx := bl.Len() - 1
 				bl.Set(0, bl.Line(0).Add(sepStart))
 				bl.Apply(func(idx int, line string) []string {
-					return []string{manip.AlignLineLeft(_g(line), width).String()}
+					return []string{manip.AlignLineLeft(gem.New(line), width).String()}
 				})
 				// remove separators (if any)
 				if sepStart.Len() > 0 {
@@ -143,11 +81,11 @@ func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
 			case Right:
 				// need to get a block with suf at start of last line and pre
 				// at start of first line
-				bl = tb.New(sepStart.Add(para), _g(opts.LineSeparator))
+				bl = tb.New(sepStart.Add(para), gem.New(opts.LineSeparator))
 				endLineIdx := bl.Len() - 1
 				bl.Set(endLineIdx, sepEnd.Add(bl.Line(endLineIdx)))
 				bl.Apply(func(idx int, line string) []string {
-					return []string{manip.AlignLineRight(_g(line), width).String()}
+					return []string{manip.AlignLineRight(gem.New(line), width).String()}
 				})
 				// remove separators (if any)
 				if sepStart.Len() > 0 {
@@ -160,9 +98,9 @@ func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
 				}
 			case Center:
 				// dont pre-add anyfin so center can work its magic
-				bl = tb.New(para, _g(opts.LineSeparator))
+				bl = tb.New(para, gem.New(opts.LineSeparator))
 				bl.Apply(func(idx int, line string) []string {
-					return []string{manip.AlignLineCenter(_g(line), width).String()}
+					return []string{manip.AlignLineCenter(gem.New(line), width).String()}
 				})
 
 				// now work out how much needs to be removed from the start:
@@ -215,11 +153,11 @@ func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
 	return ed.ApplyOpts(func(idx int, line string) []string {
 		switch align {
 		case Left:
-			return []string{manip.AlignLineLeft(_g(line), width).String()}
+			return []string{manip.AlignLineLeft(gem.New(line), width).String()}
 		case Right:
-			return []string{manip.AlignLineRight(_g(line), width).String()}
+			return []string{manip.AlignLineRight(gem.New(line), width).String()}
 		case Center:
-			return []string{manip.AlignLineCenter(_g(line), width).String()}
+			return []string{manip.AlignLineCenter(gem.New(line), width).String()}
 		default:
 			return []string{line}
 		}
@@ -345,7 +283,7 @@ func (ed Editor) CollapseSpace() Editor {
 // Options for the invocation.
 func (ed Editor) CollapseSpaceOpts(opts Options) Editor {
 	opts = opts.WithDefaults()
-	ed.Text = manip.CollapseSpace(_g(ed.Text), _g(opts.LineSeparator)).String()
+	ed.Text = manip.CollapseSpace(gem.New(ed.Text), gem.New(opts.LineSeparator)).String()
 	return ed
 }
 
@@ -517,7 +455,7 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 	rightWidth := width - leftWidth - minBetween
 
 	fullTable := tb.Block{
-		LineSeparator:     _g(opts.LineSeparator),
+		LineSeparator:     gem.New(opts.LineSeparator),
 		TrailingSeparator: !opts.NoTrailingLineSeparators,
 	}
 
@@ -530,10 +468,10 @@ func (ed Editor) InsertDefinitionsTableOpts(pos int, definitions [][2]string, wi
 		}
 		leftTab := strings.Repeat(" ", termLeftTabWidth)
 		leftCol := tb.Block{
-			Lines: []gem.String{_g(fmt.Sprintf("%s%s%s", leftTab, term, rightPadding))},
+			Lines: []gem.String{gem.New(fmt.Sprintf("%s%s%s", leftTab, term, rightPadding))},
 		}
 		// subtract 2 from width so we can put in a left margin of "  "
-		rightCol := manip.Wrap(_g(def), rightWidth-2, _g(opts.LineSeparator))
+		rightCol := manip.Wrap(gem.New(def), rightWidth-2, gem.New(opts.LineSeparator))
 		rightCol.Apply(func(idx int, line string) []string {
 			if idx == 0 {
 				return []string{"- " + line}
@@ -709,8 +647,8 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 	}
 
 	opts = opts.WithDefaults()
-	leftColBlock := manip.Wrap(_g(leftText), leftColWidth, _g(opts.LineSeparator))
-	rightColBlock := manip.Wrap(_g(rightText), rightColWidth, _g(opts.LineSeparator))
+	leftColBlock := manip.Wrap(gem.New(leftText), leftColWidth, gem.New(opts.LineSeparator))
+	rightColBlock := manip.Wrap(gem.New(rightText), rightColWidth, gem.New(opts.LineSeparator))
 
 	// need to get longest left-hand line and make the space between make up for the
 	// difference
@@ -725,7 +663,7 @@ func (ed Editor) InsertTwoColumnsOpts(pos int, leftText string, rightText string
 	spaceBetween := minSpaceBetween + (leftColWidth - maxLeftColLineLen)
 
 	combinedBlock := manip.CombineColumnBlocks(leftColBlock, rightColBlock, spaceBetween)
-	combinedBlock.LineSeparator = _g(opts.LineSeparator)
+	combinedBlock.LineSeparator = gem.New(opts.LineSeparator)
 	combinedBlock.TrailingSeparator = !opts.NoTrailingLineSeparators
 
 	return ed.Insert(pos, combinedBlock.Join().String())
@@ -779,12 +717,12 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 			sepStart := gem.RepeatStr("A", pre.Len())
 			sepEnd := gem.RepeatStr("A", suf.Len())
 
-			bl := tb.New(sepStart.Add(para).Add(sepEnd), _g(opts.LineSeparator))
+			bl := tb.New(sepStart.Add(para).Add(sepEnd), gem.New(opts.LineSeparator))
 			bl.Apply(func(idx int, line string) []string {
 				if !opts.JustifyLastLine && idx == bl.Len()-1 {
 					return []string{line}
 				}
-				return []string{manip.JustifyLine(_g(line), width).String()}
+				return []string{manip.JustifyLine(gem.New(line), width).String()}
 			})
 			text := bl.Join()
 
@@ -804,7 +742,7 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 		}
 
 		ed = ed.ApplyOpts(func(idx int, line string) []string {
-			return []string{manip.JustifyLine(_g(line), width).String()}
+			return []string{manip.JustifyLine(gem.New(line), width).String()}
 		}, opts)
 
 		if !opts.JustifyLastLine {
@@ -878,82 +816,19 @@ func (ed Editor) WrapOpts(width int, opts Options) Editor {
 			// not intended. come back and verify
 			sepStart := gem.RepeatStr("", sepPrefix.Len())
 			sepEnd := gem.RepeatStr("", sepSuffix.Len())
-			textBlock := manip.Wrap(sepStart.Add(para).Add(sepEnd), width, _g(opts.LineSeparator))
+			textBlock := manip.Wrap(sepStart.Add(para).Add(sepEnd), width, gem.New(opts.LineSeparator))
 			text := textBlock.Join()
 			return []gem.String{text}
 		}, opts)
 		return edi
 	}
 
-	textBlock := manip.Wrap(_g(ed.Text), width, _g(opts.LineSeparator))
+	textBlock := manip.Wrap(gem.New(ed.Text), width, gem.New(opts.LineSeparator))
 	text := textBlock.Join()
 	if strings.HasSuffix(ed.Text, opts.LineSeparator) {
-		text = text.Add(_g(opts.LineSeparator))
+		text = text.Add(gem.New(opts.LineSeparator))
 	}
 
 	ed.Text = text.String()
-	return ed
-}
-
-func (ed Editor) applyGParagraphsOpts(op gParagraphOperation, opts Options) Editor {
-	opts = opts.WithDefaults()
-
-	paraSep := opts.ParagraphSeparator
-	lineSep := opts.LineSeparator
-
-	// if we had negative lookahead we would just do a regexp.Split on the text
-	// on ParagraphSeparator(?!LineSeparator). unfortunately this requires an
-	// external library; the standard library regexp does not support zero-width
-	// lookaround assertions.
-	//
-	// instead we will check if the ambiguous sequence is possible, and if so,
-	// each paragraph will check to see if its last separator was "stolen" by
-	// the next paragraph.
-	//
-	// first we note whether the case is even possible:
-	ambigSepSequencePossible := paraSep+lineSep == lineSep+paraSep
-
-	// split the paragraph separator about its line separators so we can see any
-	// extra chars that will be chopped off while in a preserve-mode operation
-	// that messes with line separators
-	var paraSepPrevSuffix, paraSepNextPrefix gem.String
-	parts := strings.Split(opts.ParagraphSeparator, opts.LineSeparator)
-
-	paraSepPrevSuffix = _g(parts[0])
-	if len(parts) > 1 {
-		paraSepNextPrefix = _g(parts[len(parts)-1])
-	}
-
-	paragraphs := strings.Split(ed.Text, opts.ParagraphSeparator)
-	transformed := make([]string, 0, len(paragraphs))
-	for idx, para := range paragraphs {
-		// the first one will not have the prev
-		var paraPre, paraSuf gem.String
-		if idx != 0 {
-			paraPre = paraSepNextPrefix
-		}
-		if idx != len(paragraphs)-1 {
-			paraSuf = paraSepPrevSuffix
-
-			// additionally, look ahead to see if a trailing lineSep got chopped
-			// to the next paragraph, if we have a set of separators where that
-			// is possible.
-			if ambigSepSequencePossible {
-				if strings.HasPrefix(paragraphs[idx+1], opts.LineSeparator) {
-					paragraphs[idx+1] = paragraphs[idx+1][len(opts.LineSeparator):]
-					para = para + opts.LineSeparator
-				}
-			}
-		}
-
-		nextParas := op(idx, _g(para), paraPre, paraSuf)
-
-		if len(nextParas) > 0 {
-			transformed = append(transformed, gem.Strings(nextParas)...)
-		}
-	}
-
-	ed.Text = strings.Join(transformed, opts.ParagraphSeparator)
-
 	return ed
 }
