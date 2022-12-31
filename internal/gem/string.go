@@ -179,7 +179,8 @@ func (str String) Index(s String) int {
 
 // IndexFunc returns the index into str of the first grapheme cluster gc
 // satisfying f(gc), or -1 if none do. The checking function f will be called
-// with each grapheme cluster from left to right.
+// with each grapheme cluster from left to right. The argument provided to f is
+// guaranteed to be a non-nil []rune containing at least one element.
 func (str String) IndexFunc(f func([]rune) bool) int {
 	str = str.initialized()
 
@@ -227,7 +228,8 @@ func (str String) LastIndex(s String) int {
 
 // LastIndexFunc returns the index into str of the last grapheme cluster gc
 // satisfying f(gc), or -1 if none do. The checking function f will be called
-// with each grapheme cluster from right to left.
+// with each grapheme cluster from right to left. The argument provided to f is
+// guaranteed to be a non-nil []rune containing at least one element.
 func (str String) LastIndexFunc(f func([]rune) bool) int {
 	revStr := str.Reverse()
 

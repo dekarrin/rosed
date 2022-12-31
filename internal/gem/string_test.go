@@ -2,6 +2,7 @@ package gem
 
 import (
 	"testing"
+	"unicode"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -436,6 +437,44 @@ func Test_String_Index(t *testing.T) {
 			assert := assert.New(t)
 
 			actual := tc.str.Index(tc.search)
+
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
+func Test_String_IndexFunc(t *testing.T) {
+	testCases := []struct {
+		name   string
+		str    String
+		f      func([]rune) bool
+		expect int
+	}{
+		{
+			name:   "empty string always returns -1",
+			str:    Zero,
+			f:      func([]rune) bool { return true },
+			expect: -1,
+		},
+		{
+			name:   "matching func",
+			str:    New("gallowsCalibrator arachnidsGrip"),
+			f:      func(gc []rune) bool { return unicode.IsUpper(gc[0]) },
+			expect: 7,
+		},
+		{
+			name:   "non-matching func",
+			str:    New("several letters but an upper-case 'z' is not one"),
+			f:      func(gc []rune) bool { return string(gc) == "Z" },
+			expect: -1,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := tc.str.IndexFunc(tc.f)
 
 			assert.Equal(tc.expect, actual)
 		})
