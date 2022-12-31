@@ -297,6 +297,22 @@ func New(s string) String {
 	return String{r: []rune(s), gc: new([]int)}
 }
 
+// Repeat returns a new String consisting of count copies of the String s.
+func Repeat(s String, count int) String {
+	repeated := Zero
+	for i := 0; i < count; i++ {
+		repeated = repeated.Add(s)
+	}
+	return repeated
+}
+
+// RepeatStr returns a new String consisting of count copies of the string s. It
+// is exactly the same as [Repeat] but it allows the user to pass in a regular
+// string.
+func RepeatStr(s string, count int) String {
+	return Repeat(New(s), count)
+}
+
 // Slice turns the from slice into a slice of String objects.
 func Slice(from []string) []String {
 	str := make([]String, len(from))

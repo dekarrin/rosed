@@ -6,6 +6,42 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_Repeat(t *testing.T) {
+	testCases := []struct {
+		name   string
+		s      String
+		count  int
+		expect String
+	}{
+		{"repeat empty string -1 times", Zero, -1, Zero},
+		{"repeat empty string 0 times", Zero, 0, Zero},
+		{"repeat empty string 1 time", Zero, 1, Zero},
+		{"repeat empty string 2 times", Zero, 2, Zero},
+		{"repeat empty string 3 times", Zero, 3, Zero},
+		{"repeat single char string -1 times", New("8"), -1, Zero},
+		{"repeat single char string 0 times", New("8"), 0, Zero},
+		{"repeat single char string 1 time", New("8"), 1, New("8")},
+		{"repeat single char string 2 times", New("8"), 2, New("88")},
+		{"repeat single char string 3 times", New("8"), 3, New("888")},
+		{"repeat multi char string -1 times", New("BLUH"), -1, Zero},
+		{"repeat multi char string 0 times", New("BLUH"), 0, Zero},
+		{"repeat multi char string 1 time", New("BLUH"), 1, New("BLUH")},
+		{"repeat multi char string 2 times", New("BLUH"), 2, New("BLUHBLUH")},
+		{"repeat multi char string 3 times", New("BLUH"), 3, New("BLUHBLUHBLUH")},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := Repeat(tc.s, tc.count)
+
+			assert.True(tc.expect.Equal(actual))
+			assert.Equal(tc.expect.String(), actual.String())
+		})
+	}
+}
+
 func Test_Strings(t *testing.T) {
 	testCases := []struct {
 		name   string

@@ -212,7 +212,7 @@ func AlignLineLeft(text gem.String, width int) gem.String {
 	if extraNeeded > 0 {
 		spaceLen = extraNeeded
 	}
-	trailingSpace := gem.New(strings.Repeat(" ", spaceLen))
+	trailingSpace := gem.RepeatStr(" ", spaceLen)
 	text = endingText.Add(trailingSpace)
 
 	return text
@@ -241,7 +241,7 @@ func AlignLineRight(text gem.String, width int) gem.String {
 	if extraNeeded > 0 {
 		spaceLen = extraNeeded
 	}
-	leadingSpace := gem.New(strings.Repeat(" ", spaceLen))
+	leadingSpace := gem.RepeatStr(" ", spaceLen)
 	text = leadingSpace.Add(startingText)
 
 	return text
@@ -273,8 +273,8 @@ func AlignLineCenter(text gem.String, width int) gem.String {
 	rightSpaceNeeded := spaceNeeded / 2
 	leftSpaceNeeded := spaceNeeded - rightSpaceNeeded
 
-	leftSpace := gem.New(strings.Repeat(" ", leftSpaceNeeded))
-	rightSpace := gem.New(strings.Repeat(" ", rightSpaceNeeded))
+	leftSpace := gem.RepeatStr(" ", leftSpaceNeeded)
+	rightSpace := gem.RepeatStr(" ", rightSpaceNeeded)
 
 	text = leftSpace.Add(midText).Add(rightSpace)
 
