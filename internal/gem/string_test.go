@@ -7,6 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func intSliceRef(to ...int) *[]int {
+	return &to
+}
+
 func Test_New(t *testing.T) {
 	testCases := []struct {
 		name   string
@@ -256,13 +260,34 @@ func Test_String_Reverse(t *testing.T) {
 		expect String
 	}{
 		{"empty string", Zero, Zero},
-		{"single-rune string", New("1"), New("1")},
-		{"single-grapheme, multi-rune string", New("C\u0327"), New("C\u0327")},
-		{"multi-grapheme string, odd count", New("kcutsemoh"), New("homestuck")},
-		{"multi-grapheme string, even count", New("bulg"), New("glub")},
-		{"anagram check, odd count", New("RACECAR"), New("RACECAR")},
-		{"anagram check, even count", New("HANNAH"), New("HANNAH")},
-		{"multiple multi-rune graphemes", New("Zero:\u0030\uFE0F\u20E3, Num:\u0023\uFE0F\u20E3"), New("\u0023\uFE0F\u20E3:muN ,\u0030\uFE0F\u20E3:oreZ")},
+		{"single-rune string", New("1"), String{
+			r:  []rune{'1'},
+			gc: intSliceRef(1),
+		}},
+		{"single-grapheme, multi-rune string", New("C\u0327"), String{
+			r:  []rune{'C', '\u0327'},
+			gc: intSliceRef(2),
+		}},
+		{"multi-grapheme string, odd count", New("kcutsemoh"), String{
+			r:  []rune{'h', 'o', 'm', 'e', 's', 't', 'u', 'c', 'k'},
+			gc: intSliceRef(1, 2, 3, 4, 5, 6, 7, 8, 9),
+		}},
+		{"multi-grapheme string, even count", New("bulg"), String{
+			r:  []rune{'g', 'l', 'u', 'b'},
+			gc: intSliceRef(1, 2, 3, 4),
+		}},
+		{"anagram check, odd count", New("RACECAR"), String{
+			r:  []rune{'R', 'A', 'C', 'E', 'C', 'A', 'R'},
+			gc: intSliceRef(1, 2, 3, 4, 5, 6, 7),
+		}},
+		{"anagram check, even count", New("HANNAH"), String{
+			r:  []rune{'H', 'A', 'N', 'N', 'A', 'H'},
+			gc: intSliceRef(1, 2, 3, 4, 5, 6),
+		}},
+		{"multiple multi-rune graphemes", New("Zero:\u0030\uFE0F\u20E3, Num:\u0023\uFE0F\u20E3"), String{
+			r:  []rune{'\u0023', '\uFE0F', '\u20E3', ':', 'm', 'u', 'N', ' ', ',', '\u0030', '\uFE0F', '\u20E3', ':', 'o', 'r', 'e', 'Z'},
+			gc: intSliceRef(3, 4, 5, 6, 7, 8, 9, 12, 13, 14, 15, 16, 17),
+		}},
 	}
 
 	for _, tc := range testCases {
@@ -271,10 +296,7 @@ func Test_String_Reverse(t *testing.T) {
 
 			actual := tc.str.Reverse()
 
-			// need to check that Equal properly returns true but the 2nd
-			// check helps readability for when it fails
-			assert.True(tc.expect.Equal(actual))
-			assert.Equal(tc.expect.String(), actual.String())
+			assert.Equal(tc.expect, actual)
 		})
 	}
 }
@@ -475,6 +497,40 @@ func Test_String_IndexFunc(t *testing.T) {
 			assert := assert.New(t)
 
 			actual := tc.str.IndexFunc(tc.f)
+
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
+func Test_String_LastIndex(t *testing.T) {
+	testCases := []struct {
+		name   string
+		str    String
+		search String
+		expect int
+	}{
+		{"empty string in empty string", Zero, Zero, -1},
+		{"empty string in non-empty string", New("TEST"), Zero, 4},
+		{"long string in short string", New("GLUB"), New("GLUUUUUUUB"), -1},
+		{"not present", New("Some long string"), New("GLUB"), -1},
+		{"exact match", New("GLUB"), New("GLUB"), 0},
+		{"single-char search, is at start", New("GLUB"), New("G"), 0},
+		{"multi-char search, is at start", New("GLUB"), New("GLU"), 0},
+		{"single-char search, is in middle", New("Just go glub at it! glub yeah!"), New("g"), 20},
+		{"multi-char search, is in middle", New("Just go glub at it! glub yeah!"), New("glub"), 20},
+		{"false match, is in middle", New("Just glue glub on it! glub elub!"), New("glub"), 22},
+		{"single-char search, is at end", New("say GLUB"), New("B"), 7},
+		{"multi-char search, is at end", New("say GLUB"), New("GLUB"), 4},
+		{"search has multi-rune grapheme", New("I said that \u0023\uFE0F\u20E3 is # but in emote form"), New("that \u0023\uFE0F\u20E3 is #"), 7},
+		{"text has multi-rune graphemes before match", New("\u0023\uFE0F\u20E3 is an emoji"), New("is"), 2},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := tc.str.LastIndex(tc.search)
 
 			assert.Equal(tc.expect, actual)
 		})

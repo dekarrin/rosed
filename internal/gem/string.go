@@ -2,6 +2,7 @@ package gem
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/dekarrin/rosed/internal/util"
 )
@@ -141,26 +142,38 @@ func (str String) GraphemeIndexes() [][]int {
 }
 
 // Index returns the index of the first instance of s in str, or -1 if s is not
-// present in str.
+// present in str. Returns -1 if str is empty, returns 0 if str is not empty and
+// s is empty.
 func (str String) Index(s String) int {
 	str = str.initialized()
 	s = s.initialized()
 
+	fmt.Printf("%q.Index(%q):\n", str, s)
+
 	for i := 0; i < str.Len(); i++ {
 		// putting this here instead of the loop conditional to make it more
 		// readable
+		fmt.Printf("  [%d]: ", i)
 		remainingToCheck := str.Len() - i
 		if remainingToCheck < s.Len() {
+			fmt.Printf("remainingToCheck=%d so breaking, not found\n", remainingToCheck)
 			break
 		}
 
 		var skip int
 		var mismatch bool
 		for j := 0; j < s.Len(); j++ {
+			fmt.Printf("(str.CharAt(%d), s.CharAt(%d)) ", i+j, j)
 			checkChar := str.CharAt(i + j)
 			otherChar := s.CharAt(j)
 
 			if !graphemesEqual(checkChar, otherChar) {
+				fmt.Printf("not equal:\n")
+				fmt.Printf("    %s\n", str)
+				indent := strings.Repeat(" ", i)
+				fmt.Printf("    %s%s\n", indent, s)
+				mismatchIndent := strings.Repeat(" ", j)
+				fmt.Printf("    %s%s^\n", indent, mismatchIndent)
 				mismatch = true
 				skip = j
 				break
@@ -168,6 +181,8 @@ func (str String) Index(s String) int {
 		}
 
 		if !mismatch {
+			fmt.Printf("MATCH:\n")
+			fmt.Printf("    %s[%s]%s\n", str.Sub(0, i), str.Sub(i, i+s.Len()), str.Sub(i+s.Len(), str.Len()))
 			return i
 		}
 
@@ -202,16 +217,9 @@ func (str String) IsEmpty() bool {
 }
 
 // LastIndex returns the index of the last instance of s in str, or -1 if s is
-// not present in str. Returns -1 if str is empty, returns 0 if str is not empty
-// and s is empty.
+// not present in str. Returns -1 if str is empty, returns str.Len() if str is
+// not empty and s is empty.
 func (str String) LastIndex(s String) int {
-	// TODO: remove special cases and see if the algo still holds
-	if str.IsEmpty() {
-		return -1
-	}
-	if s.IsEmpty() {
-		return 0
-	}
 	revStr := str.Reverse()
 	revSubstr := s.Reverse()
 
@@ -308,7 +316,9 @@ func (str String) Reverse() String {
 		for j := 0; j < len(cluster); j++ {
 			reversed.r[runeCur+j] = cluster[j]
 		}
-		(*reversed.gc)[i] = runeCur + len(cluster)
+
+		revIdx := (str.Len() - 1) - i
+		(*reversed.gc)[revIdx] = runeCur + len(cluster)
 
 		runeCur += len(cluster)
 	}
