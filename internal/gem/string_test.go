@@ -424,9 +424,10 @@ func Test_String_Index(t *testing.T) {
 		{"multi-char search, is at start", New("GLUB"), New("GLU"), 0},
 		{"single-char search, is in middle", New("Just go glub at it! glub glub!"), New("g"), 5},
 		{"multi-char search, is in middle", New("Just go glub at it! glub glub!"), New("glub"), 8},
+		{"false match, is in middle", New("Just glue glub on it! glub glub!"), New("glub"), 10},
 		{"single-char search, is at end", New("say GLUB"), New("B"), 7},
 		{"multi-char search, is at end", New("say GLUB"), New("GLUB"), 4},
-		{"search has multi-rune grapheme", New("I said that \u0023\uFE0F\u20E3 is # but in emote form"), New("that \u0023\uFE0F\u20E3 is #"), 9},
+		{"search has multi-rune grapheme", New("I said that \u0023\uFE0F\u20E3 is # but in emote form"), New("that \u0023\uFE0F\u20E3 is #"), 7},
 		{"text has multi-rune graphemes before match", New("\u0023\uFE0F\u20E3 is an emoji"), New("is"), 2},
 	}
 

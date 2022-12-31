@@ -163,6 +163,7 @@ func (str String) Index(s String) int {
 			if !graphemesEqual(checkChar, otherChar) {
 				mismatch = true
 				skip = j
+				break
 			}
 		}
 
