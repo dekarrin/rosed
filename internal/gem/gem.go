@@ -58,3 +58,19 @@ func Strings(from []String) []string {
 	}
 	return str
 }
+
+// returns whether two grapheme clusters returned by CharAt and other functions
+// are equal.
+func graphemesEqual(gc1, gc2 []rune) bool {
+	if len(gc1) != len(gc2) {
+		return false
+	}
+
+	for i := range gc1 {
+		if gc1[i] != gc2[i] {
+			return false
+		}
+	}
+
+	return true
+}

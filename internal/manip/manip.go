@@ -32,7 +32,6 @@ func CollapseSpace(text gem.String, lineSep gem.String) gem.String {
 		}
 	}
 	collapsed := spaceCollapser.ReplaceAllString(text.String(), " ")
-	//collapsed = strings.TrimSpace(collapsed)
 	return _g(collapsed)
 }
 
@@ -284,23 +283,22 @@ func AlignLineCenter(text gem.String, width int) gem.String {
 // CountLeadingWhitespace counts the number of ws characters at the front of the
 // string.
 func CountLeadingWhitespace(text gem.String) int {
-	for i := 0; i < text.Len(); i++ {
-		if !unicode.IsSpace(text.CharAt(i)[0]) {
-			return i
-		}
+	firstIndex := text.IndexFunc(func(gc []rune) bool {
+		return !unicode.IsSpace(gc[0])
+	})
+	if firstIndex == -1 {
+		return text.Len()
 	}
-	return 0
+	return firstIndex
 }
 
 // CountTrailingWhitespace counts the number of ws characters at the end of the
 // string.
 func CountTrailingWhitespace(text gem.String) int {
-	for i := text.Len() - 1; i >= 0; i-- {
-		if !unicode.IsSpace(text.CharAt(i)[0]) {
-			return text.Len() - (i + 1)
-		}
-	}
-	return 0
+	lastIndex := text.LastIndexFunc(func(gc []rune) bool {
+		return !unicode.IsSpace(gc[0])
+	})
+	return text.Len() - lastIndex - 1
 }
 
 func _g(s string) gem.String {

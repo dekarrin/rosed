@@ -2,9 +2,14 @@ package gem
 
 import (
 	"testing"
+	"unicode"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func intSliceRef(to ...int) *[]int {
+	return &to
+}
 
 func Test_New(t *testing.T) {
 	testCases := []struct {
@@ -248,6 +253,54 @@ func Test_String_SetCharAt(t *testing.T) {
 	}
 }
 
+func Test_String_Reverse(t *testing.T) {
+	testCases := []struct {
+		name   string
+		str    String
+		expect String
+	}{
+		{"empty string", Zero, Zero},
+		{"single-rune string", New("1"), String{
+			r:  []rune{'1'},
+			gc: intSliceRef(1),
+		}},
+		{"single-grapheme, multi-rune string", New("C\u0327"), String{
+			r:  []rune{'C', '\u0327'},
+			gc: intSliceRef(2),
+		}},
+		{"multi-grapheme string, odd count", New("kcutsemoh"), String{
+			r:  []rune{'h', 'o', 'm', 'e', 's', 't', 'u', 'c', 'k'},
+			gc: intSliceRef(1, 2, 3, 4, 5, 6, 7, 8, 9),
+		}},
+		{"multi-grapheme string, even count", New("bulg"), String{
+			r:  []rune{'g', 'l', 'u', 'b'},
+			gc: intSliceRef(1, 2, 3, 4),
+		}},
+		{"anagram check, odd count", New("RACECAR"), String{
+			r:  []rune{'R', 'A', 'C', 'E', 'C', 'A', 'R'},
+			gc: intSliceRef(1, 2, 3, 4, 5, 6, 7),
+		}},
+		{"anagram check, even count", New("HANNAH"), String{
+			r:  []rune{'H', 'A', 'N', 'N', 'A', 'H'},
+			gc: intSliceRef(1, 2, 3, 4, 5, 6),
+		}},
+		{"multiple multi-rune graphemes", New("Zero:\u0030\uFE0F\u20E3, Num:\u0023\uFE0F\u20E3"), String{
+			r:  []rune{'\u0023', '\uFE0F', '\u20E3', ':', 'm', 'u', 'N', ' ', ',', '\u0030', '\uFE0F', '\u20E3', ':', 'o', 'r', 'e', 'Z'},
+			gc: intSliceRef(3, 4, 5, 6, 7, 8, 9, 12, 13, 14, 15, 16, 17),
+		}},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := tc.str.Reverse()
+
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
 func Test_String_Runes(t *testing.T) {
 	testCases := []struct {
 		name   string
@@ -374,6 +427,150 @@ func Test_String_Sub(t *testing.T) {
 			isEqual := actual.Equal(tc.expect)
 
 			assert.Equal(true, isEqual)
+		})
+	}
+}
+
+func Test_String_Index(t *testing.T) {
+	testCases := []struct {
+		name   string
+		str    String
+		search String
+		expect int
+	}{
+		{"empty string in empty string", Zero, Zero, -1},
+		{"empty string in non-empty string", New("TEST"), Zero, 0},
+		{"long string in short string", New("GLUB"), New("GLUUUUUUUB"), -1},
+		{"not present", New("Some long string"), New("GLUB"), -1},
+		{"exact match", New("GLUB"), New("GLUB"), 0},
+		{"single-char search, is at start", New("GLUB"), New("G"), 0},
+		{"multi-char search, is at start", New("GLUB"), New("GLU"), 0},
+		{"single-char search, is in middle", New("Just go glub at it! glub glub!"), New("g"), 5},
+		{"multi-char search, is in middle", New("Just go glub at it! glub glub!"), New("glub"), 8},
+		{"false match, is in middle", New("Just glue glub on it! glub glub!"), New("glub"), 10},
+		{"single-char search, is at end", New("say GLUB"), New("B"), 7},
+		{"multi-char search, is at end", New("say GLUB"), New("GLUB"), 4},
+		{"search has multi-rune grapheme", New("I said that \u0023\uFE0F\u20E3 is # but in emote form"), New("that \u0023\uFE0F\u20E3 is #"), 7},
+		{"text has multi-rune graphemes before match", New("\u0023\uFE0F\u20E3 is an emoji"), New("is"), 2},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := tc.str.Index(tc.search)
+
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
+func Test_String_IndexFunc(t *testing.T) {
+	testCases := []struct {
+		name   string
+		str    String
+		f      func([]rune) bool
+		expect int
+	}{
+		{
+			name:   "empty string always returns -1",
+			str:    Zero,
+			f:      func([]rune) bool { return true },
+			expect: -1,
+		},
+		{
+			name:   "matching func",
+			str:    New("gallowsCalibrator arachnidsGrip"),
+			f:      func(gc []rune) bool { return unicode.IsUpper(gc[0]) },
+			expect: 7,
+		},
+		{
+			name:   "non-matching func",
+			str:    New("several letters but an upper-case 'z' is not one"),
+			f:      func(gc []rune) bool { return string(gc) == "Z" },
+			expect: -1,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := tc.str.IndexFunc(tc.f)
+
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
+func Test_String_LastIndex(t *testing.T) {
+	testCases := []struct {
+		name   string
+		str    String
+		search String
+		expect int
+	}{
+		{"empty string in empty string", Zero, Zero, -1},
+		{"empty string in non-empty string", New("TEST"), Zero, 4},
+		{"long string in short string", New("GLUB"), New("GLUUUUUUUB"), -1},
+		{"not present", New("Some long string"), New("GLUB"), -1},
+		{"exact match", New("GLUB"), New("GLUB"), 0},
+		{"single-char search, is at start", New("GLUB"), New("G"), 0},
+		{"multi-char search, is at start", New("GLUB"), New("GLU"), 0},
+		{"single-char search, is in middle", New("Just go glub at it! glub yeah!"), New("g"), 20},
+		{"multi-char search, is in middle", New("Just go glub at it! glub yeah!"), New("glub"), 20},
+		{"false match, is in middle", New("Just glue glub on it! glub elub!"), New("glub"), 22},
+		{"single-char search, is at end", New("say GLUB"), New("B"), 7},
+		{"multi-char search, is at end", New("say GLUB"), New("GLUB"), 4},
+		{"search has multi-rune grapheme", New("I said that \u0023\uFE0F\u20E3 is # but in emote form"), New("that \u0023\uFE0F\u20E3 is #"), 7},
+		{"text has multi-rune graphemes before match", New("\u0023\uFE0F\u20E3 is an emoji"), New("is"), 2},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := tc.str.LastIndex(tc.search)
+
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
+
+func Test_String_LastIndexFunc(t *testing.T) {
+	testCases := []struct {
+		name   string
+		str    String
+		f      func([]rune) bool
+		expect int
+	}{
+		{
+			name:   "empty string always returns -1",
+			str:    Zero,
+			f:      func([]rune) bool { return true },
+			expect: -1,
+		},
+		{
+			name:   "matching func",
+			str:    New("gallowsCalibrator arachnidsGrip"),
+			f:      func(gc []rune) bool { return unicode.IsUpper(gc[0]) },
+			expect: 27,
+		},
+		{
+			name:   "non-matching func",
+			str:    New("several letters but an upper-case 'z' is not one"),
+			f:      func(gc []rune) bool { return string(gc) == "Z" },
+			expect: -1,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := tc.str.LastIndexFunc(tc.f)
+
+			assert.Equal(tc.expect, actual)
 		})
 	}
 }

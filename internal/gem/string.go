@@ -2,6 +2,7 @@ package gem
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/dekarrin/rosed/internal/util"
 )
@@ -140,11 +141,114 @@ func (str String) GraphemeIndexes() [][]int {
 	return indexes
 }
 
+// Index returns the index of the first instance of s in str, or -1 if s is not
+// present in str. Returns -1 if str is empty, returns 0 if str is not empty and
+// s is empty.
+func (str String) Index(s String) int {
+	str = str.initialized()
+	s = s.initialized()
+
+	fmt.Printf("%q.Index(%q):\n", str, s)
+
+	for i := 0; i < str.Len(); i++ {
+		// putting this here instead of the loop conditional to make it more
+		// readable
+		fmt.Printf("  [%d]: ", i)
+		remainingToCheck := str.Len() - i
+		if remainingToCheck < s.Len() {
+			fmt.Printf("remainingToCheck=%d so breaking, not found\n", remainingToCheck)
+			break
+		}
+
+		var skip int
+		var mismatch bool
+		for j := 0; j < s.Len(); j++ {
+			fmt.Printf("(str.CharAt(%d), s.CharAt(%d)) ", i+j, j)
+			checkChar := str.CharAt(i + j)
+			otherChar := s.CharAt(j)
+
+			if !graphemesEqual(checkChar, otherChar) {
+				fmt.Printf("not equal:\n")
+				fmt.Printf("    %s\n", str)
+				indent := strings.Repeat(" ", i)
+				fmt.Printf("    %s%s\n", indent, s)
+				mismatchIndent := strings.Repeat(" ", j)
+				fmt.Printf("    %s%s^\n", indent, mismatchIndent)
+				mismatch = true
+				skip = j
+				break
+			}
+		}
+
+		if !mismatch {
+			fmt.Printf("MATCH:\n")
+			fmt.Printf("    %s[%s]%s\n", str.Sub(0, i), str.Sub(i, i+s.Len()), str.Sub(i+s.Len(), str.Len()))
+			return i
+		}
+
+		i += skip
+	}
+
+	return -1
+}
+
+// IndexFunc returns the index into str of the first grapheme cluster gc
+// satisfying f(gc), or -1 if none do. The checking function f will be called
+// with each grapheme cluster from left to right. The argument provided to f is
+// guaranteed to be a non-nil []rune containing at least one element.
+func (str String) IndexFunc(f func([]rune) bool) int {
+	str = str.initialized()
+
+	for i := 0; i < str.Len(); i++ {
+		gc := str.CharAt(i)
+		if f(gc) {
+			return i
+		}
+	}
+
+	return -1
+}
+
 // IsEmpty return whether the String is the empty string "".
 func (str String) IsEmpty() bool {
 	str = str.initialized()
 
 	return len(str.r) == 0
+}
+
+// LastIndex returns the index of the last instance of s in str, or -1 if s is
+// not present in str. Returns -1 if str is empty, returns str.Len() if str is
+// not empty and s is empty.
+func (str String) LastIndex(s String) int {
+	revStr := str.Reverse()
+	revSubstr := s.Reverse()
+
+	revMatchEndIdx := revStr.Index(revSubstr)
+	if revMatchEndIdx == -1 {
+		return -1
+	}
+
+	matchEndIdx := (str.Len() - 1) - revMatchEndIdx
+	matchStartIdx := matchEndIdx - (s.Len() - 1)
+
+	return matchStartIdx
+}
+
+// LastIndexFunc returns the index into str of the last grapheme cluster gc
+// satisfying f(gc), or -1 if none do. The checking function f will be called
+// with each grapheme cluster from right to left. The argument provided to f is
+// guaranteed to be a non-nil []rune containing at least one element.
+func (str String) LastIndexFunc(f func([]rune) bool) int {
+	revStr := str.Reverse()
+
+	revIdx := revStr.IndexFunc(f)
+	if revIdx == -1 {
+		return -1
+	}
+
+	idx := (str.Len() - 1) - revIdx
+
+	return idx
 }
 
 // Len returns the number of grapheme clusters (user-perceivable characters)
@@ -193,6 +297,33 @@ func (str String) Less(s String) bool {
 
 	// if it is shorter, then it is less
 	return minLen == len(str.r)
+}
+
+// Reverse returns a copy of str with grapheme clusters in reverse order.
+func (str String) Reverse() String {
+	str = str.initialized()
+
+	if *str.gc == nil {
+		*str.gc = Split(str.r)
+	}
+
+	reversed := str.clone()
+
+	runeCur := 0
+	for i := str.Len() - 1; i >= 0; i-- {
+		cluster := str.CharAt(i)
+
+		for j := 0; j < len(cluster); j++ {
+			reversed.r[runeCur+j] = cluster[j]
+		}
+
+		revIdx := (str.Len() - 1) - i
+		(*reversed.gc)[revIdx] = runeCur + len(cluster)
+
+		runeCur += len(cluster)
+	}
+
+	return reversed
 }
 
 // Runes returns the string's raw Runes. Modifying the returned slice has no
