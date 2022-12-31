@@ -173,7 +173,7 @@ func Wrap(text gem.String, width int, lineSep gem.String) tb.Block {
 	for i := 0; i < toConsume.Len(); i++ {
 		ch := toConsume.CharAt(i)
 		if ch[0] == ' ' {
-			curLine = appendWordToLine(&lines, curWord, curLine, width)
+			curLine = appendWordToWrappedLine(&lines, curWord, curLine, width)
 			curWord = gem.Zero
 		} else {
 			curWord = curWord.Add(gem.New(string(ch)))
@@ -181,7 +181,7 @@ func Wrap(text gem.String, width int, lineSep gem.String) tb.Block {
 	}
 
 	if !curWord.IsEmpty() {
-		curLine = appendWordToLine(&lines, curWord, curLine, width)
+		curLine = appendWordToWrappedLine(&lines, curWord, curLine, width)
 	}
 
 	if !curLine.IsEmpty() {
@@ -305,10 +305,7 @@ func CountTrailingWhitespace(text gem.String) int {
 // would make the width of curLine too long, in which case curLine is put into
 // the lines, curLine is reset, curWord is added to the curLine. Lines will be
 // modified to add the appended line if curLine is full.
-//
-// TODO: this is part of a wrapping operation. Consider renaming because as is
-// it does not appear to have anything to do with it.
-func appendWordToLine(lines *tb.Block, curWord gem.String, curLine gem.String, width int) (newCurLine gem.String) {
+func appendWordToWrappedLine(lines *tb.Block, curWord gem.String, curLine gem.String, width int) (newCurLine gem.String) {
 	// any width less than 2 is not possible and will result in an infinite loop,
 	// as at least one character is required for next in word, and one character for
 	// line continuation.

@@ -11,6 +11,12 @@ import (
 	"github.com/dekarrin/rosed/internal/tb"
 )
 
+type tableCharSet struct {
+	corner gem.String
+	vert   gem.String
+	horz   gem.String
+}
+
 // MakeTable creates a table from the given slice of rows, where each row
 // is a slice of column content.
 //
@@ -29,9 +35,6 @@ import (
 //
 // border is whether to have a border
 func MakeTable(data [][]gem.String, width int, lineSep gem.String, header bool, border bool, charSet gem.String) tb.Block {
-	// TODO: clean up, this function is huge and probably could be broken down
-	// for readability sake even if constituent parts turns out to not be very
-	// re-usable
 	const minNonBorderInterColumnPadding = 2
 
 	// sanity check table input
@@ -53,16 +56,7 @@ func MakeTable(data [][]gem.String, width int, lineSep gem.String, header bool, 
 	}
 
 	// if charSet is incomplete, set it to defaults
-	if charSet.Len() < 3 {
-		defaultSet := gem.New("+|-")
-		toAdd := defaultSet.Sub(0, 3-charSet.Len())
-		charSet = charSet.Add(toAdd)
-	} else if charSet.Len() > 3 {
-		charSet = charSet.Sub(0, 3)
-	}
-	cornerChar := charSet.Sub(0, 1)
-	vertChar := charSet.Sub(1, 2)
-	horzChar := charSet.Sub(2, 3)
+	tableChars := parseTableCharSet(charSet)
 
 	// need to calc the length of the widest item in each column
 	colContentWidths := make([]int, colCount)
@@ -93,7 +87,7 @@ func MakeTable(data [][]gem.String, width int, lineSep gem.String, header bool, 
 	if border {
 		// pre-add extra space for each min col padding (2) along with the
 		// additional horz border char.
-		minTableWidth = horzChar.Len()
+		minTableWidth = tableChars.horz.Len()
 	}
 
 	for i := range colContentWidths {
@@ -108,7 +102,7 @@ func MakeTable(data [][]gem.String, width int, lineSep gem.String, header bool, 
 		minTableWidth += colContentWithPaddingWidths[i]
 
 		if border {
-			minTableWidth += horzChar.Len()
+			minTableWidth += tableChars.horz.Len()
 		}
 	}
 
@@ -150,17 +144,38 @@ func MakeTable(data [][]gem.String, width int, lineSep gem.String, header bool, 
 	}
 
 	// now we have our table widths and can begin building the table
+	tableBlock := buildTable(data, colWidths, width, lineSep, header, border, tableChars)
+
+	return tableBlock
+}
+
+func parseTableCharSet(charSet gem.String) tableCharSet {
+	if charSet.Len() < 3 {
+		defaultSet := gem.New("+|-")
+		toAdd := defaultSet.Sub(0, 3-charSet.Len())
+		charSet = charSet.Add(toAdd)
+	} else if charSet.Len() > 3 {
+		charSet = charSet.Sub(0, 3)
+	}
+	return tableCharSet{
+		corner: charSet.Sub(0, 1),
+		vert:   charSet.Sub(1, 2),
+		horz:   charSet.Sub(2, 3),
+	}
+}
+
+func buildTable(data [][]gem.String, colWidths []int, width int, lineSep gem.String, header bool, border bool, chars tableCharSet) tb.Block {
 	tableBlock := tb.New(gem.Zero, lineSep)
 
 	// build top border if needed
 	var horzBar gem.String
 	if border {
-		horzBar = cornerChar
+		horzBar = chars.corner
 		for i := range colWidths {
 			for j := 0; j < colWidths[i]; j++ {
-				horzBar = horzBar.Add(horzChar)
+				horzBar = horzBar.Add(chars.horz)
 			}
-			horzBar = horzBar.Add(cornerChar)
+			horzBar = horzBar.Add(chars.corner)
 		}
 
 		tableBlock.Append(horzBar)
@@ -170,7 +185,7 @@ func MakeTable(data [][]gem.String, width int, lineSep gem.String, header bool, 
 	if header && !border {
 		nonBorderBreakBar = gem.Zero
 		for i := 0; i < width; i++ {
-			nonBorderBreakBar = nonBorderBreakBar.Add(horzChar)
+			nonBorderBreakBar = nonBorderBreakBar.Add(chars.horz)
 		}
 	}
 
@@ -178,11 +193,11 @@ func MakeTable(data [][]gem.String, width int, lineSep gem.String, header bool, 
 	for row := range data {
 		line := gem.Zero
 		if border {
-			line = vertChar
+			line = chars.vert
 		}
 
 		var cellContent gem.String
-		for col := 0; col < colCount; col++ {
+		for col := 0; col < len(colWidths); col++ {
 			var cellData gem.String
 			if col < len(data[row]) {
 				cellData = data[row][col]
@@ -192,14 +207,14 @@ func MakeTable(data [][]gem.String, width int, lineSep gem.String, header bool, 
 				headerContent := gem.New(strings.ToUpper(cellData.String()))
 				if border {
 					cellContent = AlignLineCenter(headerContent, colWidths[col])
-					cellContent = cellContent.Add(vertChar)
+					cellContent = cellContent.Add(chars.vert)
 				} else {
 					cellContent = AlignLineLeft(headerContent, colWidths[col])
 				}
 			} else {
 				if border {
 					cellContent = AlignLineLeft(cellData, colWidths[col]-1)
-					cellContent = gem.New(" ").Add(cellContent).Add(vertChar)
+					cellContent = gem.New(" ").Add(cellContent).Add(chars.vert)
 				} else {
 					cellContent = AlignLineLeft(cellData, colWidths[col])
 				}

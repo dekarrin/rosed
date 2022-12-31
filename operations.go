@@ -812,10 +812,8 @@ func (ed Editor) WrapOpts(width int, opts Options) Editor {
 		edi := ed.applyGParagraphsOpts(func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String {
 			// need to include the separator prefix/suffix if any
 
-			// TODO: sepStart and sepEnd will be an empty string, that seems
-			// not intended. come back and verify
-			sepStart := gem.RepeatStr("", sepPrefix.Len())
-			sepEnd := gem.RepeatStr("", sepSuffix.Len())
+			sepStart := gem.RepeatStr("A", sepPrefix.Len())
+			sepEnd := gem.RepeatStr("A", sepSuffix.Len())
 			textBlock := manip.Wrap(sepStart.Add(para).Add(sepEnd), width, gem.New(opts.LineSeparator))
 			text := textBlock.Join()
 			return []gem.String{text}

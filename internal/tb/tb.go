@@ -9,24 +9,21 @@ import (
 	"github.com/dekarrin/rosed/internal/gem"
 )
 
-// LineOperation is a function that accepts a zero-indexed line number and the
-// contents of that line and performs some operation to produce zero or more new
-// lines to replace the contents of the line with.
+// BlockLineOperation is a function that accepts a zero-indexed line number and
+// the contents of that line and performs some operation to produce zero or more
+// new lines to replace the contents of the line with.
 //
-// The return value for a LineOperation is a slice of lines to insert at the
-// old line position. This can be used to delete the line or insert additional
-// new ones; to insert, include the new lines in the returned slice in the
-// proper position relative to the old line in the slice, and to delete the
-// original line, a slice with len < 1 can be returned.
+// The return value for a BlockLineOperation is a slice of lines to insert at
+// the old line position. This can be used to delete the line or insert
+// additional new ones; to insert, include the new lines in the returned slice
+// in the proper position relative to the old line in the slice, and to delete
+// the original line, a slice with len < 1 can be returned.
 //
 // The parameter idx will always be the index of the line before any
-// transformations were applied; e.g. a call to a LineOperation with idx = 4
-// will always be after a call with idx = 3, regardless of the size of the
+// transformations were applied; e.g. a call to a BlockLineOperation with idx =
+// 4 will always be after a call with idx = 3, regardless of the size of the
 // returned slice in the prior call.
-//
-// NOTE: coupling: this must be kept in sync with rosed.LineOperation to allow
-// interop. TODO: perhaps make this its own type.
-type LineOperation func(idx int, line string) []string
+type BlockLineOperation func(idx int, line string) []string
 
 // Block holds lines of text in a line-terminator agnostic way and provides a
 // way to operate on each individually, independent of what the original
@@ -79,7 +76,7 @@ func (tb *Block) AppendEmpty(count int) {
 //
 // All lines received by transform should be assumed to not have line
 // terminators, and none should be added by it.
-func (tb *Block) Apply(transform LineOperation) {
+func (tb *Block) Apply(transform BlockLineOperation) {
 	var applied []gem.String
 
 	for idx, line := range tb.Lines {
