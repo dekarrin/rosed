@@ -118,8 +118,8 @@ func (ed Editor) AlignOpts(align Alignment, width int, opts Options) Editor {
 
 	if opts.PreserveParagraphs {
 		return ed.applyGParagraphsOpts(func(idx int, para, pre, suf gem.String) []gem.String {
-			sepStart := _g(strings.Repeat(" ", pre.Len()))
-			sepEnd := _g(strings.Repeat(" ", suf.Len()))
+			sepStart := gem.RepeatStr(" ", pre.Len())
+			sepEnd := gem.RepeatStr(" ", suf.Len())
 
 			var bl tb.Block
 			switch align {
@@ -776,8 +776,8 @@ func (ed Editor) JustifyOpts(width int, opts Options) Editor {
 
 	if opts.PreserveParagraphs {
 		ed = ed.applyGParagraphsOpts(func(idx int, para, pre, suf gem.String) []gem.String {
-			sepStart := _g(strings.Repeat("A", pre.Len()))
-			sepEnd := _g(strings.Repeat("A", suf.Len()))
+			sepStart := gem.RepeatStr("A", pre.Len())
+			sepEnd := gem.RepeatStr("A", suf.Len())
 
 			bl := tb.New(sepStart.Add(para).Add(sepEnd), _g(opts.LineSeparator))
 			bl.Apply(func(idx int, line string) []string {
@@ -873,8 +873,11 @@ func (ed Editor) WrapOpts(width int, opts Options) Editor {
 	if opts.PreserveParagraphs {
 		edi := ed.applyGParagraphsOpts(func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String {
 			// need to include the separator prefix/suffix if any
-			sepStart := _g(strings.Repeat("", sepPrefix.Len()))
-			sepEnd := _g(strings.Repeat("", sepSuffix.Len()))
+
+			// TODO: sepStart and sepEnd will be an empty string, that seems
+			// not intended. come back and verify
+			sepStart := gem.RepeatStr("", sepPrefix.Len())
+			sepEnd := gem.RepeatStr("", sepSuffix.Len())
 			textBlock := manip.Wrap(sepStart.Add(para).Add(sepEnd), width, _g(opts.LineSeparator))
 			text := textBlock.Join()
 			return []gem.String{text}
