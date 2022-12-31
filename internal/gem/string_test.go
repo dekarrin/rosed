@@ -407,3 +407,36 @@ func Test_String_Sub(t *testing.T) {
 		})
 	}
 }
+
+func Test_String_Index(t *testing.T) {
+	testCases := []struct {
+		name   string
+		str    String
+		search String
+		expect int
+	}{
+		{"empty string in empty string", Zero, Zero, -1},
+		{"empty string in non-empty string", New("TEST"), Zero, 0},
+		{"long string in short string", New("GLUB"), New("GLUUUUUUUB"), -1},
+		{"not present", New("Some long string"), New("GLUB"), -1},
+		{"exact match", New("GLUB"), New("GLUB"), 0},
+		{"single-char search, is at start", New("GLUB"), New("G"), 0},
+		{"multi-char search, is at start", New("GLUB"), New("GLU"), 0},
+		{"single-char search, is in middle", New("Just go glub at it! glub glub!"), New("g"), 5},
+		{"multi-char search, is in middle", New("Just go glub at it! glub glub!"), New("glub"), 8},
+		{"single-char search, is at end", New("say GLUB"), New("B"), 7},
+		{"multi-char search, is at end", New("say GLUB"), New("GLUB"), 4},
+		{"search has multi-rune grapheme", New("I said that \u0023\uFE0F\u20E3 is # but in emote form"), New("that \u0023\uFE0F\u20E3 is #"), 9},
+		{"text has multi-rune graphemes before match", New("\u0023\uFE0F\u20E3 is an emoji"), New("is"), 2},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := tc.str.Index(tc.search)
+
+			assert.Equal(tc.expect, actual)
+		})
+	}
+}
