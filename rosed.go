@@ -1,10 +1,10 @@
 package rosed
 
-import "github.com/dekarrin/rosed/internal/gem"
+import (
+	"strings"
 
-func _g(s string) gem.String {
-	return gem.New(s)
-}
+	"github.com/dekarrin/rosed/internal/gem"
+)
 
 // Alignment is the type of alignment to apply to text. It is used in the
 // [Editor.Align] function.
@@ -67,3 +67,66 @@ type LineOperation func(idx int, line string) []string
 type ParagraphOperation func(idx int, para, sepPrefix, sepSuffix string) []string
 
 type gParagraphOperation func(idx int, para, sepPrefix, sepSuffix gem.String) []gem.String
+
+func (ed Editor) applyGParagraphsOpts(op gParagraphOperation, opts Options) Editor {
+	opts = opts.WithDefaults()
+
+	paraSep := opts.ParagraphSeparator
+	lineSep := opts.LineSeparator
+
+	// if we had negative lookahead we would just do a regexp.Split on the text
+	// on ParagraphSeparator(?!LineSeparator). unfortunately this requires an
+	// external library; the standard library regexp does not support zero-width
+	// lookaround assertions.
+	//
+	// instead we will check if the ambiguous sequence is possible, and if so,
+	// each paragraph will check to see if its last separator was "stolen" by
+	// the next paragraph.
+	//
+	// first we note whether the case is even possible:
+	ambigSepSequencePossible := paraSep+lineSep == lineSep+paraSep
+
+	// split the paragraph separator about its line separators so we can see any
+	// extra chars that will be chopped off while in a preserve-mode operation
+	// that messes with line separators
+	var paraSepPrevSuffix, paraSepNextPrefix gem.String
+	parts := strings.Split(opts.ParagraphSeparator, opts.LineSeparator)
+
+	paraSepPrevSuffix = gem.New(parts[0])
+	if len(parts) > 1 {
+		paraSepNextPrefix = gem.New(parts[len(parts)-1])
+	}
+
+	paragraphs := strings.Split(ed.Text, opts.ParagraphSeparator)
+	transformed := make([]string, 0, len(paragraphs))
+	for idx, para := range paragraphs {
+		// the first one will not have the prev
+		var paraPre, paraSuf gem.String
+		if idx != 0 {
+			paraPre = paraSepNextPrefix
+		}
+		if idx != len(paragraphs)-1 {
+			paraSuf = paraSepPrevSuffix
+
+			// additionally, look ahead to see if a trailing lineSep got chopped
+			// to the next paragraph, if we have a set of separators where that
+			// is possible.
+			if ambigSepSequencePossible {
+				if strings.HasPrefix(paragraphs[idx+1], opts.LineSeparator) {
+					paragraphs[idx+1] = paragraphs[idx+1][len(opts.LineSeparator):]
+					para = para + opts.LineSeparator
+				}
+			}
+		}
+
+		nextParas := op(idx, gem.New(para), paraPre, paraSuf)
+
+		if len(nextParas) > 0 {
+			transformed = append(transformed, gem.Strings(nextParas)...)
+		}
+	}
+
+	ed.Text = strings.Join(transformed, opts.ParagraphSeparator)
+
+	return ed
+}
