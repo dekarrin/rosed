@@ -248,6 +248,36 @@ func Test_String_SetCharAt(t *testing.T) {
 	}
 }
 
+func Test_String_Reverse(t *testing.T) {
+	testCases := []struct {
+		name   string
+		str    String
+		expect String
+	}{
+		{"empty string", Zero, Zero},
+		{"single-rune string", New("1"), New("1")},
+		{"single-grapheme, multi-rune string", New("C\u0327"), New("C\u0327")},
+		{"multi-grapheme string, odd count", New("kcutsemoh"), New("homestuck")},
+		{"multi-grapheme string, even count", New("bulg"), New("glub")},
+		{"anagram check, odd count", New("RACECAR"), New("RACECAR")},
+		{"anagram check, even count", New("HANNAH"), New("HANNAH")},
+		{"multiple multi-rune graphemes", New("Zero:\u0030\uFE0F\u20E3, Num:\u0023\uFE0F\u20E3"), New("\u0023\uFE0F\u20E3:muN ,\u0030\uFE0F\u20E3:oreZ")},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert := assert.New(t)
+
+			actual := tc.str.Reverse()
+
+			// need to check that Equal properly returns true but the 2nd
+			// check helps readability for when it fails
+			assert.True(tc.expect.Equal(actual))
+			assert.Equal(tc.expect.String(), actual.String())
+		})
+	}
+}
+
 func Test_String_Runes(t *testing.T) {
 	testCases := []struct {
 		name   string
