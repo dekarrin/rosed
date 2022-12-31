@@ -24,7 +24,7 @@ var (
 func CollapseSpace(text gem.String, lineSep gem.String) gem.String {
 	// handle the separator but do not use the empty string.
 	if !lineSep.IsEmpty() {
-		text = _g(strings.ReplaceAll(text.String(), lineSep.String(), " "))
+		text = gem.New(strings.ReplaceAll(text.String(), lineSep.String(), " "))
 	}
 	for i := 0; i < text.Len(); i++ {
 		if unicode.IsSpace(text.CharAt(i)[0]) {
@@ -32,7 +32,7 @@ func CollapseSpace(text gem.String, lineSep gem.String) gem.String {
 		}
 	}
 	collapsed := spaceCollapser.ReplaceAllString(text.String(), " ")
-	return _g(collapsed)
+	return gem.New(collapsed)
 }
 
 // CombineColumnBlocks takes two separate columns and combines them into a
@@ -92,7 +92,7 @@ func CombineColumnBlocks(left, right tb.Block, minSpaceBetween int) tb.Block {
 		charsToAddToLeft := totalCharsOnLeft - leftLineCharCount
 		midSpacer := strings.Repeat(" ", charsToAddToLeft)
 
-		combined.Append(_g(fmt.Sprintf("%s%s%s", leftLine, midSpacer, rightLine)))
+		combined.Append(gem.New(fmt.Sprintf("%s%s%s", leftLine, midSpacer, rightLine)))
 	}
 
 	return combined
@@ -106,7 +106,7 @@ func CombineColumnBlocks(left, right tb.Block, minSpaceBetween int) tb.Block {
 // collapsed-space string is returned without further modification.
 func JustifyLine(text gem.String, width int) gem.String {
 	// collapseSpace in a line so that it can be properly laid out
-	text = CollapseSpace(text, _g("\n")) // doing \n which would be whitespace-collapsed anyways
+	text = CollapseSpace(text, gem.New("\n")) // doing \n which would be whitespace-collapsed anyways
 
 	if text.Len() >= width {
 		return text
@@ -119,9 +119,9 @@ func JustifyLine(text gem.String, width int) gem.String {
 	}
 	fullList := []gem.String{}
 	for idx, word := range splitWords {
-		fullList = append(fullList, _g(word))
+		fullList = append(fullList, gem.New(word))
 		if idx+1 < len(splitWords) {
-			fullList = append(fullList, _g(" "))
+			fullList = append(fullList, gem.New(" "))
 		}
 	}
 
@@ -137,7 +137,7 @@ func JustifyLine(text gem.String, width int) gem.String {
 		if fromRight {
 			spaceWordIdx = (((numGaps - oddSubtractor) - spaceIdx) * 2) + 1
 		}
-		fullList[spaceWordIdx] = fullList[spaceWordIdx].Add(_g(" "))
+		fullList[spaceWordIdx] = fullList[spaceWordIdx].Add(gem.New(" "))
 		fromRight = !fromRight
 		spaceIdx++
 		if spaceIdx >= numGaps {
@@ -146,7 +146,7 @@ func JustifyLine(text gem.String, width int) gem.String {
 	}
 
 	finishedWord := strings.Join(gem.Strings(fullList), "")
-	return _g(finishedWord)
+	return gem.New(finishedWord)
 }
 
 // Wrap does a wrap without considering any additional lengths. Automatically
@@ -301,10 +301,6 @@ func CountTrailingWhitespace(text gem.String) int {
 	return text.Len() - lastIndex - 1
 }
 
-func _g(s string) gem.String {
-	return gem.New(s)
-}
-
 // appendWordToLine adds the current word to the the current line unless it
 // would make the width of curLine too long, in which case curLine is put into
 // the lines, curLine is reset, curWord is added to the curLine. Lines will be
@@ -327,7 +323,7 @@ func appendWordToLine(lines *tb.Block, curWord gem.String, curLine gem.String, w
 		}
 		if curLine.Len()+addedChars == width {
 			if curLine.Len() != 0 {
-				curLine = curLine.Add(_g(" "))
+				curLine = curLine.Add(gem.New(" "))
 			}
 
 			curLine = curLine.Add(curWord)
@@ -337,14 +333,14 @@ func appendWordToLine(lines *tb.Block, curWord gem.String, curLine gem.String, w
 		} else if curLine.Len()+addedChars > width {
 			if curLine.Len() == 0 {
 				curLine = curLine.Add(curWord.Sub(0, width-1))
-				curLine = curLine.Add(_g("-"))
+				curLine = curLine.Add(gem.New("-"))
 				curWord = curWord.Sub(width-1, curWord.Len())
 			}
 			lines.Append(curLine)
 			curLine = gem.Zero
 		} else {
 			if curLine.Len() != 0 {
-				curLine = curLine.Add(_g(" "))
+				curLine = curLine.Add(gem.New(" "))
 			}
 			curLine = curLine.Add(curWord)
 			curWord = gem.Zero
