@@ -2147,7 +2147,6 @@ func Test_AlignOpts(t *testing.T) {
 				"quadrant together, they are     " + DefaultLineSeparator +
 				"said to be MATESPRITS.          ",
 		},
-		// TODO: need to create ticket to check/fix the sep adding issue for justify
 		{
 			name: "left: three-paragraph, preserved, custom parasep",
 			input: "Pale Quadrant:" + DefaultLineSeparator +
