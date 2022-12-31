@@ -140,11 +140,37 @@ func (str String) GraphemeIndexes() [][]int {
 	return indexes
 }
 
+// Index returns the index of the first instance of s in str, or -1 if s is not
+// present in str.
+func (str String) Index(s String) int {
+
+}
+
+// IndexFunc returns the index into str of the first grapheme cluster gc
+// satisfying f(gc), or -1 if none do. The checking function f will be called
+// with each grapheme cluster from left to right.
+func (str String) IndexFunc(f func(gc []rune) bool) int {
+
+}
+
 // IsEmpty return whether the String is the empty string "".
 func (str String) IsEmpty() bool {
 	str = str.initialized()
 
 	return len(str.r) == 0
+}
+
+// LastIndex returns the index of the last instance of s in str, or -1 if s is
+// not present in str.
+func (str String) LastIndex(s String) int {
+
+}
+
+// LastIndexFunc returns the index into str of the last grapheme cluster gc
+// satisfying f(gc), or -1 if none do. The checking function f will be called
+// with each grapheme cluster from right to left.
+func (str String) LastIndexFunc(s String) int {
+
 }
 
 // Len returns the number of grapheme clusters (user-perceivable characters)
