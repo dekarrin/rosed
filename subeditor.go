@@ -48,6 +48,14 @@ type parentRef struct {
 func (ed Editor) Chars(start, end int) Editor {
 	// ask gem string for the grapheme-based char positions
 	indexes := gem.New(ed.Text).GraphemeIndexes()
+
+	if start == End {
+		start = len(indexes)
+	}
+	if end == End {
+		end = len(indexes)
+	}
+
 	start, end = util.RangeToIndexes(len(indexes), start, end)
 
 	// interface treats these as python-style slice indexes which means we
@@ -205,6 +213,14 @@ func (ed Editor) Lines(start, end int) Editor {
 	}
 
 	lc := ed.LineCount()
+
+	if start == End {
+		start = lc
+	}
+	if end == End {
+		end = lc
+	}
+
 	start, end = util.RangeToIndexes(lc, start, end)
 
 	// if we know we are about to get past the end of the lines
