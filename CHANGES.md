@@ -1,6 +1,6 @@
 v1.2.1 - January 7th, 2023
 --------------------------
-* Added `rosed.End`.
+* Added `rosed.End`
 
 v1.2.0 - December 31st, 2022
 ----------------------------
