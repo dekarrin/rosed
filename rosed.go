@@ -1,10 +1,16 @@
 package rosed
 
 import (
+	"math"
 	"strings"
 
 	"github.com/dekarrin/rosed/internal/gem"
 )
+
+// End is a constant that if passed to a position argument, represents a
+// contextual "end of text" as of the calling of the operation it is passed to.
+// Will always refer to the end of text.
+const End = math.MinInt
 
 // Alignment is the type of alignment to apply to text. It is used in the
 // [Editor.Align] function.

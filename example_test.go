@@ -794,6 +794,21 @@ func ExampleEditor_InsertTableOpts_tableCharSet() {
 	// Lalonde    Rose
 }
 
+// This example uses the rosed.End constant to specify the end of the text as
+// the editor is modified.
+func Example_end() {
+	fullText := Edit("Hello!\n").
+		Insert(End, "This is a line\n").
+		Insert(End, "And this is another").
+		String()
+
+	fmt.Println(fullText)
+	// Output:
+	// Hello!
+	// This is a line
+	// And this is another
+}
+
 // This example creates two columns from two runs of text.
 func ExampleEditor_InsertTwoColumns() {
 	leftText := "Karkalicious, definition: makes Terezi loco. "
